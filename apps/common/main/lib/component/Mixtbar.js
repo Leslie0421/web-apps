@@ -112,7 +112,7 @@ define([
                         '<a class="scroll left" data-hint="0" data-hint-direction="bottom" data-hint-offset="-7, 0" data-hint-title="V"></a>' +
                         '<ul>' +
                             '<% for(var i in items) { %>' +
-                                '<% if (typeof items[i] == "object") { %>' +
+                                '<% if (typeof items[i] == "object" && !items[i].isHidden) { %>' +
                                 '<li class="ribtab' +
                                         '<% if (items[i].haspanel===false) print(" x-lone") %>' +
                                         '<% if (items[i].extcls) print(\' \' + items[i].extcls) %>"' +
@@ -128,7 +128,7 @@ define([
                         '<a class="scroll right" data-hint="0" data-hint-direction="bottom" data-hint-offset="-7, 0" data-hint-title="R"></a>' +
                         '<ul>' +
                             '<% for(var i in items) { %>' +
-                                '<% if (typeof items[i] == "object") { %>' +
+                                '<% if (typeof items[i] == "object" && !items[i].isHidden) { %>' +
                                 '<li class="ribtab' +
                                         '<% if (items[i].haspanel===false) print(" x-lone") %>' +
                                         '<% if (items[i].extcls) print(\' \' + items[i].extcls) %>"' +
