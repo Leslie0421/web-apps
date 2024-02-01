@@ -4,7 +4,8 @@ const EditorUIController = () => {
 };
 
 EditorUIController.isSupportEditFeature = () => {
-    return false
+    // return false
+    return true
 };
 
 EditorUIController.getToolbarOptions = () => {

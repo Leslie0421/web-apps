@@ -1068,7 +1068,7 @@ define([
                 if (licType !== undefined && (this.appOptions.canPDFEdit) && this.editorConfig.mode !== 'view' &&
                    (licType===Asc.c_oLicenseResult.Connections || licType===Asc.c_oLicenseResult.UsersCount || licType===Asc.c_oLicenseResult.ConnectionsOS || licType===Asc.c_oLicenseResult.UsersCountOS
                    || licType===Asc.c_oLicenseResult.SuccessLimit && (this.appOptions.trialMode & Asc.c_oLicenseMode.Limited) !== 0))
-                    this._state.licenseType = licType;
+                    this._state.licenseType = 0;
 
                 if (this._isDocReady)
                     this.applyLicense();
