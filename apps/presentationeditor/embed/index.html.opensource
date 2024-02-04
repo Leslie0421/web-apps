@@ -50,7 +50,7 @@
 
       <div id="loading-mask" class="loadmask">
           <div class="loadmask-body" align="center">
-              <div class="loadmask-logo"></div>
+              <div class="loadmask-logo" style="display: none;"></div>
           </div>
       </div>
 
