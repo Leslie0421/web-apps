@@ -151,13 +151,13 @@ class MainPage extends Component {
                 <Page name="home" className={`editor${!isHideLogo ? ' page-with-logo' : ''}`}>
                     {/* Top Navbar */}
                     <Navbar id='editor-navbar' className={`main-navbar${!isHideLogo ? ' navbar-with-logo' : ''}`}>
-                        {!isHideLogo && 
+                        {/* {!isHideLogo && 
                             <div className="main-logo" onClick={() => {
                                 window.open(`${__PUBLISHER_URL__}`, "_blank");
                             }}>
                                 <Icon icon="icon-logo"></Icon>
                             </div>
-                        }
+                        } */}
                         <Subnavbar>
                             <Toolbar 
                                 openOptions={this.handleClickToOpenOptions}

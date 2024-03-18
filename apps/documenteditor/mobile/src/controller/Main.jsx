@@ -395,7 +395,7 @@ class MainController extends Component {
                 });
         };
 
-        if ( About.developVersion() ) {
+        if ( !About.developVersion() ) {
             const script = document.createElement("script");
             script.src = "../../../../sdkjs/develop/sdkjs/word/scripts.js";
             script.async = true;
