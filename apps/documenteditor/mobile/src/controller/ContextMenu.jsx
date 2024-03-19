@@ -102,6 +102,9 @@ class ContextMenu extends ContextMenuController {
                 if ( !LocalStorage.getBool("de-hide-copy-cut-paste-warning") )
                     this.showCopyCutPasteModal();
                 break;
+            case 'addcomment':
+                Common.Notifications.trigger('addcomment');
+                break;
             case 'viewcomment':
                 Common.Notifications.trigger('viewcomment');
                 break;
@@ -278,9 +281,9 @@ class ContextMenu extends ContextMenuController {
 
         const { isEdit, canFillForms, isDisconnected, isViewer, canEditComments, isProtected, typeProtection } = this.props;
 
-        if (isEdit && EditorUIController.ContextMenu) {
-            return EditorUIController.ContextMenu.mapMenuItems(this);
-        } else {
+        // if (isEdit && EditorUIController.ContextMenu) {
+        //     return EditorUIController.ContextMenu.mapMenuItems(this);
+        // } else {
             const { t } = this.props;
             const _t = t("ContextMenu", {returnObjects: true});
             const { canViewComments, canCoAuthoring, canComments, dataDoc } = this.props;
@@ -348,12 +351,12 @@ class ContextMenu extends ContextMenuController {
                     });
                 }
 
-                if (api.can_AddQuotedComment() !== false && canCoAuthoring && canComments && !locked && !(!isText && isObject) && (!isViewer || canEditComments) && (isAllowedEditing || isAllowedCommenting)) {
+                // if (api.can_AddQuotedComment() !== false && canCoAuthoring && canComments && !locked && !(!isText && isObject) && (!isViewer || canEditComments) && (isAllowedEditing || isAllowedCommenting)) {
                     itemsText.push({
                         caption: _t.menuAddComment,
                         event: 'addcomment'
                     });
-                }
+                // }
             }
 
             if (isLink) {
@@ -382,7 +385,7 @@ class ContextMenu extends ContextMenuController {
             }
 
             return itemsIcon.concat(itemsText);
-        }
+        // }
     }
 
     initExtraItems () {

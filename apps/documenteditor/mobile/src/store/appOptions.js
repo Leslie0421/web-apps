@@ -142,7 +142,8 @@ export class storeAppOptions {
         this.isLightVersion = params.asc_getIsLight();
         this.buildVersion = params.asc_getBuildVersion();
         this.canCoAuthoring = !this.isLightVersion;
-        this.isOffline = Common.EditorApi.get().asc_isOffline();
+        // this.isOffline = Common.EditorApi.get().asc_isOffline();
+        this.isOffline = true
         this.isReviewOnly = (permissions.review === true) && (permissions.edit === false);
         this.canRequestEditRights = this.config.canRequestEditRights;
         this.canEdit = (permissions.edit !== false || permissions.review === true) && // can edit or review

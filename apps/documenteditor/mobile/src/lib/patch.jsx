@@ -4,7 +4,6 @@ const EditorUIController = () => {
 };
 
 EditorUIController.isSupportEditFeature = () => {
-    // return false
     return true
 };
 
@@ -18,7 +17,7 @@ EditorUIController.initFocusObjects = () => null;
 EditorUIController.initTableTemplates = () => null;
 EditorUIController.ContextMenu = {
     mapMenuItems: () => [],
-    handleMenuItemClick: () => true,
+    handleMenuItemClick: () => false,
 };
 
 export default EditorUIController;

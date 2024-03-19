@@ -8,7 +8,9 @@ import CollaborationController from '../../../../common/mobile/lib/controller/co
 import {InitReviewController as ReviewController} from '../../../../common/mobile/lib/controller/collaboration/Review.jsx';
 import { onAdvancedOptions } from './settings/Download.jsx';
 import {
+    AddCommentController,
     CommentsController,
+    EditCommentController,
     ViewCommentsController
 } from "../../../../common/mobile/lib/controller/collaboration/Comments";
 import About from '../../../../common/mobile/lib/view/About';
@@ -395,9 +397,9 @@ class MainController extends Component {
                 });
         };
 
-        if ( !About.developVersion() ) {
+        if ( About.developVersion() ) {
             const script = document.createElement("script");
-            script.src = "../../../../sdkjs/develop/sdkjs/word/scripts.js";
+            script.src = "/sdkjs/word/sdk-all-min.js";
             script.async = true;
             script.onload = on_script_load;
             script.onerror = () => {
@@ -1280,6 +1282,8 @@ class MainController extends Component {
                 <CollaborationController />
                 <ReviewController />
                 <CommentsController />
+                <AddCommentController /> 
+                <EditCommentController />
                 {EditorUIController.getEditCommentControllers && EditorUIController.getEditCommentControllers()}
                 <ViewCommentsController />
                 <PluginsController />
