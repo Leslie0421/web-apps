@@ -17,7 +17,7 @@ EditorUIController.initFocusObjects = () => null;
 EditorUIController.initTableTemplates = () => null;
 EditorUIController.ContextMenu = {
     mapMenuItems: () => [],
-    handleMenuItemClick: () => false,
+    handleMenuItemClick: () => true,
 };
 
 export default EditorUIController;
