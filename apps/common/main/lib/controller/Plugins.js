@@ -66,7 +66,7 @@ define([
                             var tab = {action: 'plugins', caption: me.panelPlugins.groupCaption, dataHintTitle: 'E', layoutname: 'toolbar-plugins', isHidden: true};
                             me.$toolbarPanelPlugins = me.panelPlugins.getPanel();
                             me.toolbar = toolbar;
-                            toolbar.addTab(tab, me.$toolbarPanelPlugins, 10);     // TODO: clear plugins list in left panel
+                            // toolbar.addTab(tab, me.$toolbarPanelPlugins, 10);     // TODO: clear plugins list in left panel
                         }
                     }
                 },
