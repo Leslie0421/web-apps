@@ -74,7 +74,7 @@ define([
         ],
 
         initialize: function() {
-            sessionStorage.removeItem('afterIndex')
+            window.sessionStorage.removeItem('afterIndex')
             this._state = {
                 activated: false,
                 bullets: {
@@ -2433,7 +2433,7 @@ define([
 
         onPageNumAfterPosClick: function(item, e) {
             const pageIndex = this.api.getCurrentPage();
-            sessionStorage.setItem('afterIndex',pageIndex)
+            window.sessionStorage.setItem('afterIndex',pageIndex)
 
             if (this.api)
                 this.api.put_PageNum(-1);
