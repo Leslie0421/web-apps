@@ -390,6 +390,8 @@ define([
 
                 Common.UI.info({
                     maxwidth: 500,
+                    width: '30%',
+                    height: 'auto',
                     buttons: (mode.canPDFAnnotate || mode.canPDFEdit || !mode.canDownload) ? ['ok'] : buttons.concat(['cancel']),
                     primary: (mode.canPDFAnnotate || mode.canPDFEdit || !mode.canDownload) ? 'ok' : primary,
                     msg: (mode.canPDFAnnotate || mode.canPDFEdit) ? this.txtNeedCommentMode : (mode.canDownload ? this.txtNeedDownload : this.errorAccessDeny),
@@ -485,6 +487,7 @@ define([
                 if (!res) {
                     if (!Common.localStorage.getBool("pdfe-hide-copywarning")) {
                         (new Common.Views.CopyWarningDialog({
+                            width: '30%',
                             handler: function(dontshow) {
                                 if (dontshow) Common.localStorage.setItem("pdfe-hide-copywarning", 1);
                                 Common.NotificationCenter.trigger('edit:complete', me.toolbar);

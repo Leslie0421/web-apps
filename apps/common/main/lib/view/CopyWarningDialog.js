@@ -86,6 +86,15 @@ define([
             Common.UI.Window.prototype.initialize.call(this, this.options);
         },
 
+        _readDocumetGeometry: function() {
+            if (window.innerHeight == undefined) {
+                var width  = document.documentElement.offsetWidth
+            } else {
+                width  = Common.Utils.innerWidth();
+            }
+            return {width: width};
+        },
+
         render: function() {
             Common.UI.Window.prototype.render.call(this);
 
@@ -104,7 +113,17 @@ define([
                 header      = this.getChild('.header'),
                 body        = this.getChild('.body');
 
-            body.height(parseInt(text_cnt.height()) + parseInt(footer.css('height')));
+            // 自适应百分比宽度
+            let win_width = this.options.width || 500;
+            const main_width = this._readDocumetGeometry().width;
+            if(win_width && win_width.includes?.('%')) {
+                win_width =  main_width * (Number(win_width.replace('%','')) / 100);
+            } 
+            this.setWidth(win_width)
+
+            // 先处理宽度，避免首次渲染的宽度影响本次计算
+            body.height(parseInt(text_cnt.css('height')) + parseInt(footer.css('height')));
+    
             this.setHeight(parseInt(body.css('height')) + parseInt(header.css('height')));
         },
 

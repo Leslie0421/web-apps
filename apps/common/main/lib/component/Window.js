@@ -260,8 +260,15 @@ define([
                 win_height > main_height && (win_height = main_height);
             }
 
-            var win_width = (this.initConfig.width=='auto') ? parseInt(this.$window.find('.body').css('width')) : this.initConfig.width;
-            
+            // 自适应百分比宽度
+            var win_width =  this.initConfig.width
+
+            if (this.initConfig.width?.includes?.('%')) {
+                win_width = parseInt(main_width * (Number(this.initConfig.width.replace('%','')) / 100))
+            } else if(this.initConfig.width === 'auto') {
+                win_width = parseInt(this.$window.find('.body').css('width'))
+            }
+
             var top  = main_geometry.top + Math.floor((parseInt(main_height) - parseInt(win_height)) / 2);
             var left = Math.floor((parseInt(main_width) - parseInt(win_width)) / 2);
 
@@ -520,6 +527,11 @@ define([
                     window.setSize(width, parseInt(body.css('height')) + parseInt(header.css('height')));
                 } else {
                     text.css('white-space', 'normal');
+                    // 自适应百分比宽度
+                    if (options.width?.includes?.('%')) {                  
+                        const main_width = _readDocumetGeometry().width
+                        options.width = parseInt(main_width * (Number(options.width.replace('%','')) / 100))
+                    }
                     window.setWidth(options.width);
                     text_cnt.height(Math.max(text.height(), icon_height) + ((check.length>0) ? (check.height() + parseInt(check.css('margin-top'))) : 0));
                     body.height(parseInt(text_cnt.css('height')) + parseInt(footer.css('height')));
