@@ -118,7 +118,9 @@ define([
             const main_width = this._readDocumetGeometry().width;
             if(win_width && win_width.includes?.('%')) {
                 win_width =  main_width * (Number(win_width.replace('%','')) / 100);
+                if(main_width <= 600) win_width = main_width * 0.8
             } 
+            
             this.setWidth(win_width)
 
             // 先处理宽度，避免首次渲染的宽度影响本次计算
