@@ -116,7 +116,7 @@ define([
             // 自适应百分比宽度
             let win_width = this.options.width || 500;
             const main_width = this._readDocumetGeometry().width;
-            if(win_width && win_width.includes?.('%')) {
+            if(win_width && win_width.includes &&win_width.includes('%')) {
                 win_width =  main_width * (Number(win_width.replace('%','')) / 100);
                 if(main_width <= 600) win_width = main_width * 0.8
             } 
