@@ -87,6 +87,16 @@ define([
             views: [],
 
             initialize: function() {
+                let timer = null;
+                timer = setInterval(() => {
+                    const area_id = document.querySelector('#area_id');
+                    if(area_id) {
+                        area_id.style.disabled = true
+                        area_id.disabled = true
+                        clearInterval(timer)
+                    }
+                }, 100);
+                
                 this.addListeners({
                     'FileMenu': {
                         'settings:apply': _.bind(this.applySettings, this)
