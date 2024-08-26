@@ -96,7 +96,13 @@ define([
                         clearInterval(timer)
                     }
                 }, 100);
-                
+
+                document.addEventListener('focus', function(event) {
+                    if (event.target.tagName.toLowerCase() === 'textarea' && event.target.id === 'area_id') {
+                      event.preventDefault();
+                    }
+                  }, true); // 设置第三个参数为true，表示在捕获阶段监听事件
+
                 this.addListeners({
                     'FileMenu': {
                         'settings:apply': _.bind(this.applySettings, this)
