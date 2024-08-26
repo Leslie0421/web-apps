@@ -32,8 +32,7 @@
 /**
  *  ProtectDialog.js
  *
- *  Created by Julia Radzhabova on 21.06.2021
- *  Copyright (c) 2021 Ascensio System SIA. All rights reserved.
+ *  Created on 21.06.2021
  *
  */
 
@@ -155,7 +154,7 @@ define([
                 maxLength: 255,
                 validateOnBlur: false,
                 repeatInput: this.repeatPwd,
-                showPwdOnClick: true
+                showPwdOnClick: false
             });
 
             if (this.type == 'sheet') {
@@ -242,7 +241,7 @@ define([
             (this.type == 'range') && (arr = arr.concat([this.inputRangeName, this.txtDataRange]));
             arr = arr.concat([this.inputPwd, this.repeatPwd]);
             (this.type == 'sheet') && (arr = [this.btnAllowRanges].concat(arr).concat([this.optionsList]));
-            return arr;
+            return arr.concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

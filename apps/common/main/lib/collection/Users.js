@@ -34,8 +34,7 @@
  *
  *    Collection
  *
- *    Created by Maxim Kadushkin on 27 February 2014
- *    Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *    Created on 27 February 2014
  *
  */
 
@@ -87,6 +86,10 @@ define([
                 function(model){
                     return model.get('idOriginal') == id;
                 });
+        },
+
+        findOriginalUsers: function(id) {
+            return this.where({idOriginal: id});
         }
     });
 

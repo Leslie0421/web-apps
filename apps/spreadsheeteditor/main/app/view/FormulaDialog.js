@@ -34,8 +34,7 @@
  *
  *  Add formula to cell dialog
  *
- *  Created by Alexey.Musinov on 11/04/14
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 11/04/14
  *
  */
 
@@ -56,17 +55,19 @@ define([
 
             _.extend(_options,  {
                 width           : 375,
-                height          : 490,
                 header          : true,
-                cls             : 'formula-dlg',
+                cls             : 'modal-dlg formula-dlg',
                 contentTemplate : '',
                 title           : t.txtTitle,
                 items           : [],
-                buttons: null
+                buttons: [
+                    {value: 'ok', caption: this.okButtonText, primary: true, id: 'formula-dlg-btn-ok'},
+                    'cancel'
+                ],
             }, options);
 
             this.template   =   options.template || [
-                '<div class="box" style="height:' + (_options.height - 85) + 'px;">',
+                '<div class="box" style="height:405px;">',
                     '<div class="content-panel" >',
                         '<div id="formula-dlg-search" style="height:22px; margin-bottom:10px;"></div>',
                         '<label class="header">' + t.textGroupDescription + '</label>',
@@ -77,11 +78,7 @@ define([
                         '<label id="formula-dlg-desc" style="margin-top: 4px; display: block;">' + '</label>',
                     '</div>',
                 '</div>',
-                '<div class="separator horizontal"></div>',
-                '<div class="footer center">',
-                    '<button id="formula-dlg-btn-ok" class="btn normal dlg-btn primary" result="ok" style="width: 86px;">' + this.okButtonText + '</button>',
-                    '<button class="btn normal dlg-btn" result="cancel" style="width: 86px;">' + this.cancelButtonText + '</button>',
-                '</div>'
+                '<div class="separator horizontal"></div>'
             ].join('');
 
             this.api            =   options.api;
@@ -114,9 +111,9 @@ define([
                 me.filterFormulas();
             });
 
-            this.btnOk = new Common.UI.Button({
-                el: $('#formula-dlg-btn-ok')
-            });
+            this.btnOk = _.find(this.getFooterButtons(), function (item) {
+                return (item.$el && item.$el.find('#formula-dlg-btn-ok').addBack().filter('#formula-dlg-btn-ok').length>0);
+            }) || new Common.UI.Button({ el: $('#formula-dlg-btn-ok') });
 
             this.syntaxLabel = $('#formula-dlg-args');
             this.descLabel = $('#formula-dlg-desc');
@@ -124,7 +121,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.inputSearch, this.cmbFuncGroup, this.cmbListFunctions];
+            return [this.inputSearch, this.cmbFuncGroup, this.cmbListFunctions].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {
@@ -198,6 +195,7 @@ define([
         },
         onPrimary: function(list, record, event) {
             this._handleInput('ok');
+            return false;
         },
 
         _handleInput: function(state) {

@@ -30,8 +30,7 @@
  *
  */
 /**
- *  Created by Julia.Radzhabova on 9/27/18
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 9/27/18
  */
 
 define([
@@ -45,7 +44,6 @@ define([
             _.extend(_options,  {
                 title: this.textTitle,
                 width: 420,
-                height: 681,
                 header: true
             }, options);
 

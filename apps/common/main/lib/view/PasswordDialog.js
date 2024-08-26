@@ -34,8 +34,7 @@
  *
  *  Select Codepage for open CSV/TXT format file.
  *
- *  Created by Alexey.Musinov on 29/04/14
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 29/04/14
  *
  */
 
@@ -54,7 +53,6 @@ define([
 
             _.extend(_options,  {
                 width           : 395,
-                height          : 270,
                 header          : true,
                 cls             : 'modal-dlg',
                 contentTemplate : '',
@@ -111,13 +109,14 @@ define([
                         style       : 'width: 100%;',
                         maxLength: 255,
                         validateOnBlur: false,
-                        repeatInput: this.repeatPwd
+                        repeatInput: this.repeatPwd,
+                        showPwdOnClick: false
                     });
             }
         },
 
         getFocusedComponents: function() {
-            return [this.inputPwd, this.repeatPwd];
+            return [this.inputPwd, this.repeatPwd].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

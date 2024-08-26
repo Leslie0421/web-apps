@@ -33,8 +33,7 @@
 /**
  *  CrossReferenceDialog.js
  *
- *  Created by Julia Radzhabova on 22.09.2020
- *  Copyright (c) 2020 Ascensio System SIA. All rights reserved.
+ *  Created on 22.09.2020
  *
  */
 define([
@@ -45,7 +44,6 @@ define([
     DE.Views.CrossReferenceDialog = Common.UI.Window.extend(_.extend({
         options: {
             width: 400,
-            height: 410,
             style: 'min-width: 240px;',
             cls: 'modal-dlg',
             modal: false,

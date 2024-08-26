@@ -32,8 +32,7 @@
 /**
  *  DataTab.js
  *
- *  Created by Julia Radzhabova on 30.05.2019
- *  Copyright (c) 2019 Ascensio System SIA. All rights reserved.
+ *  Created on 30.05.2019
  *
  */
 
@@ -104,6 +103,10 @@ define([
 
             me.btnExternalLinks.on('click', function (b, e) {
                 me.fireEvent('data:externallinks');
+            });
+
+            me.btnGoalSeek.on('click', function (b, e) {
+                me.fireEvent('data:goalseek');
             });
 
             me.btnDataFromText.menu ?
@@ -258,6 +261,19 @@ define([
                 });
                 this.lockedControls.push(this.btnExternalLinks);
 
+                this.btnGoalSeek = new Common.UI.Button({
+                    parentEl: $host.find('#slot-btn-goal-seek'),
+                    cls: 'btn-toolbar x-huge icon-top',
+                    iconCls: 'toolbar__icon btn-goal-seek',
+                    caption: this.capGoalSeek,
+                    disabled: true,
+                    lock: [_set.editCell, _set.lostConnect, _set.coAuth],
+                    dataHint: '1',
+                    dataHintDirection: 'bottom',
+                    dataHintOffset: 'small'
+                });
+                this.lockedControls.push(this.btnGoalSeek);
+
                 this.btnsSortDown = Common.Utils.injectButtons($host.find('.slot-sortdesc'), '', 'toolbar__icon btn-sort-down', '',
                     [_set.editCell, _set.selChart, _set.selChartText, _set.selShape, _set.selShapeText, _set.selImage, _set.lostConnect, _set.coAuth, _set.ruleFilter, _set.cantModifyFilter, _set.sheetLock, _set.cantSort, _set['Sort'], _set.userProtected], undefined, undefined, undefined, '1', 'top', undefined, 'D');
 
@@ -325,6 +341,7 @@ define([
                     me.btnRemoveDuplicates.updateHint(me.tipRemDuplicates);
                     me.btnDataValidation.updateHint(me.tipDataValidation);
                     me.btnExternalLinks.updateHint(me.tipExternalLinks);
+                    me.btnGoalSeek.updateHint(me.tipGoalSeek);
 
                     me.btnsSortDown.forEach( function(btn) {
                         btn.updateHint(me.toolbar.txtSortAZ);
@@ -404,7 +421,9 @@ define([
             mniFromUrl: 'Get Data from URL',
             capDataExternalLinks: 'External Links',
             tipExternalLinks: 'View other files this spreadsheet is linked to',
-            mniFromXMLFile: 'From Local XML'
+            mniFromXMLFile: 'From Local XML',
+            capGoalSeek: 'Goal Seek',
+            tipGoalSeek: 'Find the right input for the value you want'
         }
     }()), SSE.Views.DataTab || {}));
 });

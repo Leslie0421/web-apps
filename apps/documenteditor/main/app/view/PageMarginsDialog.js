@@ -32,8 +32,7 @@
 /**
  *  PageMarginsDialog.js
  *
- *  Created by Julia Radzhabova on 2/12/16
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 2/12/16
  *
  */
 
@@ -310,7 +309,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.spnTop, this.spnBottom, this.spnLeft, this.spnRight, this.spnGutter, this.cmbGutterPosition, this.cmbOrientation, this.cmbMultiplePages];
+            return [this.spnTop, this.spnBottom, this.spnLeft, this.spnRight, this.spnGutter, this.cmbGutterPosition, this.cmbOrientation, this.cmbMultiplePages].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

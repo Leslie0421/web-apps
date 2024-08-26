@@ -32,8 +32,7 @@
 /**
  *  CustomColumnsDialog.js
  *
- *  Created by Julia Radzhabova on 6/23/17
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 6/23/17
  *
  */
 
@@ -59,7 +58,7 @@ define([
             }, options || {});
 
             this.template = [
-                '<div class="box" style="height: 203px;">',
+                '<div class="box">',
                     '<div class="input-row" style="margin-bottom: 10px;">',
                         '<label class="input-label">' + this.textColumns + '</label><div id="custom-columns-spin-num" class="float-right"></div>',
                     '</div>',
@@ -221,7 +220,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.spnColumns, this.chEqualWidth, this.chSeparator];
+            return [this.spnColumns, this.chEqualWidth, this.chSeparator].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

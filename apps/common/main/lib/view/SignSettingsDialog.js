@@ -32,8 +32,7 @@
 /**
  *  SignSettingsDialog.js
  *
- *  Created by Julia Radzhabova on 5/19/17
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 5/19/17
  *
  */
 
@@ -58,7 +57,8 @@ define([
 
         initialize : function(options) {
             _.extend(this.options, {
-                title: this.textTitle
+                title: this.textTitle,
+                buttons: ['ok'].concat((options.type || this.options.type) === 'edit' ? ['cancel'] : []),
             }, options || {});
 
             this.template = [
@@ -80,12 +80,6 @@ define([
                     '</div>',
                     '<div id="id-dlg-sign-settings-instructions"></div>',
                     '<div id="id-dlg-sign-settings-date"></div>',
-                '</div>',
-                '<div class="footer center">',
-                    '<button class="btn normal dlg-btn primary" result="ok">' + this.okButtonText + '</button>',
-                    '<% if (type == "edit") { %>',
-                    '<button class="btn normal dlg-btn" result="cancel">' + this.cancelButtonText + '</button>',
-                    '<% } %>',
                 '</div>'
             ].join('');
 
@@ -138,7 +132,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.inputName, this.inputTitle, this.inputEmail, this.textareaInstructions, this.chDate];
+            return [this.inputName, this.inputTitle, this.inputEmail, this.textareaInstructions, this.chDate].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

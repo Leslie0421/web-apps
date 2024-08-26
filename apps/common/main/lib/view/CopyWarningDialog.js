@@ -32,8 +32,7 @@
 /**
  *  CopyWarningDialog.js
  *
- *  Created by Alexander Yuzhin on 4/15/14
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 4/15/14
  *
  */
 
@@ -48,7 +47,6 @@ define([
     Common.Views.CopyWarningDialog = Common.UI.Window.extend(_.extend({
         options: {
             width   : 500,
-            height  : 325,
             cls     : 'modal-dlg copy-warning',
             buttons: ['ok']
         },
@@ -76,7 +74,7 @@ define([
                             '<p class="message">' + this.textToPaste + '</p>',
                         '</div>',
                     '</div>',
-                    '<div id="copy-warning-checkbox" class="text-align-left" style="margin-top: 20px;"></div>',
+                    '<div id="copy-warning-checkbox" class="text-align-left" style="padding: 15px 0;"></div>',
                 '</div>',
                 '<div class="separator horizontal"></div>'
             ].join('');
@@ -104,29 +102,14 @@ define([
             });
 
             this.getChild().find('.dlg-btn').on('click', _.bind(this.onBtnClick, this));
-            this.autoSize();
         },
 
-        autoSize: function() {
-            var text_cnt    = this.getChild('.box'),
-                footer      = this.getChild('.footer'),
-                header      = this.getChild('.header'),
-                body        = this.getChild('.body');
+        getFocusedComponents: function() {
+            return [this.chDontShow].concat(this.getFooterButtons());
+        },
 
-            // 自适应百分比宽度
-            let win_width = this.options.width || 500;
-            const main_width = this._readDocumetGeometry().width;
-            if(win_width && win_width.includes &&win_width.includes('%')) {
-                win_width =  main_width * (Number(win_width.replace('%','')) / 100);
-                if(main_width <= 600) win_width = main_width * 0.8
-            } 
-            
-            this.setWidth(win_width)
-
-            // 先处理宽度，避免首次渲染的宽度影响本次计算
-            body.height(parseInt(text_cnt.css('height')) + parseInt(footer.css('height')));
-    
-            this.setHeight(parseInt(body.css('height')) + parseInt(header.css('height')));
+        getDefaultFocusableComponent: function () {
+            return this.chDontShow;
         },
 
         onBtnClick: function(event) {

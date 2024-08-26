@@ -33,8 +33,7 @@
 /**
  *  CellsAddDialog.js
  *
- *  Created by Julia Radzhabova on 06.09.2019
- *  Copyright (c) 2019 Ascensio System SIA. All rights reserved.
+ *  Created on 06.09.2019
  *
  */
 
@@ -129,7 +128,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.cmbRowCol, this.spnCount, this.radioBefore, this.radioAfter];
+            return [this.cmbRowCol, this.spnCount, this.radioBefore, this.radioAfter].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

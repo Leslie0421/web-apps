@@ -32,8 +32,7 @@
 /**
  *  ChartDataRangeDialog.js
  *
- *  Created by Julia Radzhabova on 02.07.2020
- *  Copyright (c) 2020 Ascensio System SIA. All rights reserved.
+ *  Created on 02.07.2020
  *
  */
 
@@ -172,7 +171,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.inputRange1, this.inputRange2, this.inputRange3];
+            return [this.inputRange1, this.inputRange2, this.inputRange3].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

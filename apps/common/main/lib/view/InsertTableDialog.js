@@ -32,8 +32,7 @@
 /**
  *  InsertTableDialog.js
  *
- *  Created by Alexander Yuzhin on 2/17/14
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 2/17/14
  *
  */
 
@@ -47,7 +46,6 @@ define([
     Common.Views.InsertTableDialog = Common.UI.Window.extend(_.extend({
         options: {
             width: 230,
-            height: 157,
             style: 'min-width: 230px;',
             cls: 'modal-dlg',
             id: 'window-insert-table',
@@ -108,7 +106,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.udColumns, this.udRows];
+            return [this.udColumns, this.udRows].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

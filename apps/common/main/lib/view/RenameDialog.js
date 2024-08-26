@@ -32,8 +32,7 @@
 /**
  *  RenameDialog.js
  *
- *  Created by Julia Radzhabova on 9/23/16
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 9/23/16
  *
  */
 
@@ -85,6 +84,14 @@ define([
             $window.find('.btn').on('click',     _.bind(this.onBtnClick, this));
 
             me.inputNameEl = $window.find('input');
+        },
+
+        getFocusedComponents: function() {
+            return [this.inputName].concat(this.getFooterButtons());
+        },
+
+        getDefaultFocusableComponent: function () {
+            return this.inputName;
         },
 
         show: function() {

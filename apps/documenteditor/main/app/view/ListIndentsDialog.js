@@ -33,8 +33,7 @@
 /**
  *  ListIndentsDialog.js
  *
- *  Created by Julia Radzhabova on 10/13/22
- *  Copyright (c) 2022 Ascensio System SIA. All rights reserved.
+ *  Created on 10/13/22
  *
  */
 
@@ -156,7 +155,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.spnAlign, this.spnIndents, this.cmbFollow];
+            return [this.spnAlign, this.spnIndents, this.cmbFollow].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

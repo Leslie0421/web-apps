@@ -32,8 +32,7 @@
 /**
  *  SlideshowSettings.js
  *
- *  Created by Julia Radzhabova on 6/17/16
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 6/17/16
  *
  */
 
@@ -58,10 +57,9 @@ define([
             }, options || {});
 
             this.template = [
-                '<div class="box" style="height: 20px;">',
-                    '<div id="slideshow-checkbox-loop"></div>',
-                '</div>',
-                '<div class="separator horizontal"></div>'
+                '<div class="box">',
+                    '<div id="slideshow-checkbox-loop" style="margin-bottom:5px;"></div>',
+                '</div>'
             ].join('');
 
             this.options.tpl = _.template(this.template)(this.options);
@@ -85,7 +83,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [ this.chLoop ];
+            return [ this.chLoop ].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

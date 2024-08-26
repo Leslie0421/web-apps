@@ -33,8 +33,7 @@
 /**
  *  EditListItemDialog.js
  *
- *  Created by Julia Radzhabova on 05.11.2019
- *  Copyright (c) 2019 Ascensio System SIA. All rights reserved.
+ *  Created on 05.11.2019
  *
  */
 
@@ -125,7 +124,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.inputName, this.inputValue];
+            return [this.inputName, this.inputValue].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

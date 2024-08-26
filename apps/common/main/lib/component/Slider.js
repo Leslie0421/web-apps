@@ -32,8 +32,7 @@
 /**
  *  Slider.js
  *
- *  Created by Julia Radzhabova on 2/18/14
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 2/18/14
  *
  */
 
@@ -179,7 +178,7 @@ define([
 
             var onMouseDown = function (e) {
                 if ( me.disabled ) return;
-                me._dragstart = me.direction === 'vertical' ? (e.pageY*Common.Utils.zoom() - me.thumb.offset().top) : (e.pageX*Common.Utils.zoom() - me.thumb.offset().left) - 7;
+                me._dragstart = me.direction === 'vertical' ? (e.pageY*Common.Utils.zoom() - me.thumb.offset().top) : (e.pageX*Common.Utils.zoom() - me.thumb.offset().left) - 6;
 
                 me.thumb.addClass('active');
                 $(document).on('mouseup',   onMouseUp);
@@ -446,7 +445,7 @@ define([
                 var index = e.data.index,
                     thumb = me.thumbs[index].thumb;
 
-                me._dragstart = e.pageX*Common.Utils.zoom() - thumb.offset().left - thumb.width()/2;
+                me._dragstart = e.pageX*Common.Utils.zoom() - thumb.offset().left - 6.5;
                 setCenters(index);
                 me.setActiveThumb(index);
 

@@ -32,8 +32,7 @@
 /**
  *  EditNameDialog.js
  *
- *  Created by Julia Radzhabova on 10.07.2020
- *  Copyright (c) 2020 Ascensio System SIA. All rights reserved.
+ *  Created on 10.07.2020
  *
  */
 
@@ -85,6 +84,14 @@ define([
 
             var $window = this.getChild();
             $window.find('.dlg-btn').on('click',     _.bind(this.onBtnClick, this));
+        },
+
+        getFocusedComponents: function() {
+            return [this.inputLabel].concat(this.getFooterButtons());
+        },
+
+        getDefaultFocusableComponent: function () {
+            return this.inputLabel;
         },
 
         show: function() {

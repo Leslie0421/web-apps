@@ -32,8 +32,7 @@
 /**
  *  DocumentAccessDialog.js
  *
- *  Created by Julia Radzhabova on 3/14/14
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 3/14/14
  *
  */
 
@@ -48,7 +47,6 @@ define([
             _.extend(_options,  {
                 title: this.textTitle,
                 width: 600,
-                height: 536,
                 header: true
             }, options);
 

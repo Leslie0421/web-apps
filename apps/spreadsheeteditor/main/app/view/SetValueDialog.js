@@ -32,8 +32,7 @@
 /**
  *  SetValueDialog.js
  *
- *  Created by Julia Radzhabova on 4/21/14
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 4/21/14
  *
  */
 
@@ -105,6 +104,14 @@ define([
             if (this.options.rounding)
                 this.spnSize.on('change', _.bind(this.onChange, this));
             this.spnSize.$el.find('input').focus();
+        },
+
+        getFocusedComponents: function() {
+            return [this.spnSize].concat(this.getFooterButtons());
+        },
+
+        getDefaultFocusableComponent: function () {
+            return this.spnSize;
         },
 
         _handleInput: function(state) {

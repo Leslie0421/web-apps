@@ -32,8 +32,7 @@
 /**
  *  SignDialog.js
  *
- *  Created by Julia Radzhabova on 5/19/17
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 5/19/17
  *
  */
 
@@ -230,10 +229,10 @@ define([
             });
             me.btnChangeCertificate.on('click', _.bind(me.onChangeCertificate, me));
 
-            me.btnOk = new Common.UI.Button({
-                el: $window.find('.primary'),
-                disabled: true
-            });
+            me.btnOk = _.find(this.getFooterButtons(), function (item) {
+                return (item.$el && item.$el.find('.primary').addBack().filter('.primary').length>0);
+            }) || new Common.UI.Button({ el: $window.find('.primary') });
+            me.btnOk.setDisabled(true);
 
             me.cntCertificate = $('#id-dlg-sign-certificate');
             me.cntVisibleSign = $('#id-dlg-sign-visible');
@@ -247,7 +246,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.inputPurpose, this.inputName, this.cmbFonts, this.cmbFontSize, this.btnBold, this.btnItalic, this.btnSelectImage, this.btnChangeCertificate];
+            return [this.inputPurpose, this.inputName, this.cmbFonts, this.cmbFontSize, this.btnBold, this.btnItalic, this.btnSelectImage, this.btnChangeCertificate].concat(this.getFooterButtons());
         },
 
         show: function() {

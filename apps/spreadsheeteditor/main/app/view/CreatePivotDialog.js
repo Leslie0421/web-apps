@@ -33,8 +33,7 @@
 /**
  *  CreatePivotDialog.js
  *
- *  Created by Julia Radzhabova on 04.10.2019
- *  Copyright (c) 2019 Ascensio System SIA. All rights reserved.
+ *  Created on 04.10.2019
  *
  */
 define([
@@ -47,7 +46,7 @@ define([
     SSE.Views.CreatePivotDialog = Common.Views.AdvancedSettingsWindow.extend(_.extend({
         options: {
             contentWidth: 310,
-            height: 250,
+            separator: false,
             id: 'window-create-pivot'
         },
 
@@ -56,10 +55,10 @@ define([
 
             _.extend(this.options, {
                 title: this.textTitle,
-                template: [
-                    '<div class="box" style="height:' + (me.options.height - 85) + 'px;">',
-                        '<div class="content-panel" style="padding: 0 10px;"><div class="inner-content">',
-                            '<div class="settings-panel active">',
+                contentStyle: 'padding: 0 10px;',
+                contentTemplate: _.template([
+                    '<div class="settings-panel active">',
+                        '<div class="inner-content">',
                                 '<table cols="1" style="width: 100%;">',
                                     '<tr>',
                                         '<td style="padding-bottom: 2px;">',
@@ -87,15 +86,13 @@ define([
                                         '</td>',
                                     '</tr>',
                                     '<tr>',
-                                        '<td class="padding-left-22">',
+                                        '<td class="padding-small padding-left-22">',
                                             '<div id="create-pivot-input-dest" class="input-row" style=""></div>',
                                         '</td>',
                                     '</tr>',
                                 '</table>',
-                            '</div></div>',
-                        '</div>',
-                    '</div>'
-                ].join('')
+                            '</div></div>'
+                ].join(''))({scope: this})
             }, options);
 
             this.api        = options.api;
@@ -165,7 +162,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.txtSourceRange, this.radioNew, this.radioExist, this.txtDestRange];
+            return [this.txtSourceRange, this.radioNew, this.radioExist, this.txtDestRange].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

@@ -32,8 +32,7 @@
 /**
  *  LineNumbersDialog.js
  *
- *  Created by Julia Svinareva on 18/09/19
- *  Copyright (c) 2020 Ascensio System SIA. All rights reserved.
+ *  Created on 18/09/19
  *
  */
 
@@ -46,7 +45,6 @@ define([
     DE.Views.LineNumbersDialog = Common.UI.Window.extend(_.extend({
         options: {
             width: 290,
-            height: 332,
             header: true,
             style: 'min-width: 290px;',
             cls: 'modal-dlg',
@@ -60,7 +58,7 @@ define([
             }, options || {});
 
             this.template = [
-                '<div class="box" style="">',
+                '<div class="box">',
                 '<div id="line-numbers-add-line-numbering" style="margin-bottom: 15px;"></div>',
                 '<div style="margin-bottom: 15px;">',
                     '<div class="margin-right-9" style="display: inline-block;"><label>' + this.textStartAt + '</label><div id="line-numbers-start-at"></div></div>',
@@ -179,7 +177,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.chAddLineNumbering, this.spnStartAt, this.spnFromText, this.spnCountBy, this.rbRestartEachPage, this.rbRestartEachSection, this.rbContinuous, this.cmbApply];
+            return [this.chAddLineNumbering, this.spnStartAt, this.spnFromText, this.spnCountBy, this.rbRestartEachPage, this.rbRestartEachSection, this.rbContinuous, this.cmbApply].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

@@ -32,8 +32,7 @@
 /**
  *  Transitions.js
  *
- *  Created by Olga.Transitions on 15.07.21
- *  Copyright (c) 2021 Ascensio System SIA. All rights reserved.
+ *  Created on 15.07.21
  *
  */
 
@@ -188,6 +187,7 @@ define([
 
             this._state.Effect = type;
             this.onParameterClick(parameter);
+            Common.NotificationCenter.trigger('edit:complete', this.view);
         },
 
         onFocusObject: function(selectedObjects) {

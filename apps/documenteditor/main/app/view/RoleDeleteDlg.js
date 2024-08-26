@@ -32,8 +32,7 @@
 /**
  *  RoleDeleteDlg.js
  *
- *  Created by Julia Radzhabova on 15/04/22
- *  Copyright (c) 2022 Ascensio System SIA. All rights reserved.
+ *  Created on 15/04/22
  *
  */
 
@@ -99,7 +98,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.cmbRole];
+            return [this.cmbRole].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

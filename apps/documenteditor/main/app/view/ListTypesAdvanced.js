@@ -34,8 +34,7 @@
 /**
  *  ListTypesAdvanced.js
  *
- *  Created by Julia Radzhabova on 11/16/2022
- *  Copyright (c) 2022 Ascensio System SIA. All rights reserved.
+ *  Created on 11/16/2022
  *
  */
 
@@ -100,6 +99,14 @@ define([
         setTimeout(function(){
             me.cmbTypes.focus();
         }, 100);
+    },
+
+    getFocusedComponents: function() {
+        return [this.cmbTypes].concat(this.getFooterButtons());
+    },
+
+    getDefaultFocusableComponent: function () {
+        return this.cmbTypes;
     },
 
     close: function(suppressevent) {

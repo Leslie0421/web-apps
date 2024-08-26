@@ -33,8 +33,7 @@
 /**
  *  LanguageDialog.js
  *
- *  Created by Julia Radzhabova on 04/25/2017
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 04/25/2017
  *
  */
 
@@ -117,6 +116,14 @@ define([
         setTimeout(function(){
             me.cmbLanguage.focus();
         }, 100);
+    },
+
+    getFocusedComponents: function() {
+        return [this.cmbLanguage].concat(this.getFooterButtons());
+    },
+
+    getDefaultFocusableComponent: function () {
+        return this.cmbLanguage;
     },
 
     close: function(suppressevent) {

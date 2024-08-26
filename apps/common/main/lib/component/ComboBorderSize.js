@@ -32,8 +32,7 @@
 /**
  *  ComboBorderSize.js
  *
- *  Created by Julia Radzhabova on 2/10/14
- *  Copyright (c) 2018 Ascensio System SIA. All rights reserved.
+ *  Created on 2/10/14
  *
  */
 
@@ -349,6 +348,13 @@ define([
             '</div>'
         ].join('')),
 
+        render : function(parentEl) {
+            Common.UI.ComboBox.prototype.render.call(this, parentEl);
+            this._formControl  = this.cmpEl.find('.form-control');
+            if (this.disabled) this.setDisabled(this.disabled);
+            return this;
+        },
+
         itemClicked: function (e) {
             var el = $(e.currentTarget).parent();
 
@@ -429,6 +435,34 @@ define([
                 wheelSpeed: 10,
                 alwaysVisibleY: this.scrollAlwaysVisible
             }, this.options.scroller));
+        },
+
+        setTabIndex: function(tabindex) {
+            if (!this.rendered)
+                return;
+
+            this.tabindex = tabindex.toString();
+            !this.disabled && this._formControl && this._formControl.attr('tabindex', this.tabindex);
+        },
+
+        setDisabled: function(disabled) {
+            disabled = !!disabled;
+            this.disabled = disabled;
+
+            if (!this.rendered || !this._formControl)
+                return;
+
+            if (this.tabindex!==undefined) {
+                disabled && (this.tabindex = this._formControl.attr('tabindex'));
+                this._formControl.attr('tabindex', disabled ? "-1" : this.tabindex);
+            }
+            this.cmpEl.toggleClass('disabled', disabled);
+            this._button.toggleClass('disabled', disabled);
+            this._formControl.toggleClass('disabled', disabled);
+        },
+
+        focus: function() {
+            this._formControl && this._formControl.focus();
         }
 
     }, Common.UI.ComboBoxColor || {}));
@@ -459,6 +493,12 @@ define([
                 '</ul>',
             '</div>'
         ].join('')),
+
+        render : function(parentEl) {
+            Common.UI.ComboBox.prototype.render.call(this, parentEl);
+            this._formControl  = this.cmpEl.find('.form-control');
+            return this;
+        },
 
         itemClicked: function (e) {
             var el = $(e.currentTarget).parent();
@@ -546,6 +586,10 @@ define([
                 wheelSpeed: 10,
                 alwaysVisibleY: this.scrollAlwaysVisible
             }, this.options.scroller));
+        },
+
+        focus: function() {
+            this._formControl && this._formControl.focus();
         }
 
     }, Common.UI.ComboBoxIcons || {}));

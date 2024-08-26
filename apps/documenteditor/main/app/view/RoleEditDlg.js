@@ -32,8 +32,7 @@
 /**
  *  RoleEditDlg.js
  *
- *  Created by Julia Radzhabova on 13/04/22
- *  Copyright (c) 2022 Ascensio System SIA. All rights reserved.
+ *  Created on 13/04/22
  *
  */
 
@@ -104,7 +103,7 @@ define([
 
             this.btnColor = new Common.UI.ColorButton({
                 parentEl: $window.find('#id-dlg-role-color'),
-                additionalItems: [ this.mnuNoFormsColor = new Common.UI.MenuItem({
+                additionalItemsBefore: [ this.mnuNoFormsColor = new Common.UI.MenuItem({
                                       id: 'id-dlg-role-menu-no-highlight',
                                       caption: this.textNoHighlight,
                                       checkable: true,
@@ -118,7 +117,6 @@ define([
                 themecolors: 0,
                 effects: 0,
                 colorHints: false,
-                cls: 'move-focus',
                 takeFocusOnClose: true
             });
             this.btnColor.on('color:select', _.bind(this.onColorsSelect, this));
@@ -189,7 +187,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.btnColor, this.inputName];
+            return [this.btnColor, this.inputName].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {

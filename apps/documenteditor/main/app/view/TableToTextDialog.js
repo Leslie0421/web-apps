@@ -32,8 +32,7 @@
 /**
  *  TableToTextDialog.js
  *
- *  Created by Julia Radzhabova on 15/04/21
- *  Copyright (c) 2021 Ascensio System SIA. All rights reserved.
+ *  Created on 15/04/21
  *
  */
 
@@ -46,7 +45,6 @@ define([
     DE.Views.TableToTextDialog = Common.UI.Window.extend(_.extend({
         options: {
             width: 300,
-            height: 254,
             header: true,
             style: 'min-width: 240px;',
             cls: 'modal-dlg',
@@ -131,7 +129,7 @@ define([
         },
 
         getFocusedComponents: function() {
-            return [this.rbPara, this.rbTabs, this.rbSemi, this.rbOther, this.inputOther, this.chNested];
+            return [this.rbPara, this.rbTabs, this.rbSemi, this.rbOther, this.inputOther, this.chNested].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {
