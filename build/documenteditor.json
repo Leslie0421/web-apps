@@ -1,7 +1,7 @@
 {
     "name": "documenteditor",
     "version": "8.1.1",
-    "build": 26,
+    "build": 28,
     "homepage": "http://www.onlyoffice.com",
     "private": true,
     "main": {
