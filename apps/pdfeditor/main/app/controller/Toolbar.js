@@ -387,9 +387,6 @@ define([
         },
 
         attachPDFEditApiEvents: function() {
-            console.log('====================================');
-            console.log(this.mode,'this.mode');
-            console.log('====================================');
             if (!this.mode.isPDFEdit) return;
 
             this.api.asc_registerCallback('asc_onFocusObject',          _.bind(this.onApiFocusObject, this));
