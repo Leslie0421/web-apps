@@ -268,7 +268,7 @@ define([
             // 自适应百分比宽度
             var win_width =  this.initConfig.width
 
-
+        
             if (this.initConfig.width && this.initConfig.width.includes && this.initConfig.width.includes('%')) {
                 if(main_width <= 600) {
                     win_width = parseInt(main_width * 0.8)
@@ -279,12 +279,13 @@ define([
                 win_width = parseInt(this.$window.find('.body').css('width'))
             }
 
+
             // 处理最小宽度
-            if(win_width <= parseInt(this.$window.css('min-width'))) win_width = parseInt(this.$window.css('min-width'));
+            if(this.$window.css('min-width') && win_width <= parseInt(this.$window.css('min-width').replace('px', ''))) win_width = parseInt(this.$window.css('min-width').replace('px', ''));
 
             var top  = main_geometry.top + Math.floor((parseInt(main_height) - parseInt(win_height)) / 2);
             var left = Math.floor((parseInt(main_width) - parseInt(win_width)) / 2);
-        
+
             this.$window.css({
                 left: left < 0 ? 0 : left,
                 top: top < 0 ? 0 : top
@@ -548,6 +549,7 @@ define([
                     if (options.width && options.width.includes  && options.width.includes('%')) {                  
                         const main_width = _readDocumetGeometry().width;
                         options.width = parseInt(main_width * (Number(options.width.replace('%','')) / 100))
+        
                         if(main_width <= 600) options.width = main_width * 0.8
                     }
                     window.setWidth(options.width);
@@ -761,6 +763,19 @@ define([
                     }
                 };
 
+                if(!this.fireEvent('render:after',this)) {
+                    const options = this.options;
+                    // 处理 CopyWarningDialog 自适应宽度
+                    if (options.width && options.width.includes  && options.width.includes('%')) {                  
+                        const main_width = _readDocumetGeometry().width;
+                        options.width = parseInt(main_width * (Number(options.width.replace('%','')) / 100))
+        
+                        if(main_width <= 600) options.width = main_width * 0.8
+                        this.$window.css({
+                            width: options.width
+                        });
+                    }
+                }
                 this.fireEvent('render:after',this);
                 return this;
             },

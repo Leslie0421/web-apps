@@ -270,7 +270,7 @@
 
         if ( !stopLoading )
             document.write(
-                '<div id="loading-mask" class="loadmask">' +
+                '<div id="loading-mask" class="loadmask" style="display: none">' +
                     '<div class="loader-page" style="margin-bottom: ' + margin + 'px;' + ((logo!==null) ? 'height: auto;' : '') + '">' +
                         ((logo!==null) ? logo :
                         '<div class="loader-page-romb">' +

@@ -760,9 +760,6 @@ define([
         },
 
         onBtnChangeState: function(prop) {
-            console.log('====================================');
-            console.log(prop,'prop');
-            console.log('====================================');
             if ( /\:disabled$/.test(prop) ) {
                 var _is_disabled = arguments[2];
                 this.toolbar.fireEvent(prop, [_is_disabled]);

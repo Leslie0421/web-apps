@@ -334,16 +334,15 @@ define([
                 if (this.toolbar && this.toolbar.$el) {
                     this.btnsInsertImage = Common.Utils.injectButtons($host.find('.slot-insertimg').add(this.toolbar.$el.find('.slot-insertimg')), 'tlbtn-insertimage-', 'toolbar__icon btn-insertimage', this.capInsertImage,
                         [Common.enumLock.lostConnect, Common.enumLock.disableOnStart], false, true, undefined, '1', 'bottom', 'small');
-                    // this.btnsInsertText = Common.Utils.injectButtons($host.find('.slot-instext').add(this.toolbar.$el.find('.slot-instext')), 'tlbtn-inserttext-', 'toolbar__icon btn-big-text', this.capInsertText,
-                    //     [Common.enumLock.lostConnect, Common.enumLock.disableOnStart], true, false, true, '1', 'bottom', 'small');
+                    this.btnsInsertText = Common.Utils.injectButtons($host.find('.slot-instext').add(this.toolbar.$el.find('.slot-instext')), 'tlbtn-inserttext-', 'toolbar__icon btn-big-text', this.capInsertText,
+                        [Common.enumLock.lostConnect, Common.enumLock.disableOnStart], true, false, true, '1', 'bottom', 'small');
                     this.btnsInsertShape = Common.Utils.injectButtons($host.find('.slot-insertshape').add(this.toolbar.$el.find('.slot-insertshape')), 'tlbtn-insertshape-', 'toolbar__icon btn-insertshape', this.capInsertShape,
                         [Common.enumLock.lostConnect, Common.enumLock.disableOnStart], false, true, true, '1', 'bottom', 'small');
                     this.btnsAddPage = Common.Utils.injectButtons($host.find('.slot-inspage').add(this.toolbar.$el.find('.slot-inspage')), 'tlbtn-insertpage-', 'toolbar__icon btn-blankpage', this.capInsPage,
                         [Common.enumLock.lostConnect, Common.enumLock.disableOnStart], true, true, false, '1', 'bottom', 'small');
                 }
 
-                var created = this.btnsInsertImage.concat(this.btnsInsertShape, this.btnsAddPage);
-                // var created = this.btnsInsertImage.concat(this.btnsInsertText, this.btnsInsertShape, this.btnsAddPage);
+                var created = this.btnsInsertImage.concat(this.btnsInsertText, this.btnsInsertShape, this.btnsAddPage);
                 Common.Utils.lockControls(Common.enumLock.disableOnStart, true, {array: created});
                 Array.prototype.push.apply(this.lockedControls, created);
 
@@ -368,39 +367,39 @@ define([
                     btn.menu.items[2].setVisible(config.canRequestInsertImage || config.fileChoiceUrl && config.fileChoiceUrl.indexOf("{documentType}")>-1);
                 });
 
-                // me.btnsInsertText.forEach(function (button) {
-                //     button.updateHint([me.tipInsertHorizontalText, me.tipInsertText]);
-                //     button.options.textboxType = 'textRect';
-                //     button.setMenu(new Common.UI.Menu({
-                //         items: [
-                //             {
-                //                 caption: me.tipInsertHorizontalText,
-                //                 checkable: true,
-                //                 checkmark: false,
-                //                 iconCls     : 'menu__icon btn-text',
-                //                 toggleGroup: 'textbox',
-                //                 value: 'textRect',
-                //                 iconClsForMainBtn: 'btn-big-text'
-                //             },
-                //             {
-                //                 caption: me.tipInsertVerticalText,
-                //                 checkable: true,
-                //                 checkmark: false,
-                //                 iconCls     : 'menu__icon btn-text-vertical',
-                //                 toggleGroup: 'textbox',
-                //                 value: 'textRectVertical',
-                //                 iconClsForMainBtn: 'btn-big-text-vertical'
-                //             },
-                //         ]
-                //     }));
-                //     button.on('click', function (btn, e) {
-                //         me.fireEvent('insert:text-btn', [btn, e]);
-                //     });
-                //     button.menu.on('item:click', function(btn, e) {
-                //         button.toggle(true);
-                //         me.fireEvent('insert:text-menu', [button, e]);
-                //     });
-                // });
+                me.btnsInsertText.forEach(function (button) {
+                    button.updateHint([me.tipInsertHorizontalText, me.tipInsertText]);
+                    button.options.textboxType = 'textRect';
+                    button.setMenu(new Common.UI.Menu({
+                        items: [
+                            {
+                                caption: me.tipInsertHorizontalText,
+                                checkable: true,
+                                checkmark: false,
+                                iconCls     : 'menu__icon btn-text',
+                                toggleGroup: 'textbox',
+                                value: 'textRect',
+                                iconClsForMainBtn: 'btn-big-text'
+                            },
+                            {
+                                caption: me.tipInsertVerticalText,
+                                checkable: true,
+                                checkmark: false,
+                                iconCls     : 'menu__icon btn-text-vertical',
+                                toggleGroup: 'textbox',
+                                value: 'textRectVertical',
+                                iconClsForMainBtn: 'btn-big-text-vertical'
+                            },
+                        ]
+                    }));
+                    button.on('click', function (btn, e) {
+                        me.fireEvent('insert:text-btn', [btn, e]);
+                    });
+                    button.menu.on('item:click', function(btn, e) {
+                        button.toggle(true);
+                        me.fireEvent('insert:text-menu', [button, e]);
+                    });
+                });
 
                 me.btnsInsertShape.forEach(function (btn) {
                     btn.updateHint(me.tipInsertShape);
