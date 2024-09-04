@@ -1361,7 +1361,7 @@ define([
                     if (params.asc_getRights() !== Asc.c_oRights.Edit)
                         this.permissions.edit = false;
 
-                    this.appOptions.permissionsLicense = licType;
+                    this.appOptions.permissionsLicense = 0;
                     this.appOptions.canAutosave = true;
                     this.appOptions.canAnalytics = params.asc_getIsAnalyticsEnable();
 

@@ -1263,7 +1263,7 @@ define([
                 if (params.asc_getRights() !== Asc.c_oRights.Edit)
                     this.permissions.edit = false;
 
-                this.appOptions.permissionsLicense = licType;
+                this.appOptions.permissionsLicense = 0;
                 this.appOptions.isOffline      = this.api.asc_isOffline();
                 this.appOptions.isCrypted      = this.api.asc_isCrypto();
                 this.appOptions.canLicense     = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);

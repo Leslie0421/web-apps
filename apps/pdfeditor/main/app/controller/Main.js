@@ -1235,7 +1235,7 @@ define([
 
                 this.appOptions.isXpsViewer = /^(?:(djvu|xps|oxps))$/.test(this.document.fileType) || Common.Locale.getDefaultLanguage() === 'ru';
                 this.appOptions.isForm = !this.appOptions.isXpsViewer && !!window.isPDFForm;
-                this.appOptions.permissionsLicense = licType;
+                this.appOptions.permissionsLicense = 0;
                 this.appOptions.canAnalytics   = params.asc_getIsAnalyticsEnable();
                 this.appOptions.canLicense     = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
                 this.appOptions.isLightVersion = params.asc_getIsLight();
