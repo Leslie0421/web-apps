@@ -618,7 +618,7 @@ define([
                 this.permissions.edit = this.permissions.review = false;
 
             this.appOptions.isOffline      = this.api.asc_isOffline();
-            this.appOptions.trialMode      = params.asc_getLicenseMode();
+            this.appOptions.trialMode      = 0;
             this.appOptions.isBeta         = params.asc_getIsBeta();
             this.appOptions.canLicense     = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
             this.appOptions.canSubmitForms = this.appOptions.canLicense && (typeof (this.editorConfig.customization) == 'object') && !!this.editorConfig.customization.submitForm && !this.appOptions.isOffline;

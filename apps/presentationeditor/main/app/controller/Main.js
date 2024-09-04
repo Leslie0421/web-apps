@@ -1299,7 +1299,7 @@ define([
                         this.appOptions.canEditComments = this.appOptions.canDeleteComments = this.appOptions.isOffline;
                 }
                 this.appOptions.buildVersion   = params.asc_getBuildVersion();
-                this.appOptions.trialMode      = params.asc_getLicenseMode();
+                this.appOptions.trialMode      = 0;
                 this.appOptions.isBeta         = params.asc_getIsBeta();
                 this.appOptions.isSignatureSupport= this.appOptions.isEdit && this.appOptions.isDesktopApp && this.appOptions.isOffline && this.api.asc_isSignaturesSupport() && (this.permissions.protect!==false);
                 this.appOptions.isPasswordSupport = this.appOptions.isEdit && this.api.asc_isProtectionSupport() && (this.permissions.protect!==false);

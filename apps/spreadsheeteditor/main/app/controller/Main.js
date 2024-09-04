@@ -1382,7 +1382,7 @@ define([
                     }
                     this.appOptions.canRename      = this.editorConfig.canRename;
                     this.appOptions.buildVersion   = params.asc_getBuildVersion();
-                    this.appOptions.trialMode      = params.asc_getLicenseMode();
+                    this.appOptions.trialMode      = 0;
                     this.appOptions.isBeta         = params.asc_getIsBeta();
                     this.appOptions.canModifyFilter = (this.permissions.modifyFilter!==false);
                     this.appOptions.canBranding  = params.asc_getCustomization();
