@@ -843,14 +843,10 @@ define([
                         options: {}
                     };
                     this.mnuPageNumCurrentPos = clone(this.mnuPageNumberPosPicker);
-                    this.mnuPageNumAfterPos = clone(this.mnuPageNumberPosPicker);
                     
                     this.mnuPageNumCurrentPos.options.lock = [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock];
 
-                    this.mnuPageNumAfterPos.options.lock = [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock];
-
                     this.paragraphControls.push(this.mnuPageNumCurrentPos);
-                    this.paragraphControls.push(this.mnuPageNumAfterPos);
 
                     this.mnuInsertPageCount = clone(this.mnuPageNumberPosPicker);
                     this.mnuInsertPageCount.options.lock = [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock];
@@ -2588,7 +2584,6 @@ define([
                 );
 
                 var keepStateCurr = this.mnuPageNumCurrentPos.keepState,
-                    keepStateAfter= this.mnuPageNumAfterPos.keepState,
                     keepStateCount = this.mnuInsertPageCount.keepState,
                     keepStateNum = this.mnuInsertPageNum.keepState;
 
@@ -2617,12 +2612,6 @@ define([
                                             disabled: this.mnuPageNumCurrentPos.isDisabled(),
                                             value: 'current'
                                         }),
-                                        this.mnuPageNumAfterPos = new Common.UI.MenuItem({
-                                            caption: '本页及之后',
-                                            lock: this.mnuPageNumAfterPos.options.lock,
-                                            disabled: this.mnuPageNumAfterPos.isDisabled(),
-                                            value: 'after'
-                                        })
                                     ]
                                 })
                             }),
@@ -2637,13 +2626,10 @@ define([
                 this.mnuInsertPageNum.keepState = keepStateNum;
 
                 this.mnuPageNumCurrentPos.keepState = keepStateCurr;
-                this.mnuPageNumAfterPos.keepState = keepStateAfter;
 
                 this.paragraphControls.push(this.mnuPageNumCurrentPos);
-                this.paragraphControls.push(this.mnuPageNumAfterPos);
 
                 this.lockControls.push(this.mnuPageNumCurrentPos);
-                this.lockControls.push(this.mnuPageNumAfterPos);
 
                 this.mnuInsertPageCount.keepState = keepStateCount;
                 this.paragraphControls.push(this.mnuInsertPageCount);
