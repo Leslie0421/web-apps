@@ -131,7 +131,7 @@
         <div id="loading-mask" class="loadmask">
           <div class="brendpanel">
               <div>
-                  <div class="brand-logo loading-logo">
+                  <div class="brand-logo loading-logo" style="display: none;">
                       <img src="">
                   </div>
                   <div class="doc-title"></div>

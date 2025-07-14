@@ -55,6 +55,7 @@ define([
         ],
 
         initialize: function() {
+            window.sessionStorage.removeItem('afterIndex')
             this._state = {
                 activated: false,
                 bullets: {
@@ -387,6 +388,7 @@ define([
             toolbar.btnInsDateTime.on('click',                          _.bind(this.onInsDateTimeClick, this));
             toolbar.btnInsField.on('click',                             _.bind(this.onInsFieldClick, this, 'add'));
             toolbar.mnuPageNumCurrentPos.on('click',                    _.bind(this.onPageNumCurrentPosClick, this));
+            toolbar.mnuPageNumAfterPos.on('click',                    _.bind(this.onPageNumAfterPosClick, this));
             toolbar.mnuInsertPageCount.on('click',                      _.bind(this.onInsertPageCountClick, this));
             toolbar.btnBlankPage.on('click',                            _.bind(this.onBtnBlankPageClick, this));
             toolbar.listStyles.on('click',                              _.bind(this.onListStyleSelect, this));
@@ -876,7 +878,7 @@ define([
                 toolbar.mnuDropCapAdvanced.setDisabled(disable_dropcapadv);
 
             this.toolbar.lockToolbar(Common.enumLock.cantAddTable, !can_add_table, {array: [toolbar.btnInsertTable]});
-            this.toolbar.lockToolbar(Common.enumLock.cantAddPageNum, toolbar.mnuPageNumCurrentPos.isDisabled() && toolbar.mnuPageNumberPosPicker.isDisabled(), {array: [toolbar.mnuInsertPageNum]});
+            this.toolbar.lockToolbar(Common.enumLock.cantAddPageNum, toolbar.mnuPageNumCurrentPos.isDisabled() && toolbar.mnuPageNumAfterPos.isDisabled() && toolbar.mnuPageNumberPosPicker.isDisabled(), {array: [toolbar.mnuInsertPageNum]});
             this.toolbar.lockToolbar(Common.enumLock.inHeader, in_header, {array: toolbar.btnsPageBreak.concat([toolbar.btnBlankPage])});
             this.toolbar.lockToolbar(Common.enumLock.inControl, in_control, {array: toolbar.btnsPageBreak.concat([toolbar.btnBlankPage])});
             this.toolbar.lockToolbar(Common.enumLock.cantPageBreak, in_image && !btn_eq_state, {array: toolbar.btnsPageBreak.concat([toolbar.btnBlankPage])});
@@ -988,7 +990,7 @@ define([
 
         onApiLockHeaderFooters: function() {
             this.toolbar.lockToolbar(Common.enumLock.headerFooterLock, true, {array: [this.toolbar.mnuPageNumberPosPicker]});
-            this.toolbar.lockToolbar(Common.enumLock.cantAddPageNum, this.toolbar.mnuPageNumCurrentPos.isDisabled(), {array: [this.toolbar.mnuInsertPageNum]});
+            this.toolbar.lockToolbar(Common.enumLock.cantAddPageNum, this.toolbar.mnuPageNumCurrentPos.isDisabled() && this.toolbar.mnuPageNumAfterPos.isDisabled(), {array: [this.toolbar.mnuInsertPageNum]});
         },
 
         onApiUnLockHeaderFooters: function() {
@@ -2522,6 +2524,21 @@ define([
 
             if (e.type !== 'click')
                 this.toolbar.btnEditHeader.menu.hide();
+
+            Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+            Common.component.Analytics.trackEvent('ToolBar', 'Page Number');
+        },
+
+        onPageNumAfterPosClick: function(item, e) {
+            const pageIndex = this.api.getCurrentPage();
+            window.sessionStorage.setItem('afterIndex',pageIndex)
+
+            if (this.api)
+                this.api.put_PageNum(-1);
+
+            if (e.type !== 'click')
+                this.toolbar.btnEditHeader.menu.hide();
+
             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
             Common.component.Analytics.trackEvent('ToolBar', 'Page Number');
         },

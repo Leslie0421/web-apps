@@ -74,6 +74,8 @@
     var key, handler, k, i, modifiersMatch, scope;
     key = event.keyCode;
 
+    if(key === 112) return;
+    
     if (Common.UI.HintManager && Common.UI.HintManager.isHintVisible()) {
       if (key === 112) {
         Common.UI.HintManager.clearHints();

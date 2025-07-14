@@ -169,11 +169,13 @@ export class storeAppOptions {
             permissions.edit = permissions.review = false;
         this.review = (permissions.review === undefined) ? (permissions.edit !== false) : permissions.review;
         this.canAnalytics = params.asc_getIsAnalyticsEnable();
-        this.canLicense = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
+        // this.canLicense = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
+        this.canLicense = true;
         this.isLightVersion = params.asc_getIsLight();
         this.buildVersion = params.asc_getBuildVersion();
         this.canCoAuthoring = !this.isLightVersion;
-        this.isOffline = Common.EditorApi.get().asc_isOffline();
+        // this.isOffline = Common.EditorApi.get().asc_isOffline();
+        this.isOffline = true
         this.isReviewOnly = (permissions.review === true) && (permissions.edit === false);
         this.canRequestEditRights = this.config.canRequestEditRights;
         this.canEdit = (permissions.edit !== false || permissions.review === true) && // can edit or review

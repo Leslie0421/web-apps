@@ -131,14 +131,14 @@ const PageDocumentInfo = props => {
                     </List>
                 </Fragment>
             ) : null}
-            {dataApp ? (
+            {/* {dataApp ? (
                 <Fragment>
                     <BlockTitle>{t('Settings.textApplication')}</BlockTitle>
                     <List>
                         <ListItem title={dataApp}></ListItem>
                     </List>
                 </Fragment>
-            ) : null}
+            ) : null} */}
             {fileType === 'xps' && author ? (
                 <Fragment>
                     <BlockTitle>{t('Settings.textAuthor')}</BlockTitle>

@@ -98,14 +98,14 @@ const PageSpreadsheetInfo = (props) => {
                     </List>
                 </Fragment>
             ) : null}
-            {dataApp ? (
+            {/* {dataApp ? (
                 <Fragment>
                     <BlockTitle>{_t.textApplication}</BlockTitle>
                     <List>
                         <ListItem title={dataApp}></ListItem>
                     </List>
                 </Fragment>
-            ) : null}
+            ) : null} */}
             {creators ? (
                 <Fragment>
                     <BlockTitle>{_t.textAuthor}</BlockTitle>

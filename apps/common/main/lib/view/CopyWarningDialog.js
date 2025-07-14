@@ -58,20 +58,20 @@ define([], function () { 'use strict';
             this.template = [
                 '<div class="box">',
                     '<p class="message">' + this.textMsg + '</p>',
-                    '<div class="hotkeys">',
-                        '<div>',
-                            '<p class="hotkey">' + Common.Utils.String.platformKey('Ctrl+C', '{0}') + '</p>',
-                            '<p class="message">' + this.textToCopy + '</p>',
-                        '</div>',
-                        '<div>',
-                        '<p class="hotkey">' + Common.Utils.String.platformKey('Ctrl+X', '{0}') + '</p>',
-                            '<p class="message">' + this.textToCut + '</p>',
-                        '</div>',
-                        '<div>',
-                            '<p class="hotkey">' + Common.Utils.String.platformKey('Ctrl+V', '{0}') + '</p>',
-                            '<p class="message">' + this.textToPaste + '</p>',
-                        '</div>',
-                    '</div>',
+                    // '<div class="hotkeys">',
+                    //     '<div>',
+                    //         '<p class="hotkey">' + Common.Utils.String.platformKey('Ctrl+C', '{0}') + '</p>',
+                    //         '<p class="message">' + this.textToCopy + '</p>',
+                    //     '</div>',
+                    //     '<div>',
+                    //     '<p class="hotkey">' + Common.Utils.String.platformKey('Ctrl+X', '{0}') + '</p>',
+                    //         '<p class="message">' + this.textToCut + '</p>',
+                    //     '</div>',
+                    //     '<div>',
+                    //         '<p class="hotkey">' + Common.Utils.String.platformKey('Ctrl+V', '{0}') + '</p>',
+                    //         '<p class="message">' + this.textToPaste + '</p>',
+                    //     '</div>',
+                    // '</div>',
                     '<div id="copy-warning-checkbox" class="text-align-left" style="padding: 15px 0;"></div>',
                 '</div>',
                 '<div class="separator horizontal"></div>'
@@ -80,6 +80,15 @@ define([], function () { 'use strict';
             this.options.tpl = _.template(this.template)(this.options);
 
             Common.UI.Window.prototype.initialize.call(this, this.options);
+        },
+
+        _readDocumetGeometry: function() {
+            if (window.innerHeight == undefined) {
+                var width  = document.documentElement.offsetWidth
+            } else {
+                width  = Common.Utils.innerWidth();
+            }
+            return {width: width};
         },
 
         render: function() {

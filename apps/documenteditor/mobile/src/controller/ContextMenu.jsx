@@ -86,8 +86,8 @@ class ContextMenu extends ContextMenuController {
     onMenuItemClick(action) {
         super.onMenuItemClick(action);
 
-        if ( EditorUIController.ContextMenu && EditorUIController.ContextMenu.handleMenuItemClick(this, action) )
-            return;
+        // if ( EditorUIController.ContextMenu && EditorUIController.ContextMenu.handleMenuItemClick(this, action) )
+        //     return;
 
         const api = Common.EditorApi.get();
         switch (action) {
@@ -102,6 +102,9 @@ class ContextMenu extends ContextMenuController {
             case 'paste':
                 if ( !LocalStorage.getBool("de-hide-copy-cut-paste-warning") )
                     this.showCopyCutPasteModal();
+                break;
+            case 'addcomment':
+                Common.Notifications.trigger('addcomment');
                 break;
             case 'viewcomment':
                 Common.Notifications.trigger('viewcomment');
@@ -279,9 +282,9 @@ class ContextMenu extends ContextMenuController {
 
         const { isEdit, canFillForms, isDisconnected, isViewer, canEditComments, isProtected, typeProtection, isForm } = this.props;
 
-        if (isEdit && EditorUIController.ContextMenu) {
-            return EditorUIController.ContextMenu.mapMenuItems(this);
-        } else {
+        // if (isEdit && EditorUIController.ContextMenu) {
+        //     return EditorUIController.ContextMenu.mapMenuItems(this);
+        // } else {
             const { t } = this.props;
             const _t = t("ContextMenu", {returnObjects: true});
             const { canViewComments, canCoAuthoring, canComments, dataDoc } = this.props;
@@ -383,7 +386,7 @@ class ContextMenu extends ContextMenuController {
             }
 
             return itemsIcon.concat(itemsText);
-        }
+        // }
     }
 
     initExtraItems () {
