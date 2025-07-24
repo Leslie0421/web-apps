@@ -87,8 +87,6 @@ const MainPage = inject(
       isBranding = appOptions.canBranding || appOptions.canBrandingExt;
 
       if (logo && isBranding) {
-        isHideLogo = logo.visible === false;
-
         if (logo.image || logo.imageDark) {
           customLogoImage =
             colorTheme.type === "dark"
@@ -96,8 +94,6 @@ const MainPage = inject(
               : logo.image ?? logo.imageDark;
           customLogoUrl = logo.url;
         }
-      } else {
-        isHideLogo = false;
       }
     }
 
