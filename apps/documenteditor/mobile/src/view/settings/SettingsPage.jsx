@@ -163,16 +163,12 @@ const SettingsPage = inject("storeAppOptions", "storeReview", "storeDocumentInfo
                         <Icon slot="media" icon="icon-info"></Icon>
                     </ListItem>
                 }
-                {_canHelp &&
-                    <ListItem title={_t.textHelp} link="#" className='no-indicator' onClick={settingsContext.showHelp}>
-                        <Icon slot="media" icon="icon-help"></Icon>
-                    </ListItem>
-                }
+                {/* {(_canAbout && isNotForm) &&
                 {_canAbout &&
                     <ListItem title={_t.textAbout} link="/about/">
                         <Icon slot="media" icon="icon-about"></Icon>
                     </ListItem>
-                }
+                } */}
                 {_canFeedback &&
                     <ListItem title={t('Settings.textFeedback')} link="#" className='no-indicator' onClick={settingsContext.showFeedback}>
                         <Icon slot="media" icon="icon-feedback"></Icon>

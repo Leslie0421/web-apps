@@ -1,7 +1,7 @@
 {
     "name": "testpresentationeditor",
-    "version": "4.3.0",
-    "build": 1153,
+    "version": "8.2.0",
+    "build": 25,
     "homepage": "http://www.onlyoffice.com",
     "private": true,
     "test": {

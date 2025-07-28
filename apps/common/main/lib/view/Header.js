@@ -856,7 +856,8 @@ define([
                         }
                     }
 
-                    return $html;
+                    // return $html;
+                    return null;
                 } else
                 if ( role == 'right' ) {
                     var $html = $(_.template(templateRightBox)({

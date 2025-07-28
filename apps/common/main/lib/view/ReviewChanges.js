@@ -504,27 +504,27 @@ define([
                     this.lockedControls.push(this.btnCommentResolve);
                 }
 
-                if (this.appConfig.isEdit && this.appConfig.canCoAuthoring && this.appConfig.canUseMailMerge) {
-                    this.btnMailRecepients = new Common.UI.Button({
-                        id: 'id-toolbar-btn-mailrecepients',
-                        cls: 'btn-toolbar x-huge icon-top',
-                        iconCls: 'toolbar__icon btn-mailmerge',
-                        lock: [_set.mmergeLock, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.docLockView, _set.docLockForms, _set.docLockComments, _set.viewMode],
-                        caption: this.txtMailMerge,
-                        dataHint: '1',
-                        dataHintDirection: 'bottom',
-                        dataHintOffset: 'small',
-                        menu: new Common.UI.Menu({
-                            items: [
-                                {caption: this.mniMMFromFile, value: 'file'},
-                                {caption: this.mniMMFromUrl, value: 'url'},
-                                {caption: this.mniMMFromStorage, value: 'storage'}
-                            ]
-                        })
-                    });
-                    this.mnuMailRecepients = this.btnMailRecepients.menu;
-                    this.lockedControls.push(this.btnMailRecepients);
-                }
+                // if (this.appConfig.isEdit && this.appConfig.canCoAuthoring && this.appConfig.canUseMailMerge) {
+                //     this.btnMailRecepients = new Common.UI.Button({
+                //         id: 'id-toolbar-btn-mailrecepients',
+                //         cls: 'btn-toolbar x-huge icon-top',
+                //         iconCls: 'toolbar__icon btn-mailmerge',
+                //         lock: [_set.mmergeLock, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.docLockView, _set.docLockForms, _set.docLockComments, _set.viewMode],
+                //         caption: this.txtMailMerge,
+                //         dataHint: '1',
+                //         dataHintDirection: 'bottom',
+                //         dataHintOffset: 'small',
+                //         menu: new Common.UI.Menu({
+                //             items: [
+                //                 {caption: this.mniMMFromFile, value: 'file'},
+                //                 {caption: this.mniMMFromUrl, value: 'url'},
+                //                 {caption: this.mniMMFromStorage, value: 'storage'}
+                //             ]
+                //         })
+                //     });
+                //     this.mnuMailRecepients = this.btnMailRecepients.menu;
+                //     this.lockedControls.push(this.btnMailRecepients);
+                // }
             },
 
             render: function (el) {

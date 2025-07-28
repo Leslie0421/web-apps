@@ -169,7 +169,7 @@ define([
                     Common.UI.Mixtbar.prototype.initialize.call(this, {
                             template: _.template(template),
                             tabs: [
-                                {caption: me.textTabFile, action: 'file', extcls: 'canedit', layoutname: 'toolbar-file', haspanel:false, dataHintTitle: 'F'},
+                                {caption: me.textTabFile, action: 'file', extcls: 'canedit', layoutname: 'toolbar-file', haspanel:false, dataHintTitle: 'F', isHidden: true},
                                 {caption: me.textTabHome, action: 'home', extcls: 'canedit', dataHintTitle: 'H'},
                                 {caption: me.textTabInsert, action: 'ins', extcls: 'canedit', dataHintTitle: 'I'},
                                 {caption: me.textTabLayout, action: 'layout', extcls: 'canedit', layoutname: 'toolbar-layout', dataHintTitle: 'L'},
@@ -858,8 +858,11 @@ define([
                         options: {}
                     };
                     this.mnuPageNumCurrentPos = clone(this.mnuPageNumberPosPicker);
+                    
                     this.mnuPageNumCurrentPos.options.lock = [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock];
+
                     this.paragraphControls.push(this.mnuPageNumCurrentPos);
+
                     this.mnuInsertPageCount = clone(this.mnuPageNumberPosPicker);
                     this.mnuInsertPageCount.options.lock = [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock];
                     this.paragraphControls.push(this.mnuInsertPageCount);
@@ -1773,7 +1776,7 @@ define([
                     Common.UI.Mixtbar.prototype.initialize.call(this, {
                             template: _.template(template_view),
                             tabs: [
-                                {caption: me.textTabFile, action: 'file', layoutname: 'toolbar-file', haspanel: false, dataHintTitle: 'F'}
+                                {caption: me.textTabFile, action: 'file', layoutname: 'toolbar-file', haspanel: false, dataHintTitle: 'F', isHidden: true}
                             ],
                             config: config
                         }
@@ -2612,6 +2615,7 @@ define([
                 var keepStateCurr = this.mnuPageNumCurrentPos.keepState,
                     keepStateCount = this.mnuInsertPageCount.keepState,
                     keepStateNum = this.mnuInsertPageNum.keepState;
+
                 this.btnEditHeader.setMenu(
                     new Common.UI.Menu({
                         items: [
@@ -2636,7 +2640,7 @@ define([
                                             lock: this.mnuPageNumCurrentPos.options.lock,
                                             disabled: this.mnuPageNumCurrentPos.isDisabled(),
                                             value: 'current'
-                                        })
+                                        }),
                                     ]
                                 })
                             }),
@@ -2649,9 +2653,13 @@ define([
                     })
                 );
                 this.mnuInsertPageNum.keepState = keepStateNum;
+
                 this.mnuPageNumCurrentPos.keepState = keepStateCurr;
+
                 this.paragraphControls.push(this.mnuPageNumCurrentPos);
+
                 this.lockControls.push(this.mnuPageNumCurrentPos);
+
                 this.mnuInsertPageCount.keepState = keepStateCount;
                 this.paragraphControls.push(this.mnuInsertPageCount);
                 this.lockControls.push(this.mnuInsertPageCount);

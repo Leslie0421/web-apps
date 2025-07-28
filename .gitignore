@@ -23,6 +23,7 @@ apps/**/main/resources/**/iconshuge*.less
 apps/**/mobile/dist/*.*
 apps/**/mobile/hot/*.*
 apps/**/mobile/css/*.*
+apps/**/main/resources/**/iconshuge*.svg
 
 
 # test documents
@@ -37,3 +38,7 @@ apps/spreadsheeteditor/mobile/offlinedocs
 selenium-debug.log
 **/test/bin
 **/test/reports
+
+apps/**/mobile/css
+apps/**/mobile/dist
+apps/**/mobile/index.html

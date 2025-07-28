@@ -58,7 +58,7 @@ define([
                 '<div class="separator long"></div>' +
                 '<div class="group">' +
                     '<span class="btn-slot text x-huge slot-instext"></span>' +
-                    '<span class="btn-slot text x-huge" id="slot-btn-instextart"></span>' +
+                    // '<span class="btn-slot text x-huge" id="slot-btn-instextart"></span>' +
                     '<span class="btn-slot text x-huge slot-insertimg"></span>' +
                     // '<span class="btn-slot text x-huge" id="slot-btn-insertchart"></span>' +
                     // '<span class="btn-slot text x-huge" id="slot-btn-inssmartart"></span>' +
@@ -325,7 +325,7 @@ define([
                 _injectComponent('#slot-btn-insertlink', this.btnInsertHyperlink);
                 _injectComponent('#slot-btn-inserttable', this.btnInsertTable);
                 // _injectComponent('#slot-btn-insertchart', this.btnInsertChart);
-                _injectComponent('#slot-btn-instextart', this.btnInsertTextArt);
+                // _injectComponent('#slot-btn-instextart', this.btnInsertTextArt);
                 // _injectComponent('#slot-btn-editheader', this.btnEditHeader);
                 // _injectComponent('#slot-btn-datetime', this.btnInsDateTime);
                 // _injectComponent('#slot-btn-slidenum', this.btnInsSlideNum);

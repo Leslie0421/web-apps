@@ -87,6 +87,16 @@ define([
             views: [],
 
             initialize: function() {
+                let timer = null;
+                timer = setInterval(() => {
+                    const area_id = document.querySelector('#area_id');
+                    if(area_id) {
+                        area_id.style.disabled = true
+                        area_id.disabled = true
+                        clearInterval(timer)
+                    }
+                }, 100);
+
                 this.addListeners({
                     'FileMenu': {
                         'settings:apply': _.bind(this.applySettings, this)
@@ -1161,7 +1171,7 @@ define([
                 if (licType !== undefined && (this.appOptions.isPDFAnnotate || this.appOptions.isPDFFill || this.appOptions.isRestrictedEdit) &&
                    (licType===Asc.c_oLicenseResult.Connections || licType===Asc.c_oLicenseResult.UsersCount || licType===Asc.c_oLicenseResult.ConnectionsOS || licType===Asc.c_oLicenseResult.UsersCountOS
                    || licType===Asc.c_oLicenseResult.SuccessLimit && (this.appOptions.trialMode & Asc.c_oLicenseMode.Limited) !== 0))
-                    this._state.licenseType = licType;
+                    this._state.licenseType = 0;
 
                 if (licType !== undefined && this.appOptions.canLiveView && (licType===Asc.c_oLicenseResult.ConnectionsLive || licType===Asc.c_oLicenseResult.ConnectionsLiveOS ||
                     licType===Asc.c_oLicenseResult.UsersViewCount || licType===Asc.c_oLicenseResult.UsersViewCountOS))
@@ -1271,7 +1281,7 @@ define([
 
                 this.appOptions.isXpsViewer = /^(?:(djvu|xps|oxps))$/.test(this.document.fileType) || Common.Locale.getDefaultLanguage() === 'ru';
                 this.appOptions.isForm = !this.appOptions.isXpsViewer && !!window.isPDFForm;
-                this.appOptions.permissionsLicense = licType;
+                this.appOptions.permissionsLicense = 0;
                 this.appOptions.canAnalytics   = params.asc_getIsAnalyticsEnable();
                 this.appOptions.canLicense     = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
                 this.appOptions.isLightVersion = params.asc_getIsLight();
@@ -1316,7 +1326,8 @@ define([
                         this.appOptions.canEditComments = this.appOptions.canDeleteComments = this.appOptions.isOffline;
                 }
 
-                this.appOptions.trialMode      = params.asc_getLicenseMode();
+                // this.appOptions.trialMode      = 0;
+                this.appOptions.trialMode      = 0;
                 this.appOptions.isBeta         = params.asc_getIsBeta();
                 this.appOptions.isSignatureSupport= false;//this.appOptions.isEdit && this.appOptions.isDesktopApp && this.appOptions.isOffline && this.api.asc_isSignaturesSupport() && (this.permissions.protect!==false);
                 this.appOptions.isPasswordSupport = this.appOptions.isEdit && this.appOptions.isDesktopApp && this.appOptions.isOffline && this.api.asc_isProtectionSupport() && (this.permissions.protect!==false) && !this.appOptions.isForm;

@@ -2561,6 +2561,7 @@ define([
 
             if (e.type !== 'click')
                 this.toolbar.btnEditHeader.menu.hide();
+
             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
             Common.component.Analytics.trackEvent('ToolBar', 'Page Number');
         },

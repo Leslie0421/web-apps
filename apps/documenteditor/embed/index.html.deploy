@@ -42,6 +42,7 @@
             height: 20px;
             margin-left: 10px;
             text-align: center;
+            display: none;
         }
 
         .loadmask > .brendpanel .loading-logo > img {
@@ -143,7 +144,11 @@
   </head>
 
   <body class="embed-body">
+<<<<<<< HEAD
        <div id="loading-mask" class="loadmask"><div class="brendpanel"><div><div class="brand-logo loading-logo"><img src=""></div><div class="doc-title"></div><div class="circle"></div></div></div><div class="placeholder"><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+=======
+      <div id="loading-mask" class="loadmask"><div class="brendpanel"><div><div class="brand-logo loading-logo" style="display: none;"><img src=""></div><div class="doc-title"></div><div class="circle"></div></div></div><div class="placeholder"><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+>>>>>>> rel/v8.2.0/custom
 
        <script>
             var  userAgent = navigator.userAgent.toLowerCase(),

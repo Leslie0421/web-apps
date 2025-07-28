@@ -189,7 +189,7 @@
   "Common.Views.Comments.textViewResolved": "您无权重新打开批注",
   "Common.Views.Comments.txtEmpty": "文档中没有任何批注。",
   "Common.Views.CopyWarningDialog.textDontShow": "不要再显示此消息",
-  "Common.Views.CopyWarningDialog.textMsg": "使用编辑器工具栏按钮和右键快捷菜单进行的复制，剪切和粘贴操作将仅在此编辑器选项卡中执行。<br> <br>要在编辑器选项卡之外复制或粘贴到应用程序，请使用以下键盘组合：",
+  "Common.Views.CopyWarningDialog.textMsg": "使用编辑器工具栏按钮和右键快捷菜单进行的复制，剪切和粘贴操作将仅在此编辑器选项卡中执行。<br> <br>要在编辑器选项卡之外复制或粘贴到应用程序，请使用客户端自带的操作功能。",
   "Common.Views.CopyWarningDialog.textTitle": "复制，剪切和粘贴操作",
   "Common.Views.CopyWarningDialog.textToCopy": "用于复制",
   "Common.Views.CopyWarningDialog.textToCut": "用于剪切",

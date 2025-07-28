@@ -296,7 +296,7 @@ define([
                     '<div id="annot-bar-underline" style="display:inline-block;" class="margin-left-4"></div>' +
                     '<div id="annot-bar-strikeout" style="display:inline-block;" class="margin-left-4"></div>' +
                     '<div class="separator margin-left-6"></div>' +
-                    '<div id="annot-bar-edit-text" class="margin-left-13" style="display:inline-block;"></div>' +
+                    // '<div id="annot-bar-edit-text" class="margin-left-13" style="display:inline-block;"></div>' +
                     '</div>'),
                 toolbarController = PDFE.getController('Toolbar'),
                 toolbar = toolbarController.getView('Toolbar');

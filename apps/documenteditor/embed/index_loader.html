@@ -38,6 +38,7 @@
         .loader-logo {
             max-height: 160px;
             margin-bottom: 10px;
+            display: none;
         }
 
         .loader-page-romb {
@@ -242,7 +243,7 @@
                 customer = params["customer"] ? ('<div class="loader-page-text-customer">' + encodeUrlParam(params["customer"]) + '</div>') : '',
                 margin = (customer !== '') ? 50 : 20,
                 loading = 'Loading...',
-                logo = params["logo"] ? ((params["logo"] !== 'none') ? ('<img src="' + encodeUrlParam(params["logo"]) + '" class="loader-logo" />') : '') : null,
+                logo = params["logo"] ? ((params["logo"] !== 'none') ? ('<img src="' + encodeUrlParam(params["logo"]) + '" class="loader-logo" style="display: none;" />') : '') : null,
                 isForm = params["isForm"];
 
             window.frameEditorId = params["frameEditorId"];

@@ -126,8 +126,8 @@
                         <span class="btn-slot split" id="slot-btn-columns"></span>
                     </div>
                 </div>
-                <div class="separator long pdfedit"></div>
-                <div class="group pdfedit">
+                <div class="separator long pdfedit" style="display: none"></div>
+                <div class="group pdfedit"  style="display: none">
                     <span class="btn-slot text x-huge" id="slot-btn-edittext"></span>
                 </div>
                 <div class="separator long pdfedit"></div>
@@ -138,7 +138,6 @@
                 </div>
                 <div class="separator long pdfedit"></div>
                 <div class="group pdfedit">
-                    <span class="btn-slot text x-huge slot-instext"></span>
                     <span class="btn-slot text x-huge slot-insertimg"></span>
                     <span class="btn-slot text x-huge slot-insertshape"></span>
                 </div>
@@ -155,7 +154,6 @@
             <section class="panel" data-tab="comment" role="tabpanel" aria-labelledby="comment">
                 <div class="group">
                     <span class="btn-slot text x-huge" id="slot-btn-comment"></span>
-                    <span class="btn-slot text x-huge" id="slot-btn-text-comment"></span>
                 </div>
                 <div class="separator long"></div>
                 <div class="group">

@@ -163,14 +163,10 @@ class MainPage extends Component {
             isBranding = appOptions.canBranding || appOptions.canBrandingExt;
             
             if(logo && isBranding) {
-                isHideLogo = logo.visible === false;
-
                 if(logo.image || logo.imageDark) {
                     customLogoImage = colorTheme.type === 'dark' ? logo.imageDark ?? logo.image : logo.image ?? logo.imageDark;
                     customLogoUrl = logo.url;
                 }
-            } else {
-                isHideLogo = false;
             }
         }
 
