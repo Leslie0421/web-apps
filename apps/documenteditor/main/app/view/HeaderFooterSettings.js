@@ -358,7 +358,8 @@ define([
 
             this._arrNumbers = [
                 { displayValue: '1, 2, 3,...',      value: Asc.c_oAscNumberingFormat.Decimal },
-                { displayValue: '- 1 -, - 2 -, - 3 -,...',      value: Asc.c_oAscNumberingFormat.NumberInDash },
+                { displayValue: '— 1 —, — 2 —, — 3 —,...',      value: Asc.c_oAscNumberingFormat.NumberInDash },
+                // { displayValue: '— 1 —, — 2 —, — 3 —,...',      value: Asc.c_oAscNumberingFormat.NumberInZh },
                 { displayValue: 'a, b, c,...',      value: Asc.c_oAscNumberingFormat.LowerLetter },
                 { displayValue: 'A, B, C,...',      value: Asc.c_oAscNumberingFormat.UpperLetter },
                 { displayValue: 'i, ii, iii,...',   value: Asc.c_oAscNumberingFormat.LowerRoman },

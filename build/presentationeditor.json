@@ -1,7 +1,7 @@
 {
     "name": "presentationeditor",
     "version": "8.2.0",
-    "build": 40,
+    "build": 46,
     "homepage": "http://www.onlyoffice.com",
     "private": true,
     "main": {

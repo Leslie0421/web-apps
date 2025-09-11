@@ -381,7 +381,7 @@ const MainPage = inject(
                 onclosed={() => handleOptionsViewClosed("history")}
               />
             )}
-            {isFabShow && !isVersionHistoryMode && (
+            {/* {isFabShow && !isVersionHistoryMode && (
               <CSSTransition
                 in={state.fabVisible}
                 timeout={500}
@@ -398,7 +398,7 @@ const MainPage = inject(
                   </a>
                 </div>
               </CSSTransition>
-            )}
+            )} */}
             {appOptions.isDocReady && (
               <ContextMenu openOptions={handleClickToOpenOptions} />
             )}
