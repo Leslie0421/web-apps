@@ -278,7 +278,8 @@ define([
                 defaultValue : 0,
                 value: '0 cm',
                 maxValue: 55.87,
-                minValue: 0
+                minValue: 0,
+                api: this.api
             });
             this.spinners.push(this.numSpecialBy);
             this.numSpecialBy.on('change', _.bind(this.onFirstLineChange, this));
@@ -1429,13 +1430,15 @@ define([
 
         onSpecialSelect: function(combo, record) {
             this.CurSpecial = record.value;
+            const textProps = this.api.get_TextProps().TextPr;
+            const fontSize = textProps.FontSize;
             if (this.CurSpecial === c_paragraphSpecial.NONE_SPECIAL) {
                 this.numSpecialBy.setValue(0, true);
             }
             if (this._changedProps) {
                 if (this._changedProps.get_Ind()===null || this._changedProps.get_Ind()===undefined)
                     this._changedProps.put_Ind(new Asc.asc_CParagraphInd());
-                var value = Common.Utils.Metric.fnRecalcToMM(this.numSpecialBy.getNumberValue());
+                var value = Common.Utils.Metric.fnRecalcToMM(this.numSpecialBy.getNumberValue(),fontSize);
                 if (value === 0) {
                     this.numSpecialBy.setValue(Common.Utils.Metric.fnRecalcFromMM(this._arrSpecial[record.value].defaultValue), true);
                     value = this._arrSpecial[record.value].defaultValue;
@@ -1448,12 +1451,18 @@ define([
         },
 
         onFirstLineChange: function(field, newValue, oldValue, eOpts){
+            const textProps = this.api.get_TextProps().TextPr;
+            const fontSize = textProps.FontSize;
+
             if (this._changedProps) {
                 if (this._changedProps.get_Ind()===null || this._changedProps.get_Ind()===undefined)
                     this._changedProps.put_Ind(new Asc.asc_CParagraphInd());
-                var value = Common.Utils.Metric.fnRecalcToMM(field.getNumberValue());
+
+                var value = Common.Utils.Metric.fnRecalcToMM(field.getNumberValue(),fontSize);
+
                 if (this.CurSpecial === c_paragraphSpecial.NONE_SPECIAL && value > 0 )  {
                     this.CurSpecial = c_paragraphSpecial.FIRST_LINE;
+                
                     this.cmbSpecial.setValue(c_paragraphSpecial.FIRST_LINE);
                 } else if (value === 0) {
                     this.CurSpecial = c_paragraphSpecial.NONE_SPECIAL;

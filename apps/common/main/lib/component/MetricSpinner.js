@@ -56,7 +56,7 @@
  *
  *
  *  @property {String} defaultUnit
- *  Name of the unit of measurement. Can be px|em|%|en|ex|pt|"|cm|mm|pc|s|ms|см|мм|пт|сек|мс.
+ *  Name of the unit of measurement. Can be px|em|%|en|ex|磅|"|cm|mm|pc|s|ms|см|мм|пт|сек|мс.
  *
  *  defaultUnit: 'px',
  *
@@ -112,7 +112,8 @@ define([
             allowBlank  : false,
             dataHint    : '',
             dataHintDirection: '',
-            dataHintOffset: ''
+            dataHintOffset: '',
+            api: null
         },
 
         disabled    : false,
@@ -191,6 +192,10 @@ define([
 
             this.oldValue = this.options.minValue;
             this.lastValue = null;
+
+            if (this.options.api) {
+                this.api = this.options.api;
+            }
         },
 
         render: function () {
@@ -307,7 +312,7 @@ define([
                 var units = this.options.defaultUnit;
 
                 if ( typeof value.match !== 'undefined'){
-                    var searchUnits = value.match(/(px|em|%|en|ex|pt|"|cm|mm|pc|s|ms|см|мм|пт|сек|мс)$/i);
+                    var searchUnits = value.match(/(px|em|%|en|ex|磅|"|cm|mm|pc|s|ms|см|мм|пт|сек|мс|字符)$/i);
                     if (null !== searchUnits && searchUnits[0]!=='undefined') {
                         units = searchUnits[0].toLowerCase();
                     }
@@ -533,6 +538,41 @@ define([
             return (Math.round(a * x) + Math.round(b * x)) / x;
         },
 
+        formatFontSize: function(charCount){
+            // 计算字符缩进距离
+            // fontSize: 当前字体大小（单位：点 pt）
+            // charCount: 缩进字符数
+            // 返回：缩进距离（单位：厘米）
+            
+            // 1 点 = 1/72 英寸
+            // 1 英寸 = 2.54 厘米
+            // 所以 1 点 = 2.54/72 厘米
+            
+            // 对于中文字符，通常一个字符的宽度约等于字体大小
+            // 对于英文字符，宽度约为字体大小的 0.6 倍
+            // 这里使用中文字符的宽度计算（更保守的估计）
+            const textProps = this.options.api.get_TextProps().TextPr;
+            const fontSize = textProps.FontSize;
+            const charWidth = fontSize * (2.54 / 72.0) * charCount; // 将点转换为厘米
+            // 保留两位小数
+            return parseFloat(charWidth.toFixed(2));
+        },
+
+        formatFontSizeReverse: function(mmValue){
+            // 将毫米值转换为字符数
+            // mmValue: 毫米值
+            // 返回：字符数
+            
+            const textProps = this.options.api.get_TextProps().TextPr;
+            const fontSize = textProps.FontSize;
+            
+            // 将毫米转换为厘米，然后计算字符数
+            const cmValue = mmValue / 10;
+            const charCount = cmValue / (fontSize * (2.54 / 72.0));
+            // 保留两位小数
+            return parseFloat(charCount.toFixed(2));
+        },
+
         _recalcUnits: function(value, fromUnit){
             if ( fromUnit.match(/(s|ms|сек|мс)$/i) && this.options.defaultUnit.match(/(s|ms|сек|мс)$/i) ) {
                 var v_out = value;
@@ -545,7 +585,7 @@ define([
                 return v_out;
             }
 
-            var re = new RegExp('(pt|"|cm|mm|pc|см|мм|пт|' + Common.Utils.Metric.txtPt + '|' + Common.Utils.Metric.txtCm + ')$', 'i');
+            var re = new RegExp('(磅|"|cm|mm|pc|см|мм|пт|' + Common.Utils.Metric.txtPt + '|' + Common.Utils.Metric.txtCm + '|' + Common.Utils.Metric.txtChar + ')$', 'i');
             if ( fromUnit.match(re)===null || this.options.defaultUnit.match(re)===null)
                 return value;
 
@@ -553,23 +593,29 @@ define([
             // to mm
             if (fromUnit=='cm' || fromUnit=='см' || fromUnit==Common.Utils.Metric.txtCm)
                 v_out = v_out*10;
-            else if (fromUnit=='pt' || fromUnit=='пт'|| fromUnit==Common.Utils.Metric.txtPt)
+            else if (fromUnit=='磅' || fromUnit=='пт'|| fromUnit==Common.Utils.Metric.txtPt)
                 v_out = v_out * 25.4 / 72.0;
             else if (fromUnit=='\"')
                 v_out = v_out * 25.4;
             else if (fromUnit=='pc')
                 v_out = v_out * 25.4 / 6.0;
-
+            else if ((fromUnit=='字符' || fromUnit==Common.Utils.Metric.txtChar) && this.options.api) {
+                v_out = this.formatFontSize(v_out) * 10; // 将厘米转换为毫米
+            }
+               
             // from mm
             if (this.options.defaultUnit=='cm' || this.options.defaultUnit=='см' || this.options.defaultUnit==Common.Utils.Metric.txtCm)
                 v_out = parseFloat((v_out/10.).toFixed(6));
-            else if (this.options.defaultUnit=='pt' || this.options.defaultUnit=='пт' || this.options.defaultUnit==Common.Utils.Metric.txtPt)
+            else if (this.options.defaultUnit=='磅' || this.options.defaultUnit=='пт' || this.options.defaultUnit==Common.Utils.Metric.txtPt)
                 v_out = parseFloat((v_out * 72.0 / 25.4).toFixed(3));
             else if (this.options.defaultUnit=='\"')
                 v_out = parseFloat((v_out / 25.4).toFixed(3));
             else if (this.options.defaultUnit=='pc')
                 v_out = parseFloat((v_out * 6.0 / 25.4).toFixed(6));
-
+            else if ((this.options.defaultUnit=='字符' || this.options.defaultUnit==Common.Utils.Metric.txtChar) && this.options.api) {
+                v_out = this.formatFontSizeReverse(v_out);
+            }
+            
             return v_out;
         },
 
