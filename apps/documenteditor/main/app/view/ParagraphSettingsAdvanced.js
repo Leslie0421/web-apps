@@ -1430,8 +1430,8 @@ define([
 
         onSpecialSelect: function(combo, record) {
             this.CurSpecial = record.value;
-            const textProps = this.api.get_TextProps().TextPr;
-            const fontSize = textProps.FontSize;
+            const textProps = this.api.get_TextProps().get_TextPr();
+            const fontSize = textProps.get_FontSize();
             if (this.CurSpecial === c_paragraphSpecial.NONE_SPECIAL) {
                 this.numSpecialBy.setValue(0, true);
             }
@@ -1451,8 +1451,8 @@ define([
         },
 
         onFirstLineChange: function(field, newValue, oldValue, eOpts){
-            const textProps = this.api.get_TextProps().TextPr;
-            const fontSize = textProps.FontSize;
+            const textProps = this.api.get_TextProps().get_TextPr();
+            const fontSize = textProps.get_FontSize();
 
             if (this._changedProps) {
                 if (this._changedProps.get_Ind()===null || this._changedProps.get_Ind()===undefined)

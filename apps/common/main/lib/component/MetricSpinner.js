@@ -551,8 +551,8 @@ define([
             // 对于中文字符，通常一个字符的宽度约等于字体大小
             // 对于英文字符，宽度约为字体大小的 0.6 倍
             // 这里使用中文字符的宽度计算（更保守的估计）
-            const textProps = this.options.api.get_TextProps().TextPr;
-            const fontSize = textProps.FontSize;
+            const textProps = this.options.api.get_TextProps().get_TextPr();
+            const fontSize = textProps.get_FontSize();
             const charWidth = fontSize * (2.54 / 72.0) * charCount; // 将点转换为厘米
             // 保留两位小数
             return parseFloat(charWidth.toFixed(2));
@@ -563,8 +563,8 @@ define([
             // mmValue: 毫米值
             // 返回：字符数
             
-            const textProps = this.options.api.get_TextProps().TextPr;
-            const fontSize = textProps.FontSize;
+            const textProps = this.options.api.get_TextProps().get_TextPr();
+            const fontSize = textProps.get_FontSize();
             
             // 将毫米转换为厘米，然后计算字符数
             const cmValue = mmValue / 10;
