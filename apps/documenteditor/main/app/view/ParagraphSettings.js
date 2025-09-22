@@ -304,6 +304,9 @@ define([
         setApi: function(api) {
             this.api = api;
             if (this.api) {
+                // set api to numSpecialBy  
+                this.numSpecialBy.options.api = this.api;
+
                 this.api.asc_registerCallback('asc_onParaSpacingLine', _.bind(this._onLineSpacing, this));
             }
             return this;
@@ -393,7 +396,9 @@ define([
         onSpecialSelect: function(combo, record) {
             var special = record.value,
                 specialBy = (special === c_paragraphSpecial.NONE_SPECIAL) ? 0 : this.numSpecialBy.getNumberValue();
-            specialBy = Common.Utils.Metric.fnRecalcToMM(specialBy);
+            const textProps = this.api.get_TextProps().get_TextPr();
+            const fontSize = textProps.get_FontSize();
+            specialBy = Common.Utils.Metric.fnRecalcToMM(specialBy, fontSize);
             if (specialBy === 0) {
                 specialBy = this._arrSpecial[special].defaultValue;
             }
@@ -417,7 +422,10 @@ define([
         },
 
         onFirstLineChange: function(field, newValue, oldValue, eOpts){
-            var specialBy = Common.Utils.Metric.fnRecalcToMM(field.getNumberValue());
+            const textProps = this.api.get_TextProps().get_TextPr();
+            const fontSize = textProps.get_FontSize();
+            var specialBy = Common.Utils.Metric.fnRecalcToMM(field.getNumberValue(), fontSize);
+ 
             if (this._state.CurSpecial === c_paragraphSpecial.HANGING) {
                 specialBy = -specialBy;
             }
