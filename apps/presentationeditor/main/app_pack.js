@@ -26,7 +26,12 @@ require([
     'common/main/lib/view/SignDialog',
     'common/main/lib/view/ListSettingsDialog',
     'common/main/lib/view/DocumentPropertyDialog',
+    'common/main/lib/view/MacrosDialog',
+    'common/main/lib/view/MacrosAiDialog',
+    'common/main/lib/component/MonacoEditor',
+    'common/main/lib/component/TextareaField',
 
+    'presentationeditor/main/app/controller/DocumentHolderExt',
     'presentationeditor/main/app/view/FileMenuPanels',
     'presentationeditor/main/app/view/DocumentHolderExt',
     'presentationeditor/main/app/view/ParagraphSettingsAdvanced',

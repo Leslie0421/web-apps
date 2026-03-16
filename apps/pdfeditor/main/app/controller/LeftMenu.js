@@ -260,6 +260,8 @@ define([
                 close_menu = !!isopts;
                 break;
             case 'close-editor': Common.NotificationCenter.trigger('close'); break;
+            case 'switch:mobile': Common.Gateway.switchEditorType('mobile', true); break;
+            case 'suggest': Common.NotificationCenter.trigger('suggest'); break;
             default: close_menu = false;
             }
 
@@ -362,20 +364,22 @@ define([
             var me = this,
                 defFileName = this.getApplication().getController('Viewport').getView('Common.Views.Header').getDocumentCaption();
             !defFileName && (defFileName = me.txtUntitled);
-            var idx = defFileName.lastIndexOf('.');
+            var idx = defFileName.lastIndexOf('.'),
+                fileExt = format===undefined && ext==="true" ? (idx>0 ? defFileName.substring(idx) : '') : ext;
             if (idx>0)
                 defFileName = defFileName.substring(0, idx);
+
             (new Common.Views.TextInputDialog({
                 label: me.textSelectPath,
                 value: defFileName || '',
-                inputFixedConfig: {fixedValue: ext, fixedWidth: 40},
+                inputFixedConfig: {fixedValue: fileExt, fixedWidth: 40},
                 inputConfig: {
                     maxLength: me.mode.wopi.FileNameMaxLength
                 },
                 handler: function(result, value) {
                     if (result == 'ok') {
-                        if (typeof ext === 'string')
-                            value = value + ext;
+                        if (typeof fileExt === 'string')
+                            value = value + fileExt;
                         me.clickSaveAsFormat(menu, format, ext, value);
                     }
                 }
@@ -623,13 +627,15 @@ define([
         SetDisabled: function(disable, options) {
             if (this.leftMenu._state.disabled !== disable) {
                 this.leftMenu._state.disabled = disable;
-                if (disable) {
-                    this.previsEdit = this.mode.isEdit;
-                    this.prevcanEdit = this.mode.canEdit;
-                    this.mode.isEdit = this.mode.canEdit = !disable;
-                } else {
-                    this.mode.isEdit = this.previsEdit;
-                    this.mode.canEdit = this.prevcanEdit;
+                if (this.mode) {
+                    if (disable) {
+                        this.previsEdit = this.mode.isEdit;
+                        this.prevcanEdit = this.mode.canEdit;
+                        this.mode.isEdit = this.mode.canEdit = !disable;
+                    } else {
+                        this.mode.isEdit = this.previsEdit;
+                        this.mode.canEdit = this.prevcanEdit;
+                    }
                 }
             }
 

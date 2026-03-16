@@ -86,7 +86,10 @@ define([
                     'zoom:topage': _.bind(this.onBtnZoomTo, this, 'topage'),
                     'zoom:towidth': _.bind(this.onBtnZoomTo, this, 'towidth'),
                     'rulers:change': _.bind(this.onChangeRulers, this),
-                    'darkmode:change': _.bind(this.onChangeDarkMode, this)
+                    'darkmode:change': _.bind(this.onChangeDarkMode, this),
+                    'macros:click':  _.bind(this.onClickMacros, this),
+                    'pointer:select': _.bind(this.onPointerType, this, 'select'),
+                    'pointer:hand': _.bind(this.onPointerType, this, 'hand')
                 },
                 'Toolbar': {
                     'view:compact': _.bind(function (toolbar, state) {
@@ -172,6 +175,10 @@ define([
                         me.view.$el.find('.separator-rulers').remove();
                     }
 
+                    if (!config.isEdit || config.customization && config.customization.macros===false) {
+                        me.view.$el.find('#slot-btn-macros').closest('.group').prev().addBack().remove();
+                    }
+
                     me.view.cmbsZoom.forEach(function (cmb) {
                         cmb.on('selected', _.bind(me.onSelectedZoomValue, me))
                             .on('changed:before',_.bind(me.onZoomChanged, me, true))
@@ -184,11 +191,17 @@ define([
                             me.view.turnNavigation(state);
                     });
 
+                    if (me.view.btnHandTool) {
+                        var hand = config && config.customization && config.customization.pointerMode==='hand';
+                        me.api && me.api.asc_setViewerTargetType(hand ? 'hand' : 'select');
+                        me.view[hand ? 'btnHandTool' : 'btnSelectTool'].toggle(true, true);
+                    }
+
                     if (Common.UI.Themes.available()) {
                         function _add_tab_styles() {
                             let btn = me.view.btnInterfaceTheme;
                             if ( typeof(btn.menu) === 'object' )
-                                btn.menu.addItem({caption: '--'});
+                                btn.menu.addItem({caption: '--'}, true);
                             else
                                 btn.setMenu(new Common.UI.Menu());
                             let mni = new Common.UI.MenuItem({
@@ -208,17 +221,18 @@ define([
                             mni.menu.on('item:click', _.bind(function (menu, item) {
                                 Common.UI.TabStyler.setStyle(item.value);
                             }, me));
-                            btn.menu.addItem(mni);
+                            btn.menu.addItem(mni, true);
                             me.view.menuTabStyle = mni.menu;
                         }
                         function _fill_themes() {
                             let btn = this.view.btnInterfaceTheme;
-                            if ( typeof(btn.menu) == 'object' ) btn.menu.removeAll();
+                            if ( typeof(btn.menu) == 'object' ) btn.menu.removeAll(true);
                             else btn.setMenu(new Common.UI.Menu());
 
-                            var currentTheme = Common.UI.Themes.currentThemeId() || Common.UI.Themes.defaultThemeId();
+                            var currentTheme = Common.UI.Themes.currentThemeId() || Common.UI.Themes.defaultThemeId(),
+                                idx = 0;
                             for (var t in Common.UI.Themes.map()) {
-                                btn.menu.addItem({
+                                btn.menu.insertItem(idx++, {
                                     value: t,
                                     caption: Common.UI.Themes.get(t).text,
                                     checked: t === currentTheme,
@@ -232,10 +246,7 @@ define([
                         Common.NotificationCenter.on('uitheme:countchanged', _fill_themes.bind(me));
                         _fill_themes.call(me);
 
-                        me.view.btnInterfaceTheme.menu && me.view.btnInterfaceTheme.menu.on('show:after', function() {
-                            Common.UI.TooltipManager.closeTip('grayTheme');
-                        });
-                        if (me.view.btnInterfaceTheme.menu.items.length) {
+                        if (me.view.btnInterfaceTheme.menu.getItemsLength(true)) {
                             // me.view.btnInterfaceTheme.setMenu(new Common.UI.Menu({items: menuItems}));
                             me.view.btnInterfaceTheme.menu.on('item:click', _.bind(function (menu, item) {
                                 var value = item.value;
@@ -249,6 +260,9 @@ define([
                             }, 0);
                         }
                     }
+
+                    if (Common.Utils.InternalSettings.get('toolbar-active-tab')==='view')
+                        Common.NotificationCenter.trigger('tab:set-active', 'view');
                 });
             }
         },
@@ -327,6 +341,14 @@ define([
             Common.NotificationCenter.trigger('edit:complete', this.view);
         },
 
+        onClickMacros: function() {
+            var me = this;
+            var macrosWindow = new Common.Views.MacrosDialog({
+                api: this.api,
+            });
+            macrosWindow.show();
+        },
+
         onChangeDarkMode: function (isdarkmode) {
             if (!this._darkModeTimer) {
                 var me = this;
@@ -343,11 +365,11 @@ define([
         },
 
         onThemeChanged: function () {
-            if (this.view && Common.UI.Themes.available()) {
+            if (this.view && Common.UI.Themes.available() && this.view.btnInterfaceTheme.menu && (typeof (this.view.btnInterfaceTheme.menu) === 'object')) {
                 var current_theme = Common.UI.Themes.currentThemeId() || Common.UI.Themes.defaultThemeId(),
-                    menu_item = _.findWhere(this.view.btnInterfaceTheme.menu.items, {value: current_theme});
+                    menu_item = _.findWhere(this.view.btnInterfaceTheme.menu.getItems(true), {value: current_theme});
                 if ( menu_item ) {
-                    this.view.btnInterfaceTheme.menu.clearAll();
+                    this.view.btnInterfaceTheme.menu.clearAll(true);
                     menu_item.setChecked(true, true);
                 }
                 Common.Utils.lockControls(Common.enumLock.inLightTheme, !Common.UI.Themes.isDarkTheme(), {array: [this.view.btnDarkDocument]});
@@ -364,7 +386,14 @@ define([
 
         onComboBlur: function() {
             Common.NotificationCenter.trigger('edit:complete', this.view);
-        }
+        },
+
+        onPointerType: function (type) {
+            if (this.api) {
+                this.api.asc_setViewerTargetType(type);
+                Common.NotificationCenter.trigger('edit:complete', this.view);
+            }
+        },
 
     }, DE.Controllers.ViewTab || {}));
 });

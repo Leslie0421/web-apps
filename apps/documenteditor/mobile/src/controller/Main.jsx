@@ -130,7 +130,8 @@ class MainController extends Component {
             licenseType: false,
             isFromGatewayDownloadAs: false,
             isDocModified: false,
-            docProtection: false
+            docProtection: false,
+            requireUserAction: true
         };
 
         this.defaultTitleText = __APP_TITLE_TEXT__;
@@ -191,6 +192,10 @@ class MainController extends Component {
 
                 this.loadDefaultMetricSettings();
 
+                if (this.editorConfig.canRequestRefreshFile) {
+                    Common.Gateway.on('refreshfile', this.onRefreshFile.bind(this));
+                    this.api.asc_registerCallback('asc_onRequestRefreshFile', this.onRequestRefreshFile.bind(this));
+                }
             };
 
             const loadDocument = data => {
@@ -243,15 +248,12 @@ class MainController extends Component {
                     }
                 }
 
-                const fileType = data?.doc.fileType;
-                const isFormType = /^(pdf|docxf|oform)$/.test(fileType);
-                const isPDF = fileType === 'pdf';
 
-                if(isFormType) {
+                if(/^(pdf|docxf|oform|djvu|xps|oxps)$/.test(data.doc.fileType)) {
                     this.changeEditorBrandColorForPdf();
                 }
 
-                if(isPDF) {
+                if(data.doc.fileType === 'pdf') {
                     if(this.permissions.fillForms === undefined) {
                         this.permissions.fillForms = this.permissions.edit !== false;
                     }
@@ -299,20 +301,31 @@ class MainController extends Component {
                         title   : Asc.c_oLicenseResult.NotBefore === licType ? _t.titleLicenseNotActive : _t.titleLicenseExp,
                         text    : Asc.c_oLicenseResult.NotBefore === licType ? _t.warnLicenseBefore : _t.warnLicenseExp
                     }).open();
+                    if (this._isDocReady || this._isPermissionsInited) { // receive after refresh file
+                        Common.Notifications.trigger('api:disconnect');
+                    }
                     return;
                 }
 
                 if ( this.onServerVersion(params.asc_getBuildVersion()) ) return;
+                if ( this._isDocReady || this._isPermissionsInited ) {
+                    this.api.asc_LoadDocument();
+                    return;
+                }
 
                 this.appOptions.canLicense = (licType === Asc.c_oLicenseResult.Success || licType === Asc.c_oLicenseResult.SuccessLimit);
 
                 const storeAppOptions = this.props.storeAppOptions;
-                const isForm = storeAppOptions.isForm;
                 const editorConfig = window.native?.editorConfig;
                 const config = storeAppOptions.config;
                 const customization = config.customization;
-                const isMobileForceView = customization?.mobileForceView !== undefined ? customization.mobileForceView : editorConfig?.mobileForceView !== undefined ? editorConfig.mobileForceView : true;
-                const isForceView = customization?.mobile?.forceView ?? true;
+                let isMobileForceView = undefined;
+                if ( customization && customization.mobileForceView !== undefined )
+                    isMobileForceView = customization.mobileForceView;
+                else if ( editorConfig && editorConfig.mobileForceView !== undefined )
+                    isMobileForceView = editorConfig.mobileForceView;
+
+                const isForceView = isMobileForceView ?? customization?.mobile?.forceView ?? true;
 
                 if(customization?.mobileForceView !== undefined && customization?.mobileForceView !== null) {
                     console.warn("Obsolete: The mobileForceView parameter is deprecated. Please use the forceView parameter from customization.mobile block");
@@ -322,12 +335,15 @@ class MainController extends Component {
 
                 this.applyMode(storeAppOptions);
 
-                if(!isForm && (isMobileForceView || isForceView)) {
-                    this.api.asc_addRestriction(Asc.c_oAscRestrictionType.View);
-                } else if(!isForm && !isMobileForceView) {
-                    storeAppOptions.changeViewerMode(false);
+                this._isPermissionsInited = true;
+                if ( storeAppOptions.isForm ) {
+                    this.api.asc_addRestriction(Asc.c_oAscRestrictionType.OnlyForms);
                 } else {
-                    this.api.asc_addRestriction(Asc.c_oAscRestrictionType.OnlyForms)
+                    if( isForceView ) {
+                        this.api.asc_addRestriction(Asc.c_oAscRestrictionType.View);
+                    } else {
+                        storeAppOptions.changeViewerMode(false);
+                    }
                 }
 
                 this.api.asc_LoadDocument();
@@ -343,7 +359,7 @@ class MainController extends Component {
                 const isOForm = appOptions.isOForm;
                 const appSettings = this.props.storeApplicationSettings;
                 const customization = appOptions.customization;
-                const isStandardView = customization?.mobile?.standardView ?? false;
+                const _userOptions = this.props.storeAppOptions.user;
 
                 f7.emit('resize');
 
@@ -374,10 +390,10 @@ class MainController extends Component {
                 appSettings.changeShowTableEmptyLine(value);
                 this.api.put_ShowTableEmptyLine(value);
 
-               
-                value = LocalStorage.getBool('mobile-view');
+                value = LocalStorage.itemExists('mobile-view') ?
+                            LocalStorage.getBool('mobile-view') : !(customization?.mobile?.standardView ?? false);
 
-                if(value || !isStandardView) {
+                if(appOptions.isMobileViewAvailable && value) {
                     this.api.ChangeReaderMode();
                 } else {
                     appOptions.changeMobileView();
@@ -406,6 +422,7 @@ class MainController extends Component {
                 Common.Notifications.trigger('document:ready');
                 Common.Gateway.documentReady();
                 appOptions.changeDocReady(true);
+                this._state.requireUserAction = false;
 
                 if(isOForm) {
                     f7.dialog.create({
@@ -423,6 +440,21 @@ class MainController extends Component {
                             }
                         ]
                     }).open();
+                }
+
+                if (appOptions.isRestrictedEdit && appOptions.canFillForms && appOptions.isForm) { // check filling status
+                    let oform = this.api.asc_GetOForm();
+                    let role = new AscCommon.CRestrictionSettings();
+                    const _userOptions = this.props.storeAppOptions.user;
+                    if (oform && _userOptions && _userOptions.roles) {
+                        if (_userOptions.roles.length>0 && oform.asc_canFillRole(_userOptions.roles[0])) {
+                            role.put_OFormRole(_userOptions.roles[0]);
+                        } else {
+                            role.put_OFormNoRole(true);
+                            Common.Notifications.trigger('toolbar:deactivateeditcontrols');
+                        }
+                    }
+                    this.api.asc_setRestriction(Asc.c_oAscRestrictionType.OnlyForms, role);
                 }
             };
 
@@ -442,8 +474,11 @@ class MainController extends Component {
                     const config = {
                         'id-view'  : 'editor_sdk',
                         'mobile'   : true,
-                        'translate': _translate
+                        'translate': _translate,
+                        'isRtlInterface': Common.Locale.isCurrentLangRtl
                     };
+                    let hcolor = (/(?:&|^)headingsColor=([^&]+)&?/i).exec(window.location.search.substring(1));
+                    hcolor && (config['headings-color'] = '#' + hcolor[1]);
                     this.api = isPDF ? new Asc.PDFEditorApi(config) : new Asc.asc_docs_api(config);
 
                     Common.Notifications.trigger('engineCreated', this.api);
@@ -462,7 +497,8 @@ class MainController extends Component {
 
                     Common.Utils.Metric.setCurrentMetric(1); //pt
 
-                    this.appOptions   = {isCorePDF: isPDF};
+                    this.appOptions = {isCorePDF: isPDF};
+                    this.props.storeAppOptions.isMobileViewAvailable = !this.appOptions.isCorePDF;
                     this.bindEvents();
 
                     Common.Gateway.on('init',           loadConfig);
@@ -569,6 +605,7 @@ class MainController extends Component {
     applyMode (appOptions) {
         this.api.asc_enableKeyEvents(appOptions.isEdit);
         this.api.asc_setViewMode(!appOptions.isEdit && !appOptions.isRestrictedEdit);
+        this.appOptions.isCorePDF && this.api.asc_setPdfViewer(!appOptions.isEdit && !appOptions.isRestrictedEdit);
         appOptions.isRestrictedEdit && appOptions.canComments && this.api.asc_setRestriction(Asc.c_oAscRestrictionType.OnlyComments);
         appOptions.isRestrictedEdit && appOptions.canFillForms && this.api.asc_setRestriction(Asc.c_oAscRestrictionType.OnlyForms);
 
@@ -666,7 +703,7 @@ class MainController extends Component {
                 f7.dialog.create({
                     title: _t.notcriticalErrorTitle,
                     text : _t.errorOpensource,
-                    buttons: [{text: 'OK'}]
+                    buttons: [{ text: _t.textOk }]
                 }).open();
             }
             Common.Notifications.trigger('toolbar:activatecontrols');
@@ -689,11 +726,11 @@ class MainController extends Component {
             f7.dialog.create({
                 title: _t.notcriticalErrorTitle,
                 text : _t.warnLicenseAnonymous,
-                buttons: [{text: 'OK'}]
+                buttons: [{ text: _t.textOk }]
             }).open();
         } else if (this._state.licenseType) {
             let license = this._state.licenseType;
-            let buttons = [{text: 'OK'}];
+            let buttons = [{ text: _t.textOk }];
             if ((appOptions.trialMode & Asc.c_oLicenseMode.Limited) !== 0 &&
                 (license === Asc.c_oLicenseResult.SuccessLimit ||
                     appOptions.permissionsLicense === Asc.c_oLicenseResult.SuccessLimit)
@@ -771,6 +808,9 @@ class MainController extends Component {
                 () => {
                     setTimeout(() => {Common.Gateway.updateVersion()}, 0);
                 });
+            if (this._isDocReady) { // receive after refresh file
+                Common.Notifications.trigger('api:disconnect');
+            }
             return true;
         }
         return false;
@@ -837,6 +877,7 @@ class MainController extends Component {
                     this.onShowDateActions(obj, x, y);
                     break;
                 case Asc.c_oAscContentControlSpecificType.Picture:
+                case Asc.c_oAscContentControlSpecificType.Signature:
                     if (obj.pr && obj.pr.get_Lock) {
                         let lock = obj.pr.get_Lock();
                         if (lock == Asc.c_oAscSdtLockType.SdtContentLocked || lock == Asc.c_oAscSdtLockType.ContentLocked)
@@ -953,6 +994,10 @@ class MainController extends Component {
                 storeAppOptions.setEncryptionFile(true);
                 onAdvancedOptions(type, _t, this._isDocReady, this.props.storeAppOptions.canRequestClose, this.isDRM);
                 this.isDRM = true;
+            }
+            if (this._state.requireUserAction) {
+                Common.Gateway.userActionRequired();
+                this._state.requireUserAction = false;
             }
         });
 
@@ -1336,6 +1381,7 @@ class MainController extends Component {
 
         this.needToUpdateVersion = true;
         Common.Notifications.trigger('preloader:endAction', Asc.c_oAscAsyncActionType['BlockInteraction'], this.LoadingDocument);
+        Common.Notifications.trigger('preloader:endAction', Asc.c_oAscAsyncActionType['BlockInteraction'], Asc.c_oAscAsyncAction['Open']);
 
         f7.dialog.alert(
             _t.errorUpdateVersion,
@@ -1345,8 +1391,9 @@ class MainController extends Component {
                 if (callback) {
                     callback.call(this);
                 }
-                Common.Notifications.trigger('preloader:beginAction', Asc.c_oAscAsyncActionType['BlockInteraction'], this.LoadingDocument);
+                this.editorConfig && this.editorConfig.canUpdateVersion && Common.Notifications.trigger('preloader:beginAction', Asc.c_oAscAsyncActionType['BlockInteraction'], this.LoadingDocument);
             });
+        Common.Notifications.trigger('api:disconnect');
     }
 
     onDocumentName () {
@@ -1524,6 +1571,64 @@ class MainController extends Component {
                         }
                     }]
             }).open();
+        }
+    }
+
+    onRequestRefreshFile () {
+        Common.Gateway.requestRefreshFile();
+    }
+
+    onRefreshFile (data) {
+        if (data) {
+            let docInfo = new Asc.asc_CDocInfo();
+            if (data.document) {
+                docInfo.put_Id(data.document.key);
+                docInfo.put_Url(data.document.url);
+                docInfo.put_Title(data.document.title);
+                if (data.document.title) {
+                    const storeDocumentInfo = this.props.storeDocumentInfo;
+                    storeDocumentInfo.changeTitle(data.document.title);
+                    this.document.title = data.document.title;
+                    Common.Notifications.trigger('setdoctitle', data.document.title);
+                }
+                data.document.referenceData && docInfo.put_ReferenceData(data.document.referenceData);
+            }
+            if (data.editorConfig) {
+                docInfo.put_CallbackUrl(data.editorConfig.callbackUrl);
+            }
+            if (data.token)
+                docInfo.put_Token(data.token);
+
+            const _userOptions = this.props.storeAppOptions.user;
+            const _user = new Asc.asc_CUserInfo();
+            _user.put_Id(_userOptions.id);
+            _user.put_FullName(_userOptions.fullname);
+            _user.put_IsAnonymousUser(_userOptions.anonymous);
+            docInfo.put_UserInfo(_user);
+
+            const _options = Object.assign({}, this.document.options, this.editorConfig.actionLink || {});
+            docInfo.put_Options(_options);
+
+            docInfo.put_Format(this.document.fileType);
+            docInfo.put_Lang(this.editorConfig.lang);
+            docInfo.put_Mode(this.editorConfig.mode);
+            docInfo.put_Permissions(this.permissions);
+            docInfo.put_DirectUrl(data.document && data.document.directUrl ? data.document.directUrl : this.document.directUrl);
+            docInfo.put_VKey(data.document && data.document.vkey ?  data.document.vkey : this.document.vkey);
+            docInfo.put_EncryptedInfo(data.editorConfig && data.editorConfig.encryptionKeys ? data.editorConfig.encryptionKeys : this.editorConfig.encryptionKeys);
+
+            let enable = !this.editorConfig.customization || (this.editorConfig.customization.macros!==false);
+            docInfo.asc_putIsEnabledMacroses(!!enable);
+            enable = !this.editorConfig.customization || (this.editorConfig.customization.plugins!==false);
+            docInfo.asc_putIsEnabledPlugins(!!enable);
+
+            let type = /^(?:(pdf|djvu|xps|oxps))$/.exec(this.document.fileType);
+            let coEditMode = (type && typeof type[1] === 'string') ? 'strict' :  // offline viewer for pdf|djvu|xps|oxps
+                !(this.editorConfig.coEditing && typeof this.editorConfig.coEditing == 'object') ? 'fast' : // fast by default
+                    this.editorConfig.mode === 'view' && this.editorConfig.coEditing.change!==false ? 'fast' : // if can change mode in viewer - set fast for using live viewer
+                        this.editorConfig.coEditing.mode || 'fast';
+            docInfo.put_CoEditingMode(coEditMode);
+            this.api.asc_refreshFile(docInfo);
         }
     }
 

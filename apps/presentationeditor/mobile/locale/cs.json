@@ -157,6 +157,7 @@
       "textNo": "Ne",
       "textNoLicenseTitle": "Došlo k dosažení limitu licence",
       "textNoMatches": "Shoda nebyla nalezena",
+      "textOk": "OK",
       "textOpenFile": "Zadejte heslo pro otevření souboru",
       "textPaidFeature": "Placená funkce",
       "textRemember": "Zapamatovat moji volbu",
@@ -181,6 +182,12 @@
       "warnNoLicenseUsers": "Došlo k dosažení limitu %1 editorů. Pro rozšíření funkcí kontaktujte %1 obchodní oddělení.",
       "warnProcessRightsChange": "Nemáte oprávnění pro úpravu tohoto dokumentu."
     }
+  },
+  "Draw": {
+    "textColor": "Barva",
+    "textCustomColor": "Vlastní barva",
+    "textLineSize": "Velikost čáry",
+    "textOpacity": "Průhlednost"
   },
   "Error": {
     "convertationTimeoutText": "Překročen časový limit pro provedení převodu.",
@@ -209,6 +216,7 @@
     "errorKeyEncrypt": "Neznámý popisovač klíče",
     "errorKeyExpire": "Platnost popisovače klíče skončila",
     "errorLoadingFont": "Písma nejsou načtená.<br>Obraťte se na správce vámi využívaného dokumentového serveru.",
+    "errorSaveWatermark": "Tento soubor obsahuje vodoznak nad obrázkem odkazující na jinou doménou.<br>Chcete-li, aby byl vodoznak nad obrázkem v PDF viditelný, aktualizujte odkaz tak, aby odkazoval na stejnou doménu jako váš dokument, nebo jej nahrajte ze svého počítače.",
     "errorSessionAbsolute": "Platnost relace upravování dokumentu skončila. Načtěte stránku znovu.",
     "errorSessionIdle": "Poslední úprava dokumentu proběhla před dlouhou dobou. Prosím obnovte stránku.",
     "errorSessionToken": "Připojení k serveru bylo přerušeno. Načtěte prosím stránku znovu.",
@@ -227,10 +235,12 @@
     "splitDividerErrorText": "Počet řádků musí být dělitelný %1",
     "splitMaxColsErrorText": "Počet sloupců musí být menší než 1%",
     "splitMaxRowsErrorText": "Počet řádků musí být menší než 1%",
+    "textOk": "OK",
     "unknownErrorText": "Neznámá chyba.",
     "uploadImageExtMessage": "Neznámý formát obrázku.",
     "uploadImageFileCountMessage": "Žádné obrázky nenahrány.",
-    "uploadImageSizeMessage": "Obrázek je příliš velký. Maximální velikost je 25 MB."
+    "uploadImageSizeMessage": "Obrázek je příliš velký. Maximální velikost je 25 MB.",
+    "criticalErrorExtTextClose": "Press 'OK' to close the editor."
   },
   "LongActions": {
     "applyChangesTextText": "Načítání dat...",
@@ -267,13 +277,16 @@
     "waitText": "Čekejte prosím..."
   },
   "Toolbar": {
+    "btnRestartNow": "Restartovat nyní",
     "dlgLeaveMsgText": "V tomto dokumentu máte neuložené změny. Klikněte na 'Zůstat na této stránce' a počkejte dokud nedojde k automatickému uložení. Klikněte na 'Opustit tuto stránku' pro zahození neuložených změn.",
     "dlgLeaveTitleText": "Opouštíte aplikaci",
     "leaveButtonText": "Opustit tuto stránku",
     "stayButtonText": "Zůstat na této stránce",
     "textCloseHistory": "Zavřít historii",
     "textEnterNewFileName": "Zadejte nový název souboru",
-    "textRenameFile": "Přejmenovat soubor"
+    "textOk": "OK",
+    "textRenameFile": "Přejmenovat soubor",
+    "textSwitchToDesktop": "Přepnout na desktopový režim"
   },
   "View": {
     "Add": {
@@ -287,6 +300,7 @@
       "textDefault": "Vybraný text",
       "textDisplay": "Zobrazit",
       "textDone": "Hotovo",
+      "textDrawing": "Kreslení",
       "textEmptyImgUrl": "Je třeba zadat URL adresu obrázku.",
       "textExternalLink": "Externí odkaz",
       "textFirstSlide": "První snímek",
@@ -511,7 +525,6 @@
       "textEmail": "email:",
       "textEnableAll": "Zapnout vše",
       "textEnableAllMacrosWithoutNotification": "Povolit všechna makra bez notifikací",
-      "textExplanationChangeDirection": "Aplikace bude restartována pro aktivaci rozhraní RTL",
       "textFeedback": "Zpětná vazba a technická podpora",
       "textFind": "Najít",
       "textFindAndReplace": "Najít a nahradit",
@@ -537,8 +550,6 @@
       "textReplace": "Nahradit",
       "textReplaceAll": "Nahradit vše",
       "textRestartApplication": "Pro provedení změn restartujete aplikaci",
-      "textRTL": "RTL",
-      "textRtlInterface": "Rozhraní RTL (písmo zprava doleva)",
       "textSameAsSystem": "Stejné jako systémové",
       "textSearch": "Najít",
       "textSettings": "Nastavení",

@@ -46,6 +46,11 @@ define([
     DE.Views.ViewTab = Common.UI.BaseView.extend(_.extend((function(){
         var template =
         '<section class="panel" data-tab="view" role="tabpanel" aria-labelledby="view">' +
+            '<div class="group">' +
+                '<span class="btn-slot text x-huge" id="slot-btn-hand-tool-view"></span>' +
+                '<span class="btn-slot text x-huge" id="slot-btn-select-tool-view"></span>' +
+            '</div>' +
+            '<div class="separator long"></div>' +
             '<div class="group" data-layout-name="toolbar-view-navigation">' +
                 '<span class="btn-slot text x-huge" id="slot-btn-navigation"></span>' +
             '</div>' +
@@ -95,6 +100,10 @@ define([
                 '</div>' +
                 '<div class="elset"></div>' +
             '</div>' +
+            '<div class="separator long"></div>' +
+            '<div class="group">' +
+                '<span class="btn-slot text x-huge" id="slot-btn-macros"></span>' +
+            '</div>' +
         '</section>';
 
         return {
@@ -137,6 +146,15 @@ define([
                     cmb.on('combo:focusin', _.bind(me.onComboOpen, this, false));
                     cmb.on('show:after', _.bind(me.onComboOpen, this, true));
                 });
+                me.btnMacros && me.btnMacros.on('click', function () {
+                    me.fireEvent('macros:click');
+                });
+                me.btnSelectTool && me.btnSelectTool.on('toggle', _.bind(function(btn, state) {
+                    state && me.fireEvent('pointer:select');
+                }, me));
+                me.btnHandTool && me.btnHandTool.on('toggle', _.bind(function(btn, state) {
+                    state && me.fireEvent('pointer:hand');
+                }, me));
             },
 
             initialize: function (options) {
@@ -195,7 +213,8 @@ define([
                     menu: true,
                     dataHint: '1',
                     dataHintDirection: 'bottom',
-                    dataHintOffset: 'small'
+                    dataHintOffset: 'small',
+                    action: 'interface-theme'
                 });
                 this.lockedControls.push(this.btnInterfaceTheme);
 
@@ -259,7 +278,49 @@ define([
                 });
                 this.lockedControls.push(this.chRulers);
 
+                if (this.appConfig.isEdit && !(this.appConfig.customization && this.appConfig.customization.macros===false)) {
+                    this.btnMacros = new Common.UI.Button({
+                        cls: 'btn-toolbar x-huge icon-top',
+                        iconCls: 'toolbar__icon btn-macros',
+                        lock: [_set.viewMode, _set.previewReviewMode, _set.viewFormMode, _set.docLockView, _set.docLockForms, _set.docLockComments, _set.lostConnect, _set.disableOnStart],
+                        caption: this.textMacros,
+                        dataHint: '1',
+                        dataHintDirection: 'bottom',
+                        dataHintOffset: 'small'
+                    });
+                    this.lockedControls.push(this.btnMacros);
+                } else if (!this.appConfig.isRestrictedEdit) {
+                    this.btnSelectTool = new Common.UI.Button({
+                        cls: 'btn-toolbar x-huge icon-top',
+                        iconCls: 'toolbar__icon btn-select',
+                        lock: [_set.disableOnStart],
+                        caption: this.toolbar.capBtnSelect,
+                        toggleGroup: 'select-tools-tb',
+                        enableToggle: true,
+                        allowDepress: false,
+                        dataHint: '1',
+                        dataHintDirection: 'bottom',
+                        dataHintOffset: 'small'
+                    });
+                    this.lockedControls.push(this.btnSelectTool);
+
+                    this.btnHandTool = new Common.UI.Button({
+                        cls: 'btn-toolbar x-huge icon-top',
+                        iconCls: 'toolbar__icon btn-big-hand-tool',
+                        lock: [_set.disableOnStart],
+                        caption: this.toolbar.capBtnHand,
+                        toggleGroup: 'select-tools-tb',
+                        enableToggle: true,
+                        allowDepress: false,
+                        dataHint: '1',
+                        dataHintDirection: 'bottom',
+                        dataHintOffset: 'small'
+                    });
+                    this.lockedControls.push(this.btnHandTool);
+                }
+
                 Common.Utils.lockControls(_set.disableOnStart, true, {array: this.lockedControls});
+                Common.UI.LayoutManager.addControls(this.lockedControls);
                 Common.NotificationCenter.on('app:ready', this.onAppReady.bind(this));
             },
 
@@ -309,8 +370,11 @@ define([
                 this.chStatusbar.render($host.find('#slot-chk-statusbar'));
                 this.chToolbar.render($host.find('#slot-chk-toolbar'));
                 this.chRulers.render($host.find('#slot-chk-rulers'));
+                this.btnMacros && this.btnMacros.render($host.find('#slot-btn-macros'));
                 this.chLeftMenu.render($host.find('#slot-chk-leftmenu'));
                 this.chRightMenu.render($host.find('#slot-chk-rightmenu'));
+                this.btnSelectTool && this.btnSelectTool.render($host.find('#slot-btn-select-tool-view'));
+                this.btnHandTool && this.btnHandTool.render($host.find('#slot-btn-hand-tool-view'));
 
                 if (this.toolbar && this.toolbar.$el) {
                     this.btnsFitToPage = Common.Utils.injectButtons(this.toolbar.$el.find('.slot-btn-ftp'), 'tlbtn-btn-ftp-', 'toolbar__icon btn-ic-zoomtopage', this.textFitToPage,
@@ -325,11 +389,11 @@ define([
                 var created = this.btnsFitToPage.concat(this.btnsFitToWidth).concat(this.cmbsZoom);
                 Common.Utils.lockControls(Common.enumLock.disableOnStart, true, {array: created});
                 Array.prototype.push.apply(this.lockedControls, created);
-
+                Common.UI.LayoutManager.addControls(created);
                 return this.$el;
             },
 
-            onAppReady: function () {
+            onAppReady: function (config) {
                 var me = this;
                 this.btnNavigation.updateHint(this.tipHeadings);
                 this.btnInterfaceTheme.updateHint(this.tipInterfaceTheme);
@@ -340,6 +404,7 @@ define([
                 this.btnsFitToWidth.forEach(function (btn) {
                     btn.updateHint(me.tipFitToWidth);
                 });
+                this.btnMacros && this.btnMacros.updateHint(this.tipMacros);
 
                 var value = Common.UI.LayoutManager.getInitValue('leftMenu');
                 value = (value!==undefined) ? !value : false;
@@ -348,6 +413,13 @@ define([
                 value = Common.UI.LayoutManager.getInitValue('rightMenu');
                 value = (value!==undefined) ? !value : false;
                 this.chRightMenu.setValue(!Common.localStorage.getBool("de-hidden-rightmenu", value));
+
+                if (config.isEdit || config.isRestrictedEdit) {
+                    this.$el.find('#slot-btn-hand-tool-view').closest('.group').next().addBack().remove();
+                } else {
+                    this.btnSelectTool && this.btnSelectTool.updateHint(this.toolbar.tipSelectTool);
+                    this.btnHandTool && this.btnHandTool.updateHint(this.toolbar.tipHandTool);
+                }
             },
 
             show: function () {
@@ -401,7 +473,9 @@ define([
             textRightMenu: 'Right panel',
             textTabStyle: 'Tab style',
             textFill: 'Fill',
-            textLine: 'Line'
+            textLine: 'Line',
+            textMacros: 'Macros',
+            tipMacros: 'Macros'
         }
     }()), DE.Views.ViewTab || {}));
 });

@@ -304,6 +304,10 @@ define([
                 close_menu = !!isopts;
                 break;
             case 'close-editor': Common.NotificationCenter.trigger('close'); break;
+            case 'switch:mobile':
+                Common.Gateway.switchEditorType('mobile', true);
+                break;
+            case 'suggest': Common.NotificationCenter.trigger('suggest'); break;
             default: close_menu = false;
             }
 
@@ -570,6 +574,10 @@ define([
 
             Common.Utils.InternalSettings.set("de-settings-zoom", newZoomValue);
 
+            value = parseInt(Common.localStorage.getItem("de-settings-numeral"));
+            Common.Utils.InternalSettings.set("de-settings-numeral", value);
+            this.api.asc_setNumeralType(value);
+
             menu.hide();
         },
 
@@ -694,13 +702,15 @@ define([
         SetDisabled: function(disable, options) {
             if (this.leftMenu._state.disabled !== disable) {
                 this.leftMenu._state.disabled = disable;
-                if (disable) {
-                    this.previsEdit = this.mode.isEdit;
-                    this.prevcanEdit = this.mode.canEdit;
-                    this.mode.isEdit = this.mode.canEdit = !disable;
-                } else {
-                    this.mode.isEdit = this.previsEdit;
-                    this.mode.canEdit = this.prevcanEdit;
+                if (this.mode) {
+                    if (disable) {
+                        this.previsEdit = this.mode.isEdit;
+                        this.prevcanEdit = this.mode.canEdit;
+                        this.mode.isEdit = this.mode.canEdit = !disable;
+                    } else {
+                        this.mode.isEdit = this.previsEdit;
+                        this.mode.canEdit = this.prevcanEdit;
+                    }
                 }
             }
 

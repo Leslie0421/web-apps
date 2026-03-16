@@ -312,7 +312,7 @@ define([], function () {
                     '<td colspan="2"><button type="button" class="btn btn-text-default" id="fms-btn-auto-correct" style="width:auto; display: inline-block;padding-right: 10px;padding-left: 10px;" data-hint="2" data-hint-direction="bottom" data-hint-offset="medium"><%= scope.txtAutoCorrect %></button></div></td>',
                 '</tr>',
                 '<tr class ="edit divider-group"></tr>',
-                '<tr>',
+                '<tr class="appearance">',
                     '<td colspan="2" class="group-name"><label><%= scope.txtAppearance %></label></td>',
                 '</tr>',
                 '<tr class="themes">',
@@ -338,9 +338,6 @@ define([], function () {
                 '</tr>',
                 '<tr>',
                     '<td colspan="2"><div id="fms-chb-use-alt-key"></div></td>',
-                '</tr>',
-                '<tr class="ui-rtl">',
-                    '<td colspan="2"><div id="fms-chb-rtl-ui" style="display: inline-block;"></div><span class="beta-hint">Beta</span></td>',
                 '</tr>',
                 /*'<tr class="quick-print">',
                     '<td colspan="2"><div style="display: flex;"><div id="fms-chb-quick-print"></div>',
@@ -530,7 +527,7 @@ define([], function () {
             var itemsTemplate =
                 _.template([
                     '<% _.each(items, function(item) { %>',
-                    '<li id="<%= item.id %>" data-value="<%= item.value %>" <% if (item.value === "custom") { %> class="border-top" style="margin-top: 5px;padding-top: 5px;" <% } %> ><a tabindex="-1" type="menuitem" <% if (typeof(item.checked) !== "undefined" && item.checked) { %> class="checked" <% } %> ><%= scope.getDisplayValue(item) %></a></li>',
+                    '<li id="<%= item.id %>" data-value="<%= item.value %>" <% if (item.value === "custom") { %> class="border-top" <% } %> ><a tabindex="-1" type="menuitem" <% if (typeof(item.checked) !== "undefined" && item.checked) { %> class="checked" <% } %> ><%= scope.getDisplayValue(item) %></a></li>',
                     '<% }); %>'
                 ].join(''));
             this.cmbFontRender = new Common.UI.ComboBox({
@@ -640,14 +637,8 @@ define([], function () {
                 dataHint: '2',
                 dataHintDirection: 'bottom',
                 dataHintOffset: 'big'
-            });
-
-            this.chRTL = new Common.UI.CheckBox({
-                el: $markup.findById('#fms-chb-rtl-ui'),
-                labelText: this.strRTLSupport,
-                dataHint: '2',
-                dataHintDirection: 'left',
-                dataHintOffset: 'small'
+            }).on('selected', function(combo, record) {
+                me._isTabStyleChanged = true;
             });
 
             this.chTabBack = new Common.UI.CheckBox({
@@ -743,12 +734,12 @@ define([], function () {
             $('tr.macros', this.el)[(mode.customization && mode.customization.macros===false) ? 'hide' : 'show']();
             $('tr.spellcheck', this.el)[mode.isEdit && Common.UI.FeaturesManager.canChange('spellcheck') ? 'show' : 'hide']();
             $('tr.quick-print', this.el)[mode.canQuickPrint && !(mode.compactHeader && mode.isEdit) ? 'show' : 'hide']();
-            $('tr.ui-rtl', this.el)[mode.uiRtl ? 'show' : 'hide']();
             $('tr.tab-background', this.el)[!Common.Utils.isIE && Common.UI.FeaturesManager.canChange('tabBackground', true) ? 'show' : 'hide']();
-            $('tr.tab-style', this.el)[Common.UI.FeaturesManager.canChange('tabStyle', true) ? 'show' : 'hide']();
+            $('tr.tab-style', this.el)[!Common.Utils.isIE && !Common.Controllers.Desktop.isWinXp() && Common.UI.FeaturesManager.canChange('tabStyle', true) ? 'show' : 'hide']();
             if ( !Common.UI.Themes.available() ) {
                 $('tr.themes, tr.themes + tr.divider', this.el).hide();
             }
+            $('tr.appearance', this.el)[!Common.Utils.isIE ? 'show' : 'hide']();
             if (mode.compactHeader) {
                 $('tr.quick-access', this.el).hide();
             }
@@ -810,7 +801,6 @@ define([], function () {
             this.lblMacrosDesc.text(item ? item.get('descValue') : this.txtWarnMacrosDesc);
 
             this.chPaste.setValue(Common.Utils.InternalSettings.get("pe-settings-paste-button"));
-            this.chRTL.setValue(Common.localStorage.getBool("ui-rtl", Common.Locale.isCurrentLanguageRtl()));
             //this.chQuickPrint.setValue(Common.Utils.InternalSettings.get("pe-settings-quick-print-button"));
 
             var data = [];
@@ -864,14 +854,14 @@ define([], function () {
             Common.Utils.InternalSettings.set("pe-macros-mode", this.cmbMacros.getValue());
 
             Common.localStorage.setItem("pe-settings-paste-button", this.chPaste.isChecked() ? 1 : 0);
-            var isRtlChanged = this.chRTL.$el.is(':visible') && Common.localStorage.getBool("ui-rtl", Common.Locale.isCurrentLanguageRtl()) !== this.chRTL.isChecked();
-            Common.localStorage.setBool("ui-rtl", this.chRTL.isChecked());
             //Common.localStorage.setBool("pe-settings-quick-print-button", this.chQuickPrint.isChecked());
             if (!Common.Utils.isIE && Common.UI.FeaturesManager.canChange('tabBackground', true)) {
                 Common.UI.TabStyler.setBackground(this.chTabBack.isChecked() ? 'toolbar' : 'header');
             }
-            if (Common.UI.FeaturesManager.canChange('tabStyle', true)) {
+            if (!Common.Utils.isIE && Common.UI.FeaturesManager.canChange('tabStyle', true) && this._isTabStyleChanged) {
                 Common.UI.TabStyler.setStyle(this.cmbTabStyle.getValue());
+                Common.localStorage.setBool("settings-tab-style-newtheme", true); // use tab style from lc for all themes
+                this._isTabStyleChanged = false;
             }
             Common.localStorage.save();
 
@@ -880,16 +870,6 @@ define([], function () {
 
                 if (this._oldUnits !== this.cmbUnit.getValue())
                     Common.NotificationCenter.trigger('settings:unitschanged', this);
-            }
-
-            if (isRtlChanged) {
-                var config = {
-                    title: this.txtWorkspaceSettingChange,
-                    msg: this.txtRestartEditor,
-                    iconCls: 'warn',
-                    buttons: ['ok']
-                };
-                Common.UI.alert(config);
             }
         },
 
@@ -914,15 +894,17 @@ define([], function () {
         customizeQuickAccess: function () {
             if (this.dlgQuickAccess && this.dlgQuickAccess.isVisible()) return;
             this.dlgQuickAccess = new Common.Views.CustomizeQuickAccessDialog({
-                showSave: this.mode.showSaveButton,
+                showSave: this.mode.showSaveButton && Common.UI.LayoutManager.isElementVisible('header-save'),
                 showPrint: this.mode.canPrint && this.mode.twoLevelHeader,
                 showQuickPrint: this.mode.canQuickPrint && this.mode.twoLevelHeader,
+                mode: this.mode,
                 props: {
                     save: Common.localStorage.getBool('pe-quick-access-save', true),
                     print: Common.localStorage.getBool('pe-quick-access-print', true),
                     quickPrint: Common.localStorage.getBool('pe-quick-access-quick-print', true),
                     undo: Common.localStorage.getBool('pe-quick-access-undo', true),
-                    redo: Common.localStorage.getBool('pe-quick-access-redo', true)
+                    redo: Common.localStorage.getBool('pe-quick-access-redo', true),
+                    startOver: Common.localStorage.getBool('pe-quick-access-start-over', true)
                 }
             });
             this.dlgQuickAccess.show();
@@ -951,7 +933,6 @@ define([], function () {
         textForceSave: 'Save to Server',
         txtSpellCheck: 'Spell Checking',
         txtCacheMode: 'Default cache mode',
-        strRTLSupport: 'RTL interface',
         strMacrosSettings: 'Macros Settings',
         txtWarnMacros: 'Show Notification',
         txtRunMacros: 'Enable All',
@@ -979,8 +960,6 @@ define([], function () {
         txtAdvancedSettings: 'Advanced Settings',
         txtQuickPrint: 'Show the Quick Print button in the editor header',
         txtQuickPrintTip: 'The document will be printed on the last selected or default printer',
-        txtWorkspaceSettingChange: 'Workspace setting (RTL interface) change',
-        txtRestartEditor: 'Please restart presentation editor so that your workspace settings can take effect',
         txtLastUsed: 'Last used',
         txtScreenReader: 'Turn on screen reader support',
         txtCustomizeQuickAccess: 'Customize quick access',
@@ -997,7 +976,7 @@ define([], function () {
 
         events: function() {
             return {
-                'click .blank-document-btn':_.bind(this._onBlankDocument, this),
+                'click .blank-document':_.bind(this._onBlankDocument, this),
                 'click .thumb-list .thumb-wrap': _.bind(this._onDocumentTemplate, this)
             };
         },
@@ -1006,8 +985,8 @@ define([], function () {
             '<div class="header"><%= scope.txtCreateNew %></div>',
             '<div class="thumb-list">',
                 '<% if (blank) { %> ',
-                '<div class="blank-document">',
-                    '<div class="blank-document-btn" data-hint="2" data-hint-direction="left-top" data-hint-offset="10, 1">',
+                '<div class="blank-document" data-hint="2" data-hint-direction="left-top" data-hint-offset="22, 13">',
+                    '<div class="blank-document-btn">',
                         '<div class="btn-blank-format"><div class="svg-format-blank"></div></div>',
                     '</div>',
                     '<div class="title"><%= scope.txtBlank %></div>',
@@ -1157,17 +1136,17 @@ define([], function () {
                             '<td class="right"><div id="id-info-comment"></div></td>',
                         '</tr>',
                     '</tbody>',
+                    '<tbody>',
+                        '<tr>',
+                            '<td class="left"></td>',
+                            '<td class="right">',
+                            '<button id="fminfo-btn-add-property" class="btn" data-hint="2" data-hint-direction="bottom" data-hint-offset="big">',
+                            '<span>' + this.txtAddProperty + '</span>',
+                            '</button>',
+                            '</td>',
+                        '</tr>',
+                    '</tbody>',
                 '</table>',
-            '<div id="fms-flex-add-property">',
-                '<table class="main">',
-                    '<tr style="gap: 20px;">',
-                        '<td class="left"></td>',
-                        '<td class="right">',
-                            '<button id="fminfo-btn-add-property" class="btn" data-hint="2" data-hint-direction="bottom" data-hint-offset="big"><span>'+ this.txtAddProperty +'</span></button>',
-                        '</td>',
-                    '</tr>',
-                '</table>',
-            '</div>'
             ].join(''));
 
             this.menu = options.menu;
@@ -1386,8 +1365,6 @@ define([], function () {
                 this.lblDate.text(this.dateToString(value));
                 this._ShowHideInfoItem(this.lblDate, !!value);
             }
-
-            this.renderCustomProperties();
         },
 
         updateFileInfo: function() {
@@ -1439,6 +1416,8 @@ define([], function () {
                 this.tblAuthor.find('.close').toggleClass('hidden', !this.mode.isEdit);
                 !this.mode.isEdit && this._ShowHideInfoItem(this.tblAuthor, !!this.authors.length);
             }
+
+            this.renderCustomProperties();
             this.SetDisabled();
         },
 
@@ -1447,6 +1426,8 @@ define([], function () {
                 value = value ? this.txtYes : this.txtNo;
             } else if (type === AscCommon.c_oVariantTypes.vtFiletime) {
                 value = this.dateToString(new Date(value), true);
+            } else {
+                value = Common.Utils.String.htmlEncode(value);
             }
 
             return '<tr data-custom-property>' +
@@ -2138,6 +2119,8 @@ define([], function () {
                             '<div class="main-header"><%= scope.txtPrint %></div>',
                             '<table style="width: 100%;">',
                                 '<tbody>',
+                                    '<tr><td><label class="font-weight-bold"><%= scope.txtPrinter %></label></td></tr>',
+                                    '<tr><td class="padding-large"><div id="print-combo-printer" style="width: 248px;"></div></td></tr>',
                                     '<tr><td><label class="font-weight-bold"><%= scope.txtPrintRange %></label></td></tr>',
                                     '<tr><td class="padding-large"><div id="print-combo-range" style="width: 248px;"></div></td></tr>',
                                     '<tr><td class="padding-large">',
@@ -2151,6 +2134,7 @@ define([], function () {
                                     '<tr><td><label class="font-weight-bold"><%= scope.txtPaperSize %></label></td></tr>',
                                     '<tr><td class="padding-large"><div id="print-combo-pages" style="width: 248px;"></div></td></tr>',
                                     '<tr class="header-settings"><td class="padding-large"><label class="link" id="print-header-footer-settings" data-hint="2" data-hint-direction="bottom" data-hint-offset="medium"><%= scope.txtHeaderFooterSettings %></label></td></tr>',
+                                    '<tr><td class="padding-large"><label class="link" id="print-btn-system-dialog" data-hint="2" data-hint-direction="bottom" data-hint-offset="medium"><%= scope.txtPrintUsingSystemDialog %></label></td></tr>',
                                     '<tr class="fms-btn-apply"><td>',
                                         '<div class="footer justify">',
                                             '<button id="print-btn-print" class="btn normal dlg-btn primary margin-right-8" result="print" style="width: 96px;" data-hint="2" data-hint-direction="bottom" data-hint-offset="big"><%= scope.txtPrint %></button>',
@@ -2190,13 +2174,57 @@ define([], function () {
 
             this.menu = options.menu;
 
+            this._defaultPaperSizeList = [
+                { value: 0, displayValue: ['US Letter', '21,59', '27,94', 'cm'], caption: 'US Letter', size: [215.9, 279.4]},
+                { value: 1, displayValue: ['US Legal', '21,59', '35,56', 'cm'], caption: 'US Legal', size: [215.9, 355.6]},
+                { value: 2, displayValue: ['A4', '21', '29,7', 'cm'], caption: 'A4', size: [210, 297]},
+                { value: 3, displayValue: ['A5', '14,8', '21', 'cm'], caption: 'A5', size: [148, 210]},
+                { value: 4, displayValue: ['B5', '17,6', '25', 'cm'], caption: 'B5', size: [176, 250]},
+                { value: 5, displayValue: ['Envelope #10', '10,48', '24,13', 'cm'], caption: 'Envelope #10', size: [104.8, 241.3]},
+                { value: 6, displayValue: ['Envelope DL', '11', '22', 'cm'], caption: 'Envelope DL', size: [110, 220]},
+                { value: 7, displayValue: ['Tabloid', '27,94', '43,18', 'cm'], caption: 'Tabloid', size: [279.4, 431.8]},
+                { value: 8, displayValue: ['A3', '29,7', '42', 'cm'], caption: 'A3', size: [297, 420]},
+                { value: 9, displayValue: ['Tabloid Oversize', '29,69', '45,72', 'cm'], caption: 'Tabloid Oversize', size: [296.9, 457.2]},
+                { value: 10, displayValue: ['ROC 16K', '19,68', '27,3', 'cm'], caption: 'ROC 16K', size: [196.8, 273]},
+                { value: 11, displayValue: ['Envelope Choukei 3', '12', '23,5', 'cm'], caption: 'Envelope Choukei 3', size: [120, 235]},
+                { value: 12, displayValue: ['Super B/A3', '30,5', '48,7', 'cm'], caption: 'Super B/A3', size: [305, 487]},
+                { value: 13, displayValue: ['A4', '84,1', '118,9', 'cm'], caption: 'A0', size: [841, 1189]},
+                { value: 14, displayValue: ['A4', '59,4', '84,1', 'cm'], caption: 'A1', size: [594, 841]},
+                { value: 16, displayValue: ['A4', '42', '59,4', 'cm'], caption: 'A2', size: [420, 594]},
+                { value: 17, displayValue: ['A4', '10,5', '14,8', 'cm'], caption: 'A6', size: [105, 148]}
+            ];
+
             this._initSettings = true;
+            this._originalPageSize = undefined;
         },
 
         render: function(node) {
             var me = this;
 
             var $markup = $(this.template({scope: this, isRTL: Common.UI.isRTL()}));
+
+            this.cmbPrinter = new Common.UI.ComboBox({
+                el: $markup.findById('#print-combo-printer'),
+                menuStyle: 'width: 248px;max-height: 280px;',
+                editable: false,
+                takeFocusOnClose: true,
+                cls: 'input-group-nr',
+                placeHolder: this.txtPrinterNotSelected,
+                itemsTemplate:  _.template([
+                    '<% if (items.length > 0) { %>',
+                        '<% _.each(items, function(item) { %>',
+                            '<li id="<%= item.id %>" data-value="<%= item.value %>"><a tabindex="-1" type="menuitem" <% if (typeof(item.checked) !== "undefined" && item.checked) { %> class="checked" <% } %> ><%= scope.getDisplayValue(item) %></a></li>',
+                        '<% }); %>',
+                    '<% } else { %>',
+                        '<li><a style="background:none; cursor: default;" onclick="event.stopPropagation();">' + this.txtPrintersNotFound + '</a></li>',
+                    '<% } %>'
+                ].join('')),
+                data: [],
+                dataHint: '2',
+                dataHintDirection: 'bottom',
+                dataHintOffset: 'big'
+            });
+            this.cmbPrinter.on('selected', _.bind(this.onPrinterSelected, this));
 
             this.cmbRange = new Common.UI.ComboBox({
                 el: $markup.findById('#print-combo-range'),
@@ -2298,43 +2326,30 @@ define([], function () {
 
             this.cmbPaperSize = new Common.UI.ComboBoxCustom({
                 el: $markup.findById('#print-combo-pages'),
-                menuStyle: 'max-height: 280px; min-width: 248px;',
+                menuStyle: 'max-height: 280px; width: 248px;',
                 editable: false,
                 takeFocusOnClose: true,
                 template: paperSizeTemplate,
                 itemsTemplate: paperSizeItemsTemplate,
-                data: [
-                    { value: 0, displayValue: ['US Letter', '21,59', '27,94', 'cm'], caption: 'US Letter', size: [215.9, 279.4]},
-                    { value: 1, displayValue: ['US Legal', '21,59', '35,56', 'cm'], caption: 'US Legal', size: [215.9, 355.6]},
-                    { value: 2, displayValue: ['A4', '21', '29,7', 'cm'], caption: 'A4', size: [210, 297]},
-                    { value: 3, displayValue: ['A5', '14,8', '21', 'cm'], caption: 'A5', size: [148, 210]},
-                    { value: 4, displayValue: ['B5', '17,6', '25', 'cm'], caption: 'B5', size: [176, 250]},
-                    { value: 5, displayValue: ['Envelope #10', '10,48', '24,13', 'cm'], caption: 'Envelope #10', size: [104.8, 241.3]},
-                    { value: 6, displayValue: ['Envelope DL', '11', '22', 'cm'], caption: 'Envelope DL', size: [110, 220]},
-                    { value: 7, displayValue: ['Tabloid', '27,94', '43,18', 'cm'], caption: 'Tabloid', size: [279.4, 431.8]},
-                    { value: 8, displayValue: ['A3', '29,7', '42', 'cm'], caption: 'A3', size: [297, 420]},
-                    { value: 9, displayValue: ['Tabloid Oversize', '29,69', '45,72', 'cm'], caption: 'Tabloid Oversize', size: [296.9, 457.2]},
-                    { value: 10, displayValue: ['ROC 16K', '19,68', '27,3', 'cm'], caption: 'ROC 16K', size: [196.8, 273]},
-                    { value: 11, displayValue: ['Envelope Choukei 3', '12', '23,5', 'cm'], caption: 'Envelope Choukei 3', size: [120, 235]},
-                    { value: 12, displayValue: ['Super B/A3', '30,5', '48,7', 'cm'], caption: 'Super B/A3', size: [305, 487]},
-                    { value: 13, displayValue: ['A4', '84,1', '118,9', 'cm'], caption: 'A0', size: [841, 1189]},
-                    { value: 14, displayValue: ['A4', '59,4', '84,1', 'cm'], caption: 'A1', size: [594, 841]},
-                    { value: 16, displayValue: ['A4', '42', '59,4', 'cm'], caption: 'A2', size: [420, 594]},
-                    { value: 17, displayValue: ['A4', '10,5', '14,8', 'cm'], caption: 'A6', size: [105, 148]}
-                ],
+                data: [].concat(this._defaultPaperSizeList),
                 dataHint: '2',
                 dataHintDirection: 'bottom',
                 dataHintOffset: 'big',
-                updateFormControl: function (record){
+                updateFormControl: function (record, customValue){
                     var formcontrol = $(this.el).find('.form-control');
-                    if (record) {
-                        if (!Common.UI.isRTL()) {
-                            formcontrol[0].innerHTML = record.get('displayValue')[0] + ' (' + record.get('displayValue')[1] + ' ' + record.get('displayValue')[3] + ' x ' +
-                                record.get('displayValue')[2] + ' ' + record.get('displayValue')[3] + ')';
+                    if (record || customValue) {
+                        var displayValue = customValue ? customValue : record.get('displayValue');
+                        if (typeof displayValue === 'string') {
+                            formcontrol[0].innerHTML = displayValue;
                         } else {
-                            formcontrol[0].innerHTML = '<span dir="ltr">(<span dir="rtl">' + record.get("displayValue")[2] + ' ' + record.get('displayValue')[3] + '</span>' +
-                                '<span> x </span>' + '<span dir="rtl">' + record.get('displayValue')[1] + ' ' + record.get('displayValue')[3] + '</span>)' +
-                                '<span> ' + record.get('displayValue')[0] + '</span></span>';
+                            if (!Common.UI.isRTL()) {
+                                formcontrol[0].innerHTML = displayValue[0] + ' (' + displayValue[1] + ' ' + displayValue[3] + ' x ' +
+                                    displayValue[2] + ' ' + displayValue[3] + ')';
+                            } else {
+                                formcontrol[0].innerHTML = '<span dir="ltr">(<span dir="rtl">' + displayValue[2] + ' ' + displayValue[3] + '</span>' +
+                                    '<span> x </span>' + '<span dir="rtl">' + displayValue[1] + ' ' + displayValue[3] + '</span>)' +
+                                    '<span> ' + displayValue[0] + '</span></span>';
+                            }
                         }
                     } else
                         formcontrol[0].innerHTML = '';
@@ -2346,8 +2361,10 @@ define([], function () {
             this.pnlTable = $(this.pnlSettings.find('table')[0]);
             this.trApply = $markup.find('.fms-btn-apply');
 
+            this.btnPrintSystemDialog = $markup.findById('#print-btn-system-dialog');
             this.btnPrint = new Common.UI.Button({
-                el: $markup.findById('#print-btn-print')
+                el: $markup.findById('#print-btn-print'),
+                disabled: true
             });
             this.btnPrintPdf = new Common.UI.Button({
                 el: $markup.findById('#print-btn-print-pdf')
@@ -2431,6 +2448,133 @@ define([], function () {
             this.fireEvent('show', this);
         },
 
+        updateCmbPrinter: function(currentPrinter, printers) {
+            var cmbPrinterOptions = [];
+
+            printers = printers || [];
+
+            //If the current printer is not in the list of printers, add it
+            if(currentPrinter && !_.some(printers, function(printer) { return printer.name == currentPrinter })) {
+                printers.push({
+                    name: currentPrinter,
+                    duplex_supported: true,
+                    paperSupported: this._defaultPaperSizeList
+                });
+            }
+
+            cmbPrinterOptions = printers.map(function(printer) {
+                return {
+                    value: printer.name,
+                    displayValue: printer.name,
+                    paperSupported: printer.paper_supported,
+                    isDuplexSupported: printer.duplex_supported
+                }
+            });
+
+            this.cmbPrinter.setData(cmbPrinterOptions);
+            this.cmbPrinter.setValue(currentPrinter);
+            this.cmbPrinter.trigger('selected', this, this.cmbPrinter.getSelectedRecord());
+        },
+
+        setCmbSidesOptions: function(isDuplexSupported) {
+            var cmbValue = this.cmbSides.getValue();
+            var list = [{ value: 'one', displayValue: this.txtOneSide, descValue: this.txtOneSideDesc }];
+            if(isDuplexSupported) {
+                list.push(
+                    { value: 'both-long', displayValue: this.txtBothSides, descValue: this.txtBothSidesLongDesc },
+                    { value: 'both-short', displayValue: this.txtBothSides, descValue: this.txtBothSidesShortDesc }
+                );
+            } else if(cmbValue != 'one') {
+                cmbValue = 'one';
+            }
+            this.cmbSides.setData(list);
+            this.cmbSides.setValue(cmbValue);
+        },
+
+        setCmbPaperSizeOptions: function(paperSizeList) {
+            var resultList = [];
+
+            if(paperSizeList && paperSizeList.length > 0) {
+                resultList = paperSizeList.map(function(item, index) {
+                    return {
+                        value: index, 
+                        displayValue: [item.name, item.width / 10, item.height / 10, 'cm'], 
+                        caption: item.name, 
+                        size: [item.width, item.height]
+                    }
+                });
+            } else {
+                resultList = [].concat(this._defaultPaperSizeList);
+            }
+
+            var prevSelectedOption = this.cmbPaperSize.store.findWhere({ 
+                value: this.cmbPaperSize.getValue()
+            });
+            var newSelectedOption = null;
+
+            function findOptionBySize(list, width, height) {
+                return _.find(list, function(option) {
+                    return Math.abs(option.size[0] - width) < 0.1 && Math.abs(option.size[1] - height) < 0.1;
+                });
+            }
+
+            // If a previously selected option exists, search for a matching one in resultList
+            if (prevSelectedOption) {
+                newSelectedOption = findOptionBySize(
+                    resultList, 
+                    Math.round(prevSelectedOption.get('size')[0]), 
+                    Math.round(prevSelectedOption.get('size')[1])
+                );
+            }
+
+            if (!newSelectedOption) {
+                if(prevSelectedOption) {
+                    newSelectedOption = {
+                        custom: true,
+                        value: [
+                            this.txtCustom,
+                            parseFloat(Common.Utils.Metric.fnRecalcFromMM(prevSelectedOption.get('size')[0]).toFixed(2)),
+                            parseFloat(Common.Utils.Metric.fnRecalcFromMM(prevSelectedOption.get('size')[1]).toFixed(2)),
+                            Common.Utils.Metric.getCurrentMetricName()
+                        ]
+                    }
+                } else {
+                    const _w = this._originalPageSize ? this._originalPageSize.w : 210,
+                        _h = this._originalPageSize ? this._originalPageSize.h : 297;
+                    // If no matching option is found, look for the default size 210x297 (A4)
+                    if (!newSelectedOption) {
+                        newSelectedOption = findOptionBySize(resultList, _w, _h);
+                    }
+
+                    if (!newSelectedOption) {
+                        newSelectedOption = {
+                            custom: true,
+                            value: [
+                                this.txtCustom,
+                                parseFloat(Common.Utils.Metric.fnRecalcFromMM(_w).toFixed(2)),
+                                parseFloat(Common.Utils.Metric.fnRecalcFromMM(_h).toFixed(2)),
+                                Common.Utils.Metric.getCurrentMetricName()
+                            ]
+                        };
+                    }
+
+                    if (!newSelectedOption && resultList[0]) {
+                        newSelectedOption = resultList[0];
+                    } 
+                }
+            }
+            
+            this.cmbPaperSize.setData(resultList);
+            this.updatePaperSizeMetricUnit();
+            if (!newSelectedOption) {
+                this.cmbPaperSize.setValue(null);
+            } else if (newSelectedOption.custom) {
+                this.cmbPaperSize.setValue(undefined, newSelectedOption.value);
+            } else {
+                this.cmbPaperSize.setValue(newSelectedOption.value);
+            }
+        },
+
         updateScroller: function() {
             if (this.scroller) {
                 Common.UI.Menu.Manager.hideAll();
@@ -2478,7 +2622,17 @@ define([], function () {
             this.txtNumberPage.setValue(index + 1);
         },
 
+        onPrinterSelected: function(combo, record) {
+            this.setCmbSidesOptions(record ? record.isDuplexSupported : true);
+            this.setCmbPaperSizeOptions(record ? record.paperSupported : null);
+            this.btnPrint.setDisabled(!record);
+        },
+
         updateMetricUnit: function() {
+            this.updatePaperSizeMetricUnit();
+        },
+
+        updatePaperSizeMetricUnit: function() {
             if (!this.cmbPaperSize) return;
             var store = this.cmbPaperSize.store;
             for (var i=0; i<store.length; i++) {
@@ -2492,20 +2646,28 @@ define([], function () {
                     parseFloat(Common.Utils.Metric.fnRecalcFromMM(pageheight).toFixed(2)),
                     Common.Utils.Metric.getCurrentMetricName()]);
             }
-            var value = this.cmbPaperSize.getValue();
             this.cmbPaperSize.onResetItems();
-            this.cmbPaperSize.setValue(value);
         },
 
         openHeaderSettings: function() {
             this.fireEvent('openheader', this);
         },
 
+
+        setOriginalPageSize: function (w, h) {
+            this._originalPageSize = {w: w, h: h};
+        },
+
         txtPrint: 'Print',
         txtPrintPdf: 'Print to PDF',
+        txtPrinter: 'Printer',
+        txtPrinterNotSelected: 'Printer not selected',
+        txtPrintersNotFound: 'Printers not found',
+        txtPrintUsingSystemDialog: 'Print using the system dialog',
         txtPrintRange: 'Print range',
         txtCurrentPage: 'Current slide',
         txtAllPages: 'All slides',
+        txtCustom: 'Custom',
         txtCustomPages: 'Custom print',
         txtPage: 'Slide',
         txtOf: 'of {0}',

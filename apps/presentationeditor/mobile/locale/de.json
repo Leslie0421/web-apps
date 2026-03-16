@@ -157,6 +157,7 @@
       "textNo": "Nein",
       "textNoLicenseTitle": "Lizenzlimit erreicht",
       "textNoMatches": "Keine Treffer",
+      "textOk": "OK",
       "textOpenFile": "Kennwort zum Öffnen der Datei eingeben",
       "textPaidFeature": "Kostenpflichtige Funktion",
       "textRemember": "Auswahl speichern",
@@ -182,9 +183,16 @@
       "warnProcessRightsChange": "Sie können diese Datei nicht bearbeiten."
     }
   },
+  "Draw": {
+    "textColor": "Farbe",
+    "textCustomColor": "Benutzerdefinierte Farbe",
+    "textLineSize": "Liniengröße",
+    "textOpacity": "Undurchsichtigkeit"
+  },
   "Error": {
     "convertationTimeoutText": "Zeitüberschreitung bei der Umwandlung.",
     "criticalErrorExtText": "Klicken Sie auf OK, um zur Liste der Dokumente zurückzukehren.",
+    "criticalErrorExtTextClose": "Drücken Sie OK, um den Editor zu schließen.",
     "criticalErrorTitle": "Fehler",
     "downloadErrorText": "Herunterladen ist fehlgeschlagen.",
     "errorAccessDeny": "Dieser Vorgang ist für Sie nicht verfügbar.<br>Bitte wenden Sie sich an den Administrator.",
@@ -209,6 +217,7 @@
     "errorKeyEncrypt": "Unbekannter Schlüssel Deskriptor",
     "errorKeyExpire": "Der Schlüsseldeskriptor ist abgelaufen",
     "errorLoadingFont": "Schriftarten nicht hochgeladen.<br>Bitte wenden Sie sich an die Administration des Dokumenten-Servers.",
+    "errorSaveWatermark": "Diese Datei enthält ein Wasserzeichen, das mit einer anderen Domain verknüpft ist.<br>Um es in PDF sichtbar zu machen, aktualisieren Sie das Wasserzeichen, so dass es von derselben Domain wie Ihr Dokument verlinkt wird, oder laden Sie es von Ihrem Computer hoch.",
     "errorSessionAbsolute": "Die Bearbeitungssitzung ist abgelaufen. Bitte die Seite neu laden.",
     "errorSessionIdle": "Das Dokument wurde schon eine lange Zeit nicht bearbeitet. Bitte die Seite neu laden.",
     "errorSessionToken": "Die Verbindung mit dem Server wurde unterbrochen. Bitte die Seite neu laden.",
@@ -227,6 +236,7 @@
     "splitDividerErrorText": "Die Anzahl der Zeilen muss einen Teiler von %1 sein. ",
     "splitMaxColsErrorText": "Spaltenanzahl muss weniger als %1 sein",
     "splitMaxRowsErrorText": "Die Anzahl der Zeilen muss weniger als %1 sein",
+    "textOk": "OK",
     "unknownErrorText": "Unbekannter Fehler.",
     "uploadImageExtMessage": "Unbekanntes Bildformat.",
     "uploadImageFileCountMessage": "Keine Bilder hochgeladen.",
@@ -267,13 +277,16 @@
     "waitText": "Bitte warten..."
   },
   "Toolbar": {
+    "btnRestartNow": "Jetzt neu starten",
     "dlgLeaveMsgText": "Sie haben nicht gespeicherte Änderungen. Klicken Sie auf \"Auf dieser Seite bleiben\" und warten Sie, bis die Datei automatisch gespeichert wird. Klicken Sie auf \"Seite verlassen\", um nicht gespeicherte Änderungen zu verwerfen.",
     "dlgLeaveTitleText": "Sie verlassen die Anwendung",
     "leaveButtonText": "Seite verlassen",
     "stayButtonText": "Auf dieser Seite bleiben",
     "textCloseHistory": "Historie schließen",
     "textEnterNewFileName": "Geben Sie einen neuen Dateinamen ein",
-    "textRenameFile": "Datei umbenennen"
+    "textOk": "OK",
+    "textRenameFile": "Datei umbenennen",
+    "textSwitchToDesktop": "In den Desktopmodus wechseln"
   },
   "View": {
     "Add": {
@@ -287,6 +300,7 @@
       "textDefault": "Ausgewählter Text",
       "textDisplay": "Anzeigen",
       "textDone": "Fertig",
+      "textDrawing": "Zeichnen",
       "textEmptyImgUrl": "Sie müssen die URL des Bildes angeben.",
       "textExternalLink": "Externer Link",
       "textFirstSlide": "Erste Folie",
@@ -511,7 +525,6 @@
       "textEmail": "E-Mail: ",
       "textEnableAll": "Alle aktivieren",
       "textEnableAllMacrosWithoutNotification": "Alle Makros ohne Benachrichtigung aktivieren",
-      "textExplanationChangeDirection": "Die Anwendung wird für die Aktivierung der RTL-Schnittstelle neu gestartet",
       "textFeedback": "Feedback und Support",
       "textFind": "Suche",
       "textFindAndReplace": "Suchen und ersetzen",
@@ -537,8 +550,6 @@
       "textReplace": "Ersetzen",
       "textReplaceAll": "Alle ersetzen",
       "textRestartApplication": "Bitte starten Sie die Anwendung neu, damit die Änderungen wirksam werden",
-      "textRTL": "RTL",
-      "textRtlInterface": "RTL-Schnittstelle",
       "textSameAsSystem": "Wie im System",
       "textSearch": "Suche",
       "textSettings": "Einstellungen",

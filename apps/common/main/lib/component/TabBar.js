@@ -212,6 +212,7 @@ define([
                     });
                 }
                 event.dataTransfer.effectAllowed = 'copyMove';
+                this.bar.preventCutTab = false;
                 this.bar.trigger('tab:dragstart', event.dataTransfer, this.bar.selectTabs);
             }, this),
             dragenter: $.proxy(function (e) {
@@ -246,11 +247,7 @@ define([
                     this.bar.isDragDrop = true;
                 }
                 var event = e.originalEvent;
-                if (event.dataTransfer.dropEffect === 'move' && !event.dataTransfer.mozUserCancelled) {
-                    this.bar.trigger('tab:dragend', true);
-                } else {
-                    this.bar.trigger('tab:dragend', false);
-                }
+                this.bar.trigger('tab:dragend', !this.bar.preventCutTab && event.dataTransfer.dropEffect === 'move' && !event.dataTransfer.mozUserCancelled);
                 this.bar.$el.find('.mousemove').removeClass('mousemove right');
             }, this),
             drop: $.proxy(function (e) {
@@ -262,6 +259,7 @@ define([
                 this.bar.$el.find('.mousemove').removeClass('mousemove right');
                 this.bar.trigger('tab:drop', event.dataTransfer, index, (event.ctrlKey || Common.Utils.isMac && event.altKey));
                 this.bar.isDrop = true;
+                this.bar.preventCutTab = true;
             }, this)
         });
     };
@@ -286,6 +284,7 @@ define([
             Common.UI.BaseView.prototype.initialize.call(this, options);
 
             this.saved = [];
+            this.isRTL = options.isRTL || false;
         },
 
         render: function () {
@@ -527,39 +526,79 @@ define([
                 }
                 var rightbound = this.$bar.width(),
                     tab, right, left;
-                if (index == 'forward') {
-                    for (var i = 0; i < this.tabs.length; i++) {
-                        tab = this.tabs[i].$el;
-                        right = Common.Utils.getPosition(tab).left + parseInt(tab.css('width'));
+                if (this.isRTL) {
+                    if (index == 'forward') {
+                        for (var i = this.tabs.length - 1; i >= 0; i--) {
+                            tab = this.tabs[i].$el;
+                            right = Common.Utils.getPosition(tab).left + parseInt(tab.css('width'));
 
-                        if (right > rightbound) {
-                            this.$bar.scrollLeft(this.$bar.scrollLeft() + (right - rightbound) + (this.$bar.width() > 400 ? 20 : 5));
-                            this.checkInvisible(suppress);
-                            break;
+                            if (right > rightbound) {
+                                this.$bar.scrollLeft(this.$bar.scrollLeft() + (right - rightbound) + (rightbound > 400 ? 20 : 5));
+                                this.checkInvisible(suppress);
+                                break;
+                            }
                         }
                     }
-                } else if (index == 'backward') {
-                    for (i = this.tabs.length; i-- > 0; ) {
-                        tab = this.tabs[i].$el;
+                    else if (index == 'backward') {
+                        for (var i = 0; i < this.tabs.length; i++) {
+                            tab = this.tabs[i].$el;
+                            left = Common.Utils.getPosition(tab).left;
+
+                            if (left < 0) {
+                                this.$bar.scrollLeft(this.$bar.scrollLeft() + left - 26);
+                                this.checkInvisible(suppress);
+                                break;
+                            }
+                        }
+                    }
+                    else if (typeof index == 'number') {
+                        tab = this.tabs[index].$el;
                         left = Common.Utils.getPosition(tab).left;
+                        right = left + parseInt(tab.css('width'));
+
+                        if (right > rightbound) {
+                            this.$bar.scrollLeft(this.$bar.scrollLeft() + (right - rightbound) + 20);
+                            this.checkInvisible(suppress);
+                        } else if (left < 0) {
+                            this.$bar.scrollLeft(this.$bar.scrollLeft() + left - 26);
+                            this.checkInvisible(suppress);
+                        }
+                    }
+                } else {
+                    if (index == 'forward') {
+                        for (var i = 0; i < this.tabs.length; i++) {
+                            tab = this.tabs[i].$el;
+                            right = Common.Utils.getPosition(tab).left + parseInt(tab.css('width'));
+
+                            if (right > rightbound) {
+                                this.$bar.scrollLeft(this.$bar.scrollLeft() + (right - rightbound) + (this.$bar.width() > 400 ? 20 : 5));
+                                this.checkInvisible(suppress);
+                                break;
+                            }
+                        }
+                    } else if (index == 'backward') {
+                        for (i = this.tabs.length; i-- > 0; ) {
+                            tab = this.tabs[i].$el;
+                            left = Common.Utils.getPosition(tab).left;
+
+                            if (left < 0) {
+                                this.$bar.scrollLeft(this.$bar.scrollLeft() + left - 26);
+                                this.checkInvisible(suppress);
+                                break;
+                            }
+                        }
+                    } else if (typeof index == 'number') {
+                        tab = this.tabs[index].$el;
+                        left = Common.Utils.getPosition(tab).left;
+                        right = left + parseInt(tab.css('width'));
 
                         if (left < 0) {
                             this.$bar.scrollLeft(this.$bar.scrollLeft() + left - 26);
                             this.checkInvisible(suppress);
-                            break;
+                        } else if (right > rightbound) {
+                            this.$bar.scrollLeft(this.$bar.scrollLeft() + (right - rightbound) + 20);
+                            this.checkInvisible(suppress);
                         }
-                    }
-                } else if (typeof index == 'number') {
-                    tab = this.tabs[index].$el;
-                    left = Common.Utils.getPosition(tab).left;
-                    right = left + parseInt(tab.css('width'));
-
-                    if (left < 0) {
-                        this.$bar.scrollLeft(this.$bar.scrollLeft() + left - 26);
-                        this.checkInvisible(suppress);
-                    } else if (right > rightbound) {
-                        this.$bar.scrollLeft(this.$bar.scrollLeft() + (right - rightbound) + 20);
-                        this.checkInvisible(suppress);
                     }
                 }
             }
@@ -567,8 +606,8 @@ define([
 
         checkInvisible: function(suppress) {
             var result = {
-                first: !this.isTabVisible(Common.UI.isRTL() ? this.tabs.length-1 : 0),
-                last: !this.isTabVisible(Common.UI.isRTL() ? 0 : this.tabs.length-1)
+                first: !this.isTabVisible(this.isRTL ? this.tabs.length-1 : 0),
+                last: !this.isTabVisible(this.isRTL ? 0 : this.tabs.length-1)
             };
 
             !suppress && this.fireEvent('tab:invisible', this, result);
@@ -630,5 +669,9 @@ define([
             });
             return width;
         },
+
+        setDirection: function(isRTL) {
+            this.isRTL = isRTL;
+        }
     });
 });

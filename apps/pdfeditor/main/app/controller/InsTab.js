@@ -262,7 +262,7 @@ define([
             if ( this.view.btnsInsertText.pressed() ) {
                 this.view.btnsInsertText.toggle(false, true);
                 this.view.btnsInsertText.forEach(function(button) {
-                    button.menu.clearAll();
+                    button.menu.clearAll(true);
                 });
             }
 
@@ -473,12 +473,12 @@ define([
         },
 
         onBtnInsertTextClick: function(btn, e) {
-            btn.menu.items.forEach(function(item) {
+            btn.menu.getItems(true).forEach(function(item) {
                 if(item.value == btn.options.textboxType)
                     item.setChecked(true);
             });
             if(!btn.pressed) {
-                btn.menu.clearAll();
+                btn.menu.clearAll(true);
             }
             this.onInsertText(btn.options.textboxType, btn, e);
         },
@@ -494,7 +494,7 @@ define([
                     button.updateHint([e.caption, self.views.tipInsertText]);
                     button.changeIcon({
                         next: e.options.iconClsForMainBtn,
-                        curr: button.menu.items.filter(function(item){return item.value == oldType})[0].options.iconClsForMainBtn
+                        curr: button.menu.getItems(true).filter(function(item){return item.value == oldType})[0].options.iconClsForMainBtn
                     });
                     button.options.textboxType = newType;
                 });
@@ -595,7 +595,7 @@ define([
         },
 
         onAddPage: function(before) {
-            this.api && this.api.asc_AddPage(!!before);
+            this.api && this.api.asc_AddPage(this.api.getCurrentPage() + (before ? 0 : 1) );
         },
 /*
         mouseenterSmartArt: function (groupName, menu) {
@@ -707,11 +707,9 @@ define([
         },
 
         fillEquations: function() {
-            if (!this.view.btnInsertEquation.rendered || this.view.btnInsertEquation.menu.items.length>0) return;
+            if (!this.view.btnInsertEquation.rendered || this.view.btnInsertEquation.menu.getItemsLength(true)>0) return;
 
             var me = this, equationsStore = this.getApplication().getCollection('EquationGroups');
-
-            me.view.btnInsertEquation.menu.removeAll();
             var onShowAfter = function(menu) {
                 for (var i = 0; i < equationsStore.length; ++i) {
                     var equationPicker = new Common.UI.DataViewSimple({
@@ -760,7 +758,7 @@ define([
                         ]
                     })
                 });
-                me.view.btnInsertEquation.menu.addItem(menuItem);
+                me.view.btnInsertEquation.menu.addItem(menuItem, true);
             }
         },
 
@@ -929,7 +927,8 @@ define([
             var pr, i = -1, type,
                 paragraph_locked = false,
                 no_paragraph = true,
-                in_chart = false;
+                in_chart = false,
+                page_deleted = false;
 
             while (++i < selectedObjects.length) {
                 type = selectedObjects[i].get_ObjectType();
@@ -946,6 +945,8 @@ define([
                     if (type == Asc.c_oAscTypeSelectElement.Chart) {
                         in_chart = true;
                     }
+                } else if (type == Asc.c_oAscTypeSelectElement.PdfPage) {
+                    page_deleted = pr.asc_getDeleteLock();
                 }
             }
 
@@ -962,6 +963,11 @@ define([
             if (this._state.no_paragraph !== no_paragraph) {
                 if (this._state.activated) this._state.no_paragraph = no_paragraph;
                 Common.Utils.lockControls(Common.enumLock.noParagraphSelected, no_paragraph, {array: this.view.lockedControls});
+            }
+
+            if (page_deleted !== undefined && this._state.pagecontrolsdisable !== page_deleted) {
+                if (this._state.activated) this._state.pagecontrolsdisable = page_deleted;
+                Common.Utils.lockControls(Common.enumLock.pageDeleted, page_deleted, {array: this.view.lockedControls});
             }
         },
 

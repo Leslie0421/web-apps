@@ -157,6 +157,7 @@
       "textNo": "No",
       "textNoLicenseTitle": "License limit reached",
       "textNoMatches": "No Matches",
+      "textOk": "Ok",
       "textOpenFile": "Enter a password to open the file",
       "textPaidFeature": "Paid feature",
       "textRemember": "Remember my choice",
@@ -182,9 +183,16 @@
       "warnProcessRightsChange": "You don't have permission to edit the file."
     }
   },
+  "Draw": {
+    "textColor": "Color",
+    "textCustomColor": "Custom color",
+    "textLineSize": "Line size",
+    "textOpacity": "Opacity"
+  },
   "Error": {
     "convertationTimeoutText": "Conversion timeout exceeded.",
     "criticalErrorExtText": "Press 'OK' to go back to the document list.",
+    "criticalErrorExtTextClose": "Press 'OK' to close the editor.",
     "criticalErrorTitle": "Error",
     "downloadErrorText": "Download failed.",
     "errorAccessDeny": "You are trying to perform an action you do not have rights for.<br>Please contact your admin.",
@@ -209,6 +217,7 @@
     "errorKeyEncrypt": "Unknown key descriptor",
     "errorKeyExpire": "Key descriptor expired",
     "errorLoadingFont": "Fonts are not loaded.<br>Please contact your Document Server administrator.",
+    "errorSaveWatermark": "This file contains a watermark image linked to another domain.<br>To make it visible in PDF, update the watermark image so it links from the same domain as your document, or upload it from your computer.",
     "errorSessionAbsolute": "The document editing session has expired. Please, reload the page.",
     "errorSessionIdle": "The document has not been edited for quite a long time. Please, reload the page.",
     "errorSessionToken": "The connection to the server has been interrupted. Please, reload the page.",
@@ -227,6 +236,7 @@
     "splitDividerErrorText": "The number of rows must be a divisor of %1",
     "splitMaxColsErrorText": "The number of columns must be less than %1",
     "splitMaxRowsErrorText": "The number of rows must be less than %1",
+    "textOk": "OK",
     "unknownErrorText": "Unknown error.",
     "uploadImageExtMessage": "Unknown image format.",
     "uploadImageFileCountMessage": "No images uploaded.",
@@ -267,13 +277,16 @@
     "waitText": "Please, wait..."
   },
   "Toolbar": {
+    "btnRestartNow": "Restart now",
     "dlgLeaveMsgText": "You have unsaved changes in this document. Click 'Stay on this Page' to wait for autosave. Click 'Leave this Page' to discard all the unsaved changes.",
     "dlgLeaveTitleText": "You leave the application",
     "leaveButtonText": "Leave this page",
     "stayButtonText": "Stay on this Page",
     "textCloseHistory": "Close History",
     "textEnterNewFileName": "Enter a new file name",
-    "textRenameFile": "Rename File"
+    "textOk": "OK",
+    "textRenameFile": "Rename File",
+    "textSwitchToDesktop": "Switch to Desktop"
   },
   "View": {
     "Add": {
@@ -287,6 +300,7 @@
       "textDefault": "Selected text",
       "textDisplay": "Display",
       "textDone": "Done",
+      "textDrawing": "Drawing",
       "textEmptyImgUrl": "You need to specify the image URL.",
       "textExternalLink": "External Link",
       "textFirstSlide": "First Slide",
@@ -511,7 +525,6 @@
       "textEmail": "email:",
       "textEnableAll": "Enable All",
       "textEnableAllMacrosWithoutNotification": "Enable all macros without notification",
-      "textExplanationChangeDirection": "Application will be restarted for RTL interface activation",
       "textFeedback": "Feedback & Support",
       "textFind": "Find",
       "textFindAndReplace": "Find and Replace",
@@ -537,8 +550,6 @@
       "textReplace": "Replace",
       "textReplaceAll": "Replace All",
       "textRestartApplication": "Please restart the application for the changes to take effect",
-      "textRTL": "RTL",
-      "textRtlInterface": "RTL Interface",
       "textSameAsSystem": "Same As System",
       "textSearch": "Find",
       "textSettings": "Settings",

@@ -124,6 +124,7 @@ define([
                 config && !!config.feedback && !!config.feedback.url ?
                     window.open(config.feedback.url) :
                     window.open('{{SUPPORT_URL}}');
+                Common.NotificationCenter.trigger('edit:complete', this);
             }, this));
 
             /** coauthoring begin **/
@@ -200,6 +201,7 @@ define([
                 this.onCoauthOptions();
             }
 
+            btn.options.type !== 'plugin' && $('.left-panel .plugin-panel').toggleClass('active', false);
             this.fireEvent('panel:show', [this, btn.options.action, btn.pressed]);
             Common.NotificationCenter.trigger('layout:changed', 'leftmenu');
         },
@@ -278,19 +280,19 @@ define([
 
         close: function(menu) {
             this.btnAbout.toggle(false);
-            this.btnThumbs.toggle(false);
+            this.btnThumbs.toggle(false, !this.mode);
             if (!this._state.pluginIsRunning)
                 this.$el.width(SCALE_MIN);
             /** coauthoring begin **/
-            if (this.mode.canCoAuthoring) {
+            if (this.mode && this.mode.canCoAuthoring) {
                 if (this.mode.canViewComments) {
-                    this.panelComments['hide']();
+                    this.panelComments && this.panelComments['hide']();
                     if (this.btnComments.pressed)
                         this.fireEvent('comments:hide', this);
                     this.btnComments.toggle(false, true);
                 }
                 if (this.mode.canChat) {
-                    this.panelChat['hide']();
+                    this.panelChat && this.panelChat['hide']();
                     this.btnChat.toggle(false);
                 }
             }

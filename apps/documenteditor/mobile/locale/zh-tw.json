@@ -58,14 +58,15 @@
     "textRows": "行列",
     "textScreenTip": "螢幕提示",
     "textSectionBreak": "分節符",
-    "textShape": "形狀",
+    "textShape": "圖形",
     "textStartAt": "開始",
     "textTable": "表格",
     "textTableContents": "目錄",
     "textTableSize": "表格大小",
     "textWithBlueLinks": "含有藍色連結",
     "textWithPageNumbers": "含有頁碼",
-    "txtNotUrl": "此字段應為格式為“ http://www.example.com”的URL。"
+    "txtNotUrl": "此字段應為格式為“ http://www.example.com”的URL。",
+    "textDrawing": "Drawing"
   },
   "Common": {
     "Collaboration": {
@@ -147,7 +148,7 @@
       "textReview": "評論",
       "textReviewChange": "變更評論",
       "textRight": "對齊右側",
-      "textShape": "形狀",
+      "textShape": "圖形",
       "textSharingSettings": "分享設定",
       "textShd": "背景顏色",
       "textSmallCaps": "小大寫",
@@ -366,7 +367,7 @@
     "textSendToBackground": "傳送到背景",
     "textSeptember": "九月",
     "textSettings": "設定",
-    "textShape": "形狀",
+    "textShape": "圖形",
     "textSimple": "簡單",
     "textSize": "大小",
     "textSmallCaps": "小大寫",
@@ -461,11 +462,16 @@
     "uploadImageExtMessage": "圖片格式未知。",
     "uploadImageFileCountMessage": "無上傳圖片。",
     "uploadImageSizeMessage": "圖像超出最大大小限制。最大為25MB。",
+    "criticalErrorExtTextClose": "Press 'OK' to close the editor.",
     "errorComboSeries": "To create a combination chart, select at least two series of data.",
     "errorCompare": "The Compare documents feature is not available in the co-editing mode.",
+    "errorEditProtectedRange": "You are not allowed to edit this selection because it is protected.",
     "errorForceSave": "An error occurred while saving the file. Please use the 'Download as' option to save the file to your computer hard drive or try again later.",
+    "errorPDFFormsLocked": "The action cannot be performed as it causes changes in locked forms.",
+    "errorSaveWatermark": "This file contains a watermark image linked to another domain.<br>To make it visible in PDF, update the watermark image so it links from the same domain as your document, or upload it from your computer.",
     "errorSetPassword": "Password could not be set.",
     "errorSubmit": "Submit failed.",
+    "textOk": "OK",
     "uploadDocExtMessage": "Unknown document format.",
     "uploadDocFileCountMessage": "No documents uploaded.",
     "uploadDocSizeMessage": "Maximum document size limit exceeded."
@@ -788,13 +794,12 @@
     "textClose": "Close",
     "textDark": "Dark",
     "textDarkTheme": "Dark Theme",
-    "textExplanationChangeDirection": "Application will be restarted for RTL interface activation",
+    "textDrawing": "Drawing",
     "textExport": "Export",
     "textExportAs": "Export As",
     "textLight": "Light",
     "textPasswordWarning": "If the password is forgotten or lost, it cannot be recovered.",
     "textRemoveFromFavorites": "Remove from Favorites",
-    "textRtlInterface": "RTL Interface",
     "textSameAsSystem": "Same as system",
     "textTheme": "Theme",
     "textTypeEditingWarning": "Allow only this type of editing in the document.",
@@ -808,9 +813,18 @@
     "textOk": "好",
     "textSwitchedMobileView": "切換至行動版檢視",
     "textSwitchedStandardView": "切換至標準版檢視",
+    "warnEmptyRequiredField": "填寫所有必填欄位以傳送表單。",
+    "btnRestartNow": "Restart now",
     "btnSend": "Send",
     "textCloseHistory": "Close History",
     "textEnterNewFileName": "Enter a new file name",
-    "textRenameFile": "Rename File"
+    "textRenameFile": "Rename File",
+    "textSwitchToDesktop": "Switch to Desktop"
+  },
+  "Draw": {
+    "textColor": "Color",
+    "textCustomColor": "Custom color",
+    "textLineSize": "Line size",
+    "textOpacity": "Opacity"
   }
 }

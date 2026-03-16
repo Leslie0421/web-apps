@@ -1,7 +1,7 @@
 {
     "name": "documenteditor",
-    "version": "8.2.0",
-    "build": 49,
+    "version": "9.0.4",
+    "build": 52,
     "homepage": "http://www.onlyoffice.com",
     "private": true,
     "main": {
@@ -106,6 +106,16 @@
                         "text": "../vendor/requirejs-text/text"
                     }
                 }
+            },
+            "babel": {
+                "files": [
+                    {
+                        "expand": true,
+                        "cwd": "../deploy/web-apps/apps/documenteditor/main/",
+                        "src": "*.js",
+                        "dest": "../deploy/web-apps/apps/documenteditor/main/ie"
+                    }
+                ]
             }
         },
         "less": {
@@ -127,7 +137,7 @@
                     "cwd": "../apps/documenteditor/main/resources/img/",
                     "src": [
                         "**/*.{png,jpg,gif,ico}",
-                        "!toolbar/*x/**/*"
+                        "!toolbar/**/*x/**/*"
                     ],
                     "dest": "../deploy/web-apps/apps/documenteditor/main/resources/img/"
                 }
@@ -138,7 +148,7 @@
                     "cwd": "../apps/common/main/resources/img/",
                     "src": [
                         "**/*.{png,jpg,gif}",
-                        "!toolbar/*x/**/*"
+                        "!toolbar/**/*x/**/*"
                     ],
                     "dest": "../deploy/web-apps/apps/documenteditor/main/resources/img/"
                 }
@@ -203,7 +213,10 @@
                 {
                     "expand": true,
                     "cwd": "../apps/documenteditor/main/resources/img",
-                    "src": "**/*.svg",
+                    "src": [
+                        "**/*.svg",
+                        "!toolbar/**/*x/**/*"
+                    ],
                     "dest": "../deploy/web-apps/apps/documenteditor/main/resources/img"
                 }
             ],

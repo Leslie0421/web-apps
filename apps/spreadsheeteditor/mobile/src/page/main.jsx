@@ -17,6 +17,7 @@ import SettingsController from '../controller/settings/Settings';
 import AddingController from '../controller/add/Add';
 import EditView from '../view/edit/Edit';
 import VersionHistoryController from '../../../../common/mobile/lib/controller/VersionHistory';
+import { DrawController } from "../../../../common/mobile/lib/controller/Draw";
 
 export const MainContext = createContext();
 
@@ -119,9 +120,6 @@ class MainPage extends Component {
     }
 
     componentDidMount () {
-        if ($$('.skl-container').length) {
-            $$('.skl-container').remove();
-        }
 
         document.addEventListener('touchmove', this.touchMoveHandler);
 
@@ -163,8 +161,10 @@ class MainPage extends Component {
             isBranding = appOptions.canBranding || appOptions.canBrandingExt;
             
             if(logo && isBranding) {
-                if(logo.image || logo.imageDark) {
-                    customLogoImage = colorTheme.type === 'dark' ? logo.imageDark ?? logo.image : logo.image ?? logo.imageDark;
+                isHideLogo = logo.visible === false;
+
+                if(logo.image || logo.imageDark || logo.imageLight) {
+                    customLogoImage = colorTheme.type === 'dark' ? logo.imageDark ?? logo.image ?? logo.imageLight : logo.imageLight ?? logo.image ?? logo.imageDark;
                     customLogoUrl = logo.url;
                 }
             }
@@ -207,6 +207,9 @@ class MainPage extends Component {
                         <CellEditor onClickToOpenAddOptions={(panels, button) => this.handleClickToOpenOptions('add', {panels: panels, button: button})} />
                         {/* Page content */}
                         <View id="editor_sdk" />
+                        <Navbar id='drawbar' style={{ display: !appOptions.isDrawMode && 'none' }}>
+                            <DrawController />
+                        </Navbar>
                         {isShowPlaceholder ?
                             <div className="doc-placeholder">
                                 <div className="columns"></div>

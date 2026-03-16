@@ -177,6 +177,7 @@
       "warnNoLicenseUsers": "Jūs sasniedzāt %1 redaktoru lietotāju ierobežojumu. Sazinieties ar %1 pārdošanas komandu, lai uzzinātu personīgos jaunināšanas noteikumus.",
       "warnProcessRightsChange": "Jums nav atļaujas rediģēt failu.",
       "textNoLicenseTitle": "License limit reached",
+      "textOk": "Ok",
       "titleLicenseNotActive": "License not active",
       "warnLicenseAnonymous": "Access denied for anonymous users.<br>This document will be opened for viewing only.",
       "warnLicenseBefore": "License not active.<br>Please contact your administrator."
@@ -227,10 +228,13 @@
     "uploadImageExtMessage": "Nezināms attēla formāts.",
     "uploadImageFileCountMessage": "Nav augšupielādēto attēlu.",
     "uploadImageSizeMessage": "Attēls ir pārāk liels. Maksimālais izmērs ir 25 MB.",
+    "criticalErrorExtTextClose": "Press 'OK' to close the editor.",
     "errorComboSeries": "To create a combination chart, select at least two series of data.",
     "errorEmailClient": "No email client could be found",
     "errorForceSave": "An error occurred while saving the file. Please use the 'Download as' option to save the file to your computer hard drive or try again later.",
-    "errorSetPassword": "Password could not be set."
+    "errorSaveWatermark": "This file contains a watermark image linked to another domain.<br>To make it visible in PDF, update the watermark image so it links from the same domain as your document, or upload it from your computer.",
+    "errorSetPassword": "Password could not be set.",
+    "textOk": "OK"
   },
   "LongActions": {
     "applyChangesTextText": "Ielādē datus...",
@@ -272,8 +276,11 @@
     "leaveButtonText": "Pamest lapu",
     "stayButtonText": "Palikt šajā lapā",
     "textCloseHistory": "Aizvērt vēsturi",
+    "btnRestartNow": "Restart now",
     "textEnterNewFileName": "Enter a new file name",
-    "textRenameFile": "Rename File"
+    "textOk": "OK",
+    "textRenameFile": "Rename File",
+    "textSwitchToDesktop": "Switch to Desktop"
   },
   "View": {
     "Add": {
@@ -316,7 +323,8 @@
       "textSlideNumber": "Slaida numurs",
       "textTable": "Tabula",
       "textTableSize": "Tabulas izmērs",
-      "txtNotUrl": "Šim laukam ir jābūt URL formātā \"http://www.example.com\""
+      "txtNotUrl": "Šim laukam ir jābūt URL formātā \"http://www.example.com\"",
+      "textDrawing": "Drawing"
     },
     "Edit": {
       "notcriticalErrorTitle": "Brīdinājums",
@@ -533,7 +541,6 @@
       "textReplace": "Aizvietot",
       "textReplaceAll": "Aizvietot visus",
       "textRestartApplication": "Restartējiet programmu, lai izmaiņas stātos spēkā",
-      "textRTL": "RTL",
       "textSearch": "Meklēt",
       "textSettings": "Iestatījumi",
       "textShowNotification": "Rādīt paziņojumu",
@@ -548,11 +555,15 @@
       "textVersionHistory": "Versiju vēsture",
       "textClose": "Close",
       "textDark": "Dark",
-      "textExplanationChangeDirection": "Application will be restarted for RTL interface activation",
       "textLight": "Light",
-      "textRtlInterface": "RTL Interface",
       "textSameAsSystem": "Same As System",
       "textTheme": "Theme"
     }
+  },
+  "Draw": {
+    "textColor": "Color",
+    "textCustomColor": "Custom color",
+    "textLineSize": "Line size",
+    "textOpacity": "Opacity"
   }
 }
