@@ -398,7 +398,7 @@ class MainController extends Component {
 
         if ( About.developVersion() ) {
             const script = document.createElement("script");
-            script.src = "../../../../sdkjs/develop/sdkjs/cell/scripts.js";
+            script.src = "/sdkjs/cell/sdk-all-min.js";
             script.async = true;
             script.onload = on_load_scripts;
             script.onerror = () => {

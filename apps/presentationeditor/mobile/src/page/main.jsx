@@ -172,6 +172,8 @@ class MainPage extends Component {
                     customLogoImage = colorTheme.type === 'dark' ? logo.imageDark ?? logo.image ?? logo.imageLight : logo.imageLight ?? logo.image ?? logo.imageDark;
                     customLogoUrl = logo.url;
                 }
+            } else {
+                isHideLogo = true;
             }
         }
 

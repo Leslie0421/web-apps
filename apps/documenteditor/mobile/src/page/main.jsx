@@ -69,7 +69,7 @@ const MainPage = inject('storeDocumentInfo', 'users', 'storeAppOptions', 'storeV
                 customLogoUrl = logo.url;
             }
         } else {
-            isHideLogo = false;
+            isHideLogo = true;
         }
     }
 

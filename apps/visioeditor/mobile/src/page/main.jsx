@@ -124,7 +124,7 @@ class MainPage extends Component {
                     customLogoUrl = logo.url;
                 }
             } else {
-                isHideLogo = false;
+                isHideLogo = true;
             }
         }
 
