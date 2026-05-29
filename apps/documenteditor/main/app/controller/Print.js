@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 define([
     'core'
@@ -44,8 +47,7 @@ define([
             this._state = {
                 lock_doc: false,
                 firstPrintPage: 0,
-                isPrintPreviewOpenedOnce: false,
-                isPrinterInfoLoad: false,
+                shouldUpdateCmbPrinter: false, 
                 currentPrinter: null,
                 printersList: []
             };
@@ -98,8 +100,6 @@ define([
                 if (!_.isEmpty(value) && /[0-9,\-]/.test(value)) {
                     var res = [],
                         arr = value.split(',');
-                    if (me._isPrint && arr.length>1)
-                        return me.txtPrintRangeSingleRange;
 
                     for (var i=0; i<arr.length; i++) {
                         var item = arr[i];
@@ -228,8 +228,16 @@ define([
         onApiPageOrient: function(isportrait) {
             this._state.pgorient = !!isportrait;
             if (this.printSettings && this.printSettings.isVisible()) {
-                var item = this.printSettings.cmbPaperOrientation.store.findWhere({value: this._state.pgorient ? Asc.c_oAscPageOrientation.PagePortrait : Asc.c_oAscPageOrientation.PageLandscape});
-                if (item) this.printSettings.cmbPaperOrientation.setValue(item.get('value'));
+                let value;
+                if(this._state.pgorientAuto) {
+                    value = 'auto';
+                } else if(this._state.pgorient) {
+                    value = Asc.c_oAscPageOrientation.PagePortrait;
+                } else {
+                    value = Asc.c_oAscPageOrientation.PageLandscape;
+                }
+                var item = this.printSettings.cmbPaperOrientation.store.findWhere({ value: value });
+                item && this.printSettings.cmbPaperOrientation.setValue(item.get('value'));
             }
         },
 
@@ -291,6 +299,9 @@ define([
             if (this.printSettings && this.printSettings.isVisible()) {
                 this.api.asc_drawPrintPreview(this._navigationPreview.currentPreviewPage);
                 this.updateNavigationButtons(this._navigationPreview.currentPreviewPage, this._navigationPreview.pageCount);
+
+                const item = this.printSettings.cmbPaperOrientation.store.findWhere({ value: 'auto' });
+                item && this.printSettings.cmbPaperOrientation.setValue(item.get('value'));
             }
         },
 
@@ -298,6 +309,7 @@ define([
             var me = this;
             this.printSettings.$previewBox.removeClass('hidden');
 
+            this._state.pgorientAuto = true;
             this.onUpdateLastCustomMargins(this._state.lastmargins);
             this._state.pgsize && this.onApiPageSize(this._state.pgsize[0], this._state.pgsize[1]);
             this.onApiPageOrient(this._state.pgorient);
@@ -313,9 +325,8 @@ define([
             this.SetDisabled();
             this._isPreviewVisible = true;
 
-            if(this._state.isPrinterInfoLoad && !this._state.isPrintPreviewOpenedOnce) {
-                this._state.isPrintPreviewOpenedOnce = true;
-                this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList);      
+            if(this._state.shouldUpdateCmbPrinter) {
+                this.updateCmbPrinter();      
             }
         },
 
@@ -409,20 +420,31 @@ define([
         onPaperOrientSelect: function(combo, record) {
             this._state.pgorient = undefined;
             if (this.api) {
-                this.api.change_PageOrient(record.value === Asc.c_oAscPageOrientation.PagePortrait);
+                this._state.pgorientAuto = (record.value == 'auto');
+                if(record.value != 'auto') {
+                    this.api.change_PageOrient(record.value === Asc.c_oAscPageOrientation.PagePortrait);
+                } 
             }
 
             Common.NotificationCenter.trigger('edit:complete');
         },
 
-        setPrinterInfo: function(currentPrinter, list) {
-            this._state.isPrinterInfoLoad = true;
-            this._state.currentPrinter = currentPrinter;
-            this._state.printersList = list;
-            if(this.printSettings && this.printSettings.isVisible() && !this._state.isPrintPreviewOpenedOnce) {
-                this._state.isPrintPreviewOpenedOnce = true;
-                this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList);
+        setPrintersInfo: function(currentPrinter, list, isWaitingForPrinters) {
+            this._state.currentPrinter = currentPrinter || this._state.currentPrinter;
+            this._state.printersList = _.uniq(_.union(this._state.printersList, list), function(option) {
+                return option.name;
+            });
+            this._state.isWaitingForPrinters = !!isWaitingForPrinters;
+            this._state.shouldUpdateCmbPrinter = true;
+
+            if(this.printSettings && this.printSettings.isVisible() && this._state.shouldUpdateCmbPrinter) {
+                this.updateCmbPrinter();
             }
+        },
+
+        updateCmbPrinter: function() {
+            this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList, this._state.isWaitingForPrinters);
+            this._state.shouldUpdateCmbPrinter = false;
         },
 
         checkPageSize: function(width, height, left, right, top, bottom) {
@@ -546,23 +568,38 @@ define([
                 this.isInputFirstChange = true;
                 return;
             }
-            if (this.printSettings.cmbRange.getValue()==='all')
+
+            let pages; 
+            if(this.printSettings.cmbRange.getValue() === -1) {
+                pages = this.printSettings.inputPages.getValue();
+            } else if (this.printSettings.cmbRange.getValue() === 'all') {
+                pages = 'all';
                 this._state.firstPrintPage = 0;
-            else if (this.printSettings.cmbRange.getValue()==='current')
+            } else if (this.printSettings.cmbRange.getValue() === 'current') {
+                pages = String(this._navigationPreview.currentPage + 1);
                 this._state.firstPrintPage = this._navigationPreview.currentPage;
+            }
 
             var size = this.api.asc_getPageSize(this._state.firstPrintPage);
             var printerOption = this.printSettings.cmbPrinter.getSelectedRecord();
+            const orientationOption = this.printSettings.cmbPaperOrientation.getSelectedRecord();
+            let paperOrientation = null;
+            if(orientationOption && orientationOption.value === 'auto') {
+                paperOrientation = 'auto';
+            } else if(size) {
+                paperOrientation = size['H'] > size['W'] ? 'portrait' : 'landscape';
+            }
             this.adjPrintParams.asc_setNativeOptions({
                 usesystemdialog: useSystemDialog,
                 printer: printerOption ? printerOption.value : null,
-                pages: this.printSettings.cmbRange.getValue()===-1 ? this.printSettings.inputPages.getValue() : this.printSettings.cmbRange.getValue(),
+                colorMode: this.printSettings.cmbColorPrinting.getValue() === 'color',
+                pages: pages,
                 paperSize: {
                     w: size ? size['W'] : undefined,
                     h: size ? size['H'] : undefined,
                     preset: size ? this.findPagePreset(size['W'], size['H']) : undefined
                 },
-                paperOrientation: size ? (size['H'] > size['W'] ? 'portrait' : 'landscape') : null,
+                paperOrientation: paperOrientation,
                 copies: this.printSettings.spnCopies.getNumberValue() || 1,
                 sides: this.printSettings.cmbSides.getValue()
             });
@@ -610,7 +647,6 @@ define([
 
         txtCustom: 'Custom',
         txtPrintRangeInvalid: 'Invalid print range',
-        textMarginsLast: 'Last Custom',
-        txtPrintRangeSingleRange: 'Enter either a single page number or a single page range (for example, 5-12). Or you can Print to PDF.'
+        textMarginsLast: 'Last Custom'
     }, DE.Controllers.Print || {}));
 });

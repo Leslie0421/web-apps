@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 define([
     'core'
@@ -44,8 +47,7 @@ define([
 
             this._state = {
                 isLockedSlideHeaderAppyToAll: false,
-                isPrintPreviewOpenedOnce: false,
-                isPrinterInfoLoad: false,
+                shouldUpdateCmbPrinter: false, 
                 currentPrinter: null,
                 printersList: []
             };
@@ -96,8 +98,6 @@ define([
                 if (!_.isEmpty(value) && /[0-9,\-]/.test(value)) {
                     var res = [],
                         arr = value.split(',');
-                    if (me._isPrint && arr.length>1)
-                        return me.txtPrintRangeSingleRange;
 
                     for (var i=0; i<arr.length; i++) {
                         var item = arr[i];
@@ -218,9 +218,8 @@ define([
             }
             this._isPreviewVisible = true;
 
-            if(this._state.isPrinterInfoLoad && !this._state.isPrintPreviewOpenedOnce) {
-                this._state.isPrintPreviewOpenedOnce = true;
-                this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList);      
+            if(this._state.shouldUpdateCmbPrinter) {
+                this.updateCmbPrinter();      
             }
         },
 
@@ -290,14 +289,22 @@ define([
             this.onChangePreviewPage(forward);
         },
 
-        setPrinterInfo: function(currentPrinter, list) {
-            this._state.isPrinterInfoLoad = true;
-            this._state.currentPrinter = currentPrinter;
-            this._state.printersList = list;
-            if(this.printSettings && this.printSettings.isVisible() && !this._state.isPrintPreviewOpenedOnce) {
-                this._state.isPrintPreviewOpenedOnce = true;
-                this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList);
+        setPrintersInfo: function(currentPrinter, list, isWaitingForPrinters) {
+            this._state.currentPrinter = currentPrinter || this._state.currentPrinter;
+            this._state.printersList = _.uniq(_.union(this._state.printersList, list), function(option) {
+                return option.name;
+            });
+            this._state.isWaitingForPrinters = !!isWaitingForPrinters;
+            this._state.shouldUpdateCmbPrinter = true;
+
+            if(this.printSettings && this.printSettings.isVisible() && this._state.shouldUpdateCmbPrinter) {
+                this.updateCmbPrinter();
             }
+        },
+
+        updateCmbPrinter: function() {
+            this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList, this._state.isWaitingForPrinters);
+            this._state.shouldUpdateCmbPrinter = false;
         },
 
         updateNavigationButtons: function (page, count) {
@@ -330,13 +337,23 @@ define([
             if (this._navigationPreview.pageCount<1)
                 return;
 
+            let pages; 
+            if(this.printSettings.cmbRange.getValue() === -1) {
+                pages = this.printSettings.inputPages.getValue();
+            } else if (this.printSettings.cmbRange.getValue() === 'all') {
+                pages = 'all';
+            } else if (this.printSettings.cmbRange.getValue() === 'current') {
+                pages = String(this._navigationPreview.currentPage + 1);
+            }
+
             var rec = this.printSettings.cmbPaperSize.getSelectedRecord();
             var printerOption = this.printSettings.cmbPrinter.getSelectedRecord();
             var size = rec ? rec.size : this._paperSize; 
             this.adjPrintParams.asc_setNativeOptions({
                 usesystemdialog: useSystemDialog,
                 printer: printerOption ? printerOption.value : null,
-                pages: this.printSettings.cmbRange.getValue()===-1 ? this.printSettings.inputPages.getValue() : this.printSettings.cmbRange.getValue(),
+                colorMode: this.printSettings.cmbColorPrinting.getValue() === 'color',
+                pages: pages,
                 paperSize: {
                     w: size ? size[0] : undefined,
                     h: size ? size[1] : undefined,
@@ -401,7 +418,6 @@ define([
             }
         },
 
-        txtPrintRangeInvalid: 'Invalid print range',
-        txtPrintRangeSingleRange: 'Enter either a single slide number or a single slide range (for example, 5-12). Or you can Print to PDF.'
+        txtPrintRangeInvalid: 'Invalid print range'
     }, PE.Controllers.Print || {}));
 });

@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  FormSettings.js
@@ -93,6 +96,8 @@ define([
             this.TimeSettings = el.find('.form-time');
             this.linkAdvanced = el.find('#form-advanced-link');
             this.RequiredSettings = el.find('#form-chb-required').closest('tr');
+            this.NameSettings = el.find('.form-name');
+            this.NotCheckSettings = el.find('.form-not-check');
         },
 
         createDelayedElements: function() {
@@ -126,6 +131,24 @@ define([
             this.cmbName.on('selected', this.onNameChanged.bind(this));
             this.cmbName.on('changed:after', this.onNameChanged.bind(this));
             this.cmbName.on('hide:after', this.onHideMenus.bind(this));
+
+            this.cmbNumeral = new Common.UI.ComboBox({
+                el          : $markup.findById('#form-combo-numeral'),
+                editable    : false,
+                cls         : 'input-group-nr',
+                menuStyle   : 'min-width:100%;',
+                data        : [
+                    { value: Asc.c_oNumeralType.arabic, displayValue: this.textArabic },
+                    { value: Asc.c_oNumeralType.hindi, displayValue: this.textHindi }
+                    // { value: Asc.c_oNumeralType.context, displayValue: this.textContext }
+                ],
+                dataHint: '1',
+                dataHintDirection: 'bottom',
+                dataHintOffset: 'big'
+            });
+            this.cmbNumeral.setValue(Asc.c_oNumeralType.arabic);
+            this.cmbNumeral.on('selected', this.onNumeralChanged.bind(this));
+            this.lockedControls.push(this.cmbNumeral);
 
             this.cmbOrient = new Common.UI.ComboBox({
                 el: $markup.findById('#form-combo-orient'),
@@ -240,6 +263,18 @@ define([
             this.txtPlaceholder.cmpEl.on('focus', 'input.form-control', function() {
                 setTimeout(function(){me.txtPlaceholder._input && me.txtPlaceholder._input.select();}, 1);
             });
+
+            this.textareaTip = new Common.UI.TextareaField({
+                el          : $markup.findById('#form-txt-tip'),
+                style       : 'width: 100%; height: 36px;',
+                value       : '',
+                dataHint    : '1',
+                dataHintDirection: 'left',
+                dataHintOffset: 'small'
+            });
+            this.lockedControls.push(this.textareaTip);
+            this.textareaTip.on('changed:after', this.onTipChanged.bind(this));
+            this.textareaTip.on('inputleave', function(){ me.fireEvent('editcomplete', me);});
 
             this.chAutofit = new Common.UI.CheckBox({
                 el: $markup.findById('#form-chb-autofit'),
@@ -897,6 +932,14 @@ define([
             }
         },
 
+        onTipChanged: function(input, newValue, oldValue, e) {
+            if (this.api && !this._noApply && (newValue!==oldValue)) {
+                this.api.SetFieldTooltip(newValue);
+                if (!e.relatedTarget || (e.relatedTarget.localName != 'input' && e.relatedTarget.localName != 'textarea') || !/form-control/.test(e.relatedTarget.className))
+                    this.fireEvent('editcomplete', this);
+            }
+        },
+
         onLineWidthChanged: function(combo, record) {
             if (this.api && !this._noApply) {
                 this._state.StrokeWidth = undefined;
@@ -909,6 +952,14 @@ define([
             if (this.api && !this._noApply) {
                 this._state.Orient = undefined;
                 this.api.SetFieldRotate(record.value);
+                this.fireEvent('editcomplete', this);
+            }
+        },
+
+        onNumeralChanged: function(combo, record) {
+            if (this.api && !this._noApply) {
+                this._state.Numeral = undefined;
+                this.api.SetFieldDigitsType(record.value);
                 this.fireEvent('editcomplete', this);
             }
         },
@@ -1331,21 +1382,27 @@ define([
                     this._state.Name=val;
                 }
 
+                val = props.asc_getTooltip();
+                if (this._state.tip!==val) {
+                    this.textareaTip.setValue(val ? val : '');
+                    this._state.tip=val;
+                }
+
                 val = props.asc_getRequired();
                 if ( this._state.Required!==val ) {
-                    this.chRequired.setValue(!!val, true);
+                    this.chRequired.setValue(val!==null && val!==undefined ? !!val : 'indeterminate', true);
                     this._state.Required=val;
                 }
 
                 val = props.asc_getReadOnly();
                 if ( this._state.Readonly!==val ) {
-                    this.chReadonly.setValue(!!val, true);
+                    this.chReadonly.setValue(val!==null && val!==undefined ? !!val : 'indeterminate', true);
                     this._state.Readonly=val;
                 }
 
                 val = props.asc_getRot();
                 if ( this._state.Orient!==val ) {
-                    this.cmbOrient.setValue(val!==undefined ? val : 0);
+                    this.cmbOrient.setValue(val!==null && val!==undefined ? val : '');
                     this._state.Orient=val;
                 }
 
@@ -1420,7 +1477,7 @@ define([
 
                     var combChanged = false;
                     if ( this._state.Comb!==isComb ) {
-                        this.chComb.setValue(!!isComb, true);
+                        this.chComb.setValue(isComb!==null && isComb!==undefined ? !!isComb : 'indeterminate', true);
                         this._state.Comb=isComb;
                         combChanged = true;
                     }
@@ -1439,7 +1496,7 @@ define([
                     this.spnMaxChars.setDisabled(!isCharLimits || this._state.DisabledControls);
 
                     if ( this._state.Multi!==isMulti ) {
-                        this.chMulti.setValue(!!isMulti, true);
+                        this.chMulti.setValue(isMulti!==null && isMulti!==undefined ? !!isMulti : 'indeterminate', true);
                         this._state.Multi=isMulti;
                     }
                     this.chMulti.setDisabled(isComb || isPwd || isFormatSelected || this._state.DisabledControls);
@@ -1451,7 +1508,7 @@ define([
                     this.chPwd.setDisabled(isComb || isMulti || this._state.DisabledControls);
 
                     if ( this._state.Scroll!==isScroll ) {
-                        this.chScroll.setValue(!!isScroll, true);
+                        this.chScroll.setValue(isScroll!==null && isScroll!==undefined ? !!isScroll : 'indeterminate', true);
                         this._state.Scroll=isScroll;
                     }
                     this.chScroll.setDisabled(isComb || this._state.DisabledControls);
@@ -1467,15 +1524,15 @@ define([
 
                         val = specProps.asc_getAutoFit();
                         if ( this._state.AutoFit!==val ) {
-                            this.chAutofit.setValue(!!val, true);
+                            this.chAutofit.setValue(val!==null && val!==undefined ? !!val : 'indeterminate', true);
                             this._state.AutoFit=val;
                         }
                         this.chAutofit.setDisabled(isComb || this._state.DisabledControls);
 
                         let format = specProps.asc_getFormat();
-                        val = format ? format.asc_getType() : AscPDF.FormatType.NONE;
+                        val = format===undefined ? AscPDF.FormatType.NONE : format===null ? null : format.asc_getType(); // undefined - none, null - different types
                         if ( this._state.FormatType!==val ) {
-                            this.cmbFormat.setValue((val !== null && val !== undefined) ? val : AscPDF.FormatType.NONE, '');
+                            this.cmbFormat.setValue((val !== null && val !== undefined) ? val : '', '');
                             this._state.FormatType=val;
                             forceShowHide = true;
                         }
@@ -1520,7 +1577,7 @@ define([
                 if (type == AscPDF.FIELD_TYPES.combobox && specProps) {
                     val = specProps.asc_getEditable();
                     if ( this._state.CustomText!==val ) {
-                        this.chCustomText.setValue(!!val, true);
+                        this.chCustomText.setValue(val!==null && val!==undefined ? !!val : 'indeterminate', true);
                         this._state.CustomText=val;
                     }
                 }
@@ -1528,7 +1585,7 @@ define([
                 if (type == AscPDF.FIELD_TYPES.listbox && specProps) {
                     val = specProps.asc_getMultipleSelection();
                     if ( this._state.Multisel!==val ) {
-                        this.chMultisel.setValue(!!val, true);
+                        this.chMultisel.setValue(val!==null && val!==undefined ? !!val : 'indeterminate', true);
                         this._state.Multisel=val;
                     }
                 }
@@ -1567,7 +1624,7 @@ define([
 
                         val = specProps.asc_getCommitOnSelChange();
                         if ( this._state.Commit!==val ) {
-                            this.chCommit.setValue(!!val, true);
+                            this.chCommit.setValue(val!==null && val!==undefined ? !!val : 'indeterminate', true);
                             this._state.Commit=val;
                         }
                     }
@@ -1650,7 +1707,7 @@ define([
 
                             val = specProps.asc_getFitBounds();
                             if ( this._state.Fit!==val ) {
-                                this.chFit.setValue(!!val, true);
+                                this.chFit.setValue(val!==null && val!==undefined ? !!val : 'indeterminate', true);
                                 this._state.Fit=val;
                             }
                             this.cmbHowScale.setDisabled(this._state.Scale === AscPDF.Api.Types.scaleWhen.never || this._state.DisabledControls);
@@ -1679,17 +1736,23 @@ define([
                         this.chDefValue.setCaption(isCheckbox ? this.textCheckDefault : this.textRadioDefault);
                         val = specProps.asc_getDefaultChecked();
                         if ( this._state.DefValue!==val ) {
-                            this.chDefValue.setValue(!!val, true);
+                            this.chDefValue.setValue(val!==null && val!==undefined ? !!val : 'indeterminate', true);
                             this._state.DefValue=val;
                         }
 
                         if (type == AscPDF.FIELD_TYPES.radiobutton) {
                             val = specProps.asc_getRadiosInUnison();
                             if ( this._state.Unison!==val ) {
-                                this.chUnison.setValue(!!val, true);
+                                this.chUnison.setValue(val!==null && val!==undefined ? !!val : 'indeterminate', true);
                                 this._state.Unison=val;
                             }
                         }
+                    }
+                } else {
+                    val = props.asc_getDigitsType();
+                    if ( this._state.Numeral!==val ) {
+                        this.cmbNumeral.setValue(val!==null && val!==undefined ? val : '');
+                        this._state.Numeral=val;
                     }
                 }
 
@@ -1830,6 +1893,7 @@ define([
                 isButton = type === AscPDF.FIELD_TYPES.button,
                 isImage = isButton && (specProps.asc_getLayout()!==AscPDF.Api.Types.position.textOnly),
                 isButtonText = isButton && (specProps.asc_getLayout()!==AscPDF.Api.Types.position.iconOnly);
+            this.NameSettings.toggleClass('hidden', type===null);
             this.TextComboSettings.toggleClass('hidden', !(isCombobox || isText));
             this.ListSettings.toggleClass('hidden', !(isCombobox || isListbox));
             this.TextSettings.toggleClass('hidden', !isText);
@@ -1846,6 +1910,7 @@ define([
                                                                                  this._state.FormatType===AscPDF.FormatType.SPECIAL && this._state.SpecialType===-1));
             this.DateSettings.toggleClass('hidden', !(isCombobox || isText) || this._state.FormatType!==AscPDF.FormatType.DATE);
             this.TimeSettings.toggleClass('hidden', !(isCombobox || isText) || this._state.FormatType!==AscPDF.FormatType.TIME);
+            this.NotCheckSettings.toggleClass('hidden', isCheck || isRadio);
         }
 
     }, PDFE.Views.FormSettings || {}));

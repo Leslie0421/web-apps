@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 define([
     'core'
@@ -45,8 +48,7 @@ define([
                 lock_doc: false,
                 firstPrintPage: 0,
                 pgorient: true,
-                isPrintPreviewOpenedOnce: false,
-                isPrinterInfoLoad: false,
+                shouldUpdateCmbPrinter: false, 
                 currentPrinter: null,
                 printersList: []
             };
@@ -93,14 +95,13 @@ define([
             this.printSettings.cmbPaperSize.on('selected', _.bind(this.onPaperSizeSelect, this));
             this.printSettings.cmbPaperOrientation.on('selected', _.bind(this.onPaperOrientSelect, this));
             this.printSettings.cmbPaperMargins.on('selected', _.bind(this.onPaperMarginsSelect, this));
+            this.printSettings.cmbContent.on('selected', _.bind(this.onContentSelect, this));
             this.printSettings.cmbRange.on('selected', _.bind(this.comboRangeChange, this));
             this.printSettings.inputPages.on('changing', _.bind(this.inputPagesChanging, this));
             this.printSettings.inputPages.validation = function(value) {
                 if (!_.isEmpty(value) && /[0-9,\-]/.test(value)) {
                     var res = [],
                         arr = value.split(',');
-                    if (me._isPrint && arr.length>1)
-                        return me.txtPrintRangeSingleRange;
 
                     for (var i=0; i<arr.length; i++) {
                         var item = arr[i];
@@ -135,9 +136,13 @@ define([
                 return me.txtPrintRangeInvalid;
             };
 
+            if(!this.printSettings.cmbPrinter) {
+                this.printSettings.setCmbPaperSizeOptions();
+            }
+
             Common.NotificationCenter.on('window:resize', _.bind(function () {
                 if (this._isPreviewVisible) {
-                    this.api.asc_drawPrintPreview(this._navigationPreview.currentPreviewPage);
+                    this.drawPrintPreview();
                 }
             }, this));
             Common.NotificationCenter.on('margins:update', _.bind(this.onUpdateLastCustomMargins, this));
@@ -281,7 +286,7 @@ define([
             if (this._navigationPreview.currentPreviewPage > count - 1) {
                 this._navigationPreview.currentPreviewPage = Math.max(0, count - 1);
                 if (this.printSettings && this.printSettings.isVisible()) {
-                    this.api.asc_drawPrintPreview(this._navigationPreview.currentPreviewPage);
+                    this.drawPrintPreview();
                     this.updateNavigationButtons(this._navigationPreview.currentPreviewPage, count);
                 }
             }
@@ -290,7 +295,7 @@ define([
         onCurrentPage: function(number) {
             this._navigationPreview.currentPreviewPage = number;
             if (this.printSettings && this.printSettings.isVisible()) {
-                this.api.asc_drawPrintPreview(this._navigationPreview.currentPreviewPage);
+                this.drawPrintPreview();
                 this.updateNavigationButtons(this._navigationPreview.currentPreviewPage, this._navigationPreview.pageCount);
             }
         },
@@ -309,14 +314,14 @@ define([
             this.api.asc_initPrintPreview('print-preview', opts);
 
             this._navigationPreview.currentPreviewPage = this._navigationPreview.currentPage = this.api.getCurrentPage();
-            this.api.asc_drawPrintPreview(this._navigationPreview.currentPreviewPage);
+            this.adjPrintParams.asc_setPdfContent(this.printSettings.cmbContent.getValue());
+            this.drawPrintPreview();
             this.updateNavigationButtons(this._navigationPreview.currentPreviewPage, this._navigationPreview.pageCount);
             this.SetDisabled();
             this._isPreviewVisible = true;
 
-            if(this._state.isPrinterInfoLoad && !this._state.isPrintPreviewOpenedOnce) {
-                this._state.isPrintPreviewOpenedOnce = true;
-                this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList);      
+            if(this._state.shouldUpdateCmbPrinter) {
+                this.updateCmbPrinter();      
             }
         },
 
@@ -389,6 +394,11 @@ define([
             Common.NotificationCenter.trigger('edit:complete');
         },
 
+        onContentSelect: function(combo, record) {
+            this.adjPrintParams.asc_setPdfContent(record.value);
+            this.drawPrintPreview();
+        },
+
         onUpdateLastCustomMargins: function(props) {
             this._state.lastmargins = props;
             if (this.printSettings && this.printSettings.isVisible()) {
@@ -416,14 +426,22 @@ define([
             Common.NotificationCenter.trigger('edit:complete');
         },
 
-        setPrinterInfo: function(currentPrinter, list) {
-            this._state.isPrinterInfoLoad = true;
-            this._state.currentPrinter = currentPrinter;
-            this._state.printersList = list;
-            if(this.printSettings && this.printSettings.isVisible() && !this._state.isPrintPreviewOpenedOnce) {
-                this._state.isPrintPreviewOpenedOnce = true;
-                this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList);
+        setPrintersInfo: function(currentPrinter, list, isWaitingForPrinters) {
+            this._state.currentPrinter = currentPrinter || this._state.currentPrinter;
+            this._state.printersList = _.uniq(_.union(this._state.printersList, list), function(option) {
+                return option.name;
+            });
+            this._state.isWaitingForPrinters = !!isWaitingForPrinters;
+            this._state.shouldUpdateCmbPrinter = true;
+
+            if(this.printSettings && this.printSettings.isVisible() && this._state.shouldUpdateCmbPrinter) {
+                this.updateCmbPrinter();
             }
+        },
+
+        updateCmbPrinter: function() {
+            this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList, this._state.isWaitingForPrinters);
+            this._state.shouldUpdateCmbPrinter = false;
         },
 
         checkPageSize: function(width, height, left, right, top, bottom) {
@@ -520,6 +538,13 @@ define([
             this.onChangePreviewPage(forward);
         },
 
+        drawPrintPreview: function() {
+            this.api.asc_drawPrintPreview(
+                this._navigationPreview.currentPreviewPage, 
+                this.adjPrintParams.asc_getPdfContent()
+            );
+        },
+
         updateNavigationButtons: function (page, count) {
             this._navigationPreview.currentPage = page;
             this.printSettings.updateCurrentPage(page);
@@ -541,43 +566,58 @@ define([
         },
 
         onBtnPrint: function(print, useSystemDialog) {
-            this._isPrint = print;
-            if (this.printSettings.cmbRange.getValue()===-1 && this.printSettings.inputPages.checkValidate() !== true)  {
-                this.printSettings.inputPages.focus();
-                this.isInputFirstChange = true;
-                return;
-            }
-            if (this.printSettings.cmbRange.getValue()==='all')
-                this._state.firstPrintPage = 0;
-            else if (this.printSettings.cmbRange.getValue()==='current')
-                this._state.firstPrintPage = this._navigationPreview.currentPage;
+            const _main = this.getApplication().getController('Main');
+            _main.onTryPrint(function() {
+                this._isPrint = print;
+                if (this.printSettings.cmbRange.getValue()===-1 && this.printSettings.inputPages.checkValidate() !== true)  {
+                    this.printSettings.inputPages.focus();
+                    this.isInputFirstChange = true;
+                    return;
+                }
 
-            var size = this.api.asc_getPageSize(this._state.firstPrintPage);
-            var printerOption = this.printSettings.cmbPrinter.getSelectedRecord();
-            this.adjPrintParams.asc_setNativeOptions({
-                usesystemdialog: useSystemDialog,
-                printer: printerOption ? printerOption.value : null,
-                pages: this.printSettings.cmbRange.getValue()===-1 ? this.printSettings.inputPages.getValue() : this.printSettings.cmbRange.getValue(),
-                paperSize: {
-                    w: size ? size['W'] : undefined,
-                    h: size ? size['H'] : undefined,
-                    preset: size ? this.findPagePreset(size['W'], size['H']) : undefined
-                },
-                paperOrientation: size ? (size['H'] > size['W'] ? 'portrait' : 'landscape') : null,
-                copies: this.printSettings.spnCopies.getNumberValue() || 1,
-                sides: this.printSettings.cmbSides.getValue()
-            });
+                let pages; 
+                if(this.printSettings.cmbRange.getValue() === -1) {
+                    pages = this.printSettings.inputPages.getValue();
+                } else if (this.printSettings.cmbRange.getValue() === 'all') {
+                    pages = 'all';
+                    this._state.firstPrintPage = 0;
+                } else if (this.printSettings.cmbRange.getValue() === 'current') {
+                    pages = String(this._navigationPreview.currentPage + 1);
+                    this._state.firstPrintPage = this._navigationPreview.currentPage;
+                }
 
-            this.printSettings.menu.hide();
-            if ( print ) {
-                var opts = new Asc.asc_CDownloadOptions(null, Common.Utils.isChrome || Common.Utils.isOpera || Common.Utils.isGecko && Common.Utils.firefoxVersion>86);
-                opts.asc_setAdvancedOptions(this.adjPrintParams);
-                this.api.asc_Print(opts);
-            } else {
-                var opts = new Asc.asc_CDownloadOptions(Asc.c_oAscFileType.PDF);
-                opts.asc_setAdvancedOptions(this.adjPrintParams);
-                this.api.asc_DownloadAs(opts);
-            }
+                var size = this.api.asc_getPageSize(this._state.firstPrintPage),
+                    printerOption = (this.printSettings.cmbPrinter ? this.printSettings.cmbPrinter.getSelectedRecord() : null),
+                    colorPrintingValue = this.printSettings.cmbColorPrinting
+                        ? this.printSettings.cmbColorPrinting.getValue()
+                        : null;
+
+                this.adjPrintParams.asc_setNativeOptions({
+                    usesystemdialog: useSystemDialog,
+                    printer: printerOption ? printerOption.value : null,
+                    colorMode: colorPrintingValue === 'color',
+                    pages: pages,
+                    paperSize: {
+                        w: size ? size['W'] : undefined,
+                        h: size ? size['H'] : undefined,
+                        preset: size ? this.findPagePreset(size['W'], size['H']) : undefined
+                    },
+                    paperOrientation: size ? (size['H'] > size['W'] ? 'portrait' : 'landscape') : null,
+                    copies: this.printSettings.spnCopies ? this.printSettings.spnCopies.getNumberValue() || 1 : 1,
+                    sides: this.printSettings.cmbSides ? this.printSettings.cmbSides.getValue() : 'one'
+                });
+
+                this.printSettings.menu.hide();
+                if ( print ) {
+                    var opts = new Asc.asc_CDownloadOptions(null, Common.Utils.isChrome || Common.Utils.isOpera || Common.Utils.isGecko && Common.Utils.firefoxVersion>86);
+                    opts.asc_setAdvancedOptions(this.adjPrintParams);
+                    this.api.asc_Print(opts);
+                } else {
+                    var opts = new Asc.asc_CDownloadOptions(Asc.c_oAscFileType.PDF);
+                    opts.asc_setAdvancedOptions(this.adjPrintParams);
+                    this.api.asc_DownloadAs(opts);
+                }
+            }.bind(this));
         },
 
         inputPagesChanging: function (input, value) {
@@ -612,7 +652,6 @@ define([
 
         txtCustom: 'Custom',
         txtPrintRangeInvalid: 'Invalid print range',
-        textMarginsLast: 'Last Custom',
-        txtPrintRangeSingleRange: 'Enter either a single page number or a single page range (for example, 5-12). Or you can Print to PDF.'
+        textMarginsLast: 'Last Custom'
     }, PDFE.Controllers.Print || {}));
 });

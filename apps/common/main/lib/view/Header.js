@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  Header.js
@@ -156,7 +159,7 @@ define([
                                 '</div>' +
                                 '<div class="lr-separator" id="id-box-doc-name">' +
                                     // '<label id="title-doc-name" /></label>' +
-                                    '<input id="title-doc-name" autofill="off" autocomplete="off"/></input>' +
+                                    '<input id="title-doc-name" autofill="off" autocomplete="off" spellcheck="false"/></input>' +
                                 '</div>' +
                                 '<div class="hedset">' +
                                     '<div class="btn-slot" data-layout-name="header-user">' +
@@ -402,7 +405,11 @@ define([
             }
 
             me.btnStartFill && me.btnStartFill.on('click', function (e) {
-                Common.NotificationCenter.trigger('forms:request-fill');
+                if(appConfig.canRequestStartFilling) {
+                    Common.NotificationCenter.trigger('forms:request-fill');
+                } else {
+                    Common.NotificationCenter.trigger('forms:show-send-for-signing');
+                }
             });
 
             if (me.btnFillStatus) {
@@ -453,7 +460,6 @@ define([
             }
 
             if ( me.btnPrint ) {
-                me.btnPrint.updateHint(me.tipPrint + Common.Utils.String.platformKey('Ctrl+P'));
                 me.btnPrint.on('click', function (e) {
                     me.fireEvent('print', me);
                 });
@@ -467,28 +473,24 @@ define([
             }
 
             if ( me.btnSave ) {
-                me.btnSave.updateHint(appConfig.canSaveToFile || appConfig.isDesktopApp && appConfig.isOffline ? me.tipSave + (isPDFEditor ? '' : Common.Utils.String.platformKey('Ctrl+S')) : me.tipDownload);
                 me.btnSave.on('click', function (e) {
                     me.fireEvent('save', me);
                 });
             }
 
             if ( me.btnUndo ) {
-                me.btnUndo.updateHint(me.tipUndo + Common.Utils.String.platformKey('Ctrl+Z'));
                 me.btnUndo.on('click', function (e) {
                     me.fireEvent('undo', me);
                 });
             }
 
             if ( me.btnRedo ) {
-                me.btnRedo.updateHint(me.tipRedo + Common.Utils.String.platformKey('Ctrl+Y'));
                 me.btnRedo.on('click', function (e) {
                     me.fireEvent('redo', me);
                 });
             }
 
             if (me.btnStartOver) {
-                me.btnStartOver.updateHint(me.tipStartOver + (Common.Utils.String.platformKey(Common.Utils.isMac ? 'Ctrl+Shift+enter' : 'Ctrl+F5')));
                 me.btnStartOver.on('click', function (e) {
                     me.fireEvent('startover', me);
                 });
@@ -606,8 +608,6 @@ define([
                 });
             }
 
-            if (me.btnSearch)
-                me.btnSearch.updateHint(me.tipSearch +  Common.Utils.String.platformKey('Ctrl+F'));
 
             var menuTemplate = _.template('<a id="<%= id %>" tabindex="-1" type="menuitem" class="menu-item"><div>' +
                                             '<% if (!_.isEmpty(iconCls)) { %>' +
@@ -711,6 +711,11 @@ define([
             }
             if (appConfig.twoLevelHeader && !appConfig.compactHeader)
                 Common.NotificationCenter.on('window:resize', onResize);
+
+            const app = (window.DE || window.PE || window.SSE || window.PDFE || window.VE);
+            if(app && app.getController('Common.Controllers.Shortcuts')) {
+                app.getController('Common.Controllers.Shortcuts').updateShortcutHints(this.shortcutHints);
+            }
         }
 
         function onFocusDocName(e){
@@ -796,6 +801,8 @@ define([
                 var filter = Common.localStorage.getKeysFilter();
                 this.appPrefix = (filter && filter.length) ? filter.split(',')[0] : '';
 
+                this.shortcutHints = {};
+
                 me.btnGoBack = new Common.UI.Button({
                     id: 'btn-go-back',
                     cls: 'btn-header',
@@ -816,10 +823,15 @@ define([
                     cls: 'btn-header no-caret',
                     iconCls: 'toolbar__icon icon--inverse btn-menu-search',
                     enableToggle: true,
+                    lock: [Common.enumLock.lostConnect, Common.enumLock.fileMenuOpened],
                     dataHint: '0',
                     dataHintDirection: 'bottom',
                     dataHintOffset: 'big'
                 });
+                this.shortcutHints.OpenFindDialog = {
+                    btn: me.btnSearch,
+                    label: me.tipSearch
+                };
 
                 me.btnFavorite = new Common.UI.Button({
                     id: 'id-btn-favorite',
@@ -876,7 +888,7 @@ define([
                             this.logo.addClass('hidden');
                         } else if (this.branding.logo.image || this.branding.logo.imageDark || this.branding.logo.imageLight) {
                             _logoImage = logo.image;
-                            this.logo.html('<img src="' + _logoImage + '" style="max-width:100px; max-height:20px; margin: 0;"/>');
+                            this.logo.html('<img src="' + _logoImage + '" style="max-width:300px; max-height:20px; margin: 0;"/>');
                             this.logo.css({'background-image': 'none', width: 'auto'});
                             (this.branding.logo.url || this.branding.logo.url===undefined) && this.logo.addClass('link');
                         }
@@ -920,8 +932,13 @@ define([
                         if ( (config.canDownload || config.canDownloadOrigin) && !config.isOffline  )
                             this.btnDownload = createTitleButton('toolbar__icon icon--inverse btn-download', $html.findById('#slot-hbtn-download'), undefined, 'bottom', 'big');
 
-                        if ( config.canPrint )
+                        if ( config.canPrint ) {
                             this.btnPrint = createTitleButton('toolbar__icon icon--inverse btn-print', $html.findById('#slot-hbtn-print'), undefined, 'bottom', 'big', 'P');
+                            this.shortcutHints.PrintPreviewAndPrint = {
+                                btn: me.btnPrint,
+                                label: me.tipPrint + (!!window.VE ? (Common.Utils.String.platformKey('Ctrl+P')) : '')
+                            };
+                        }
 
                         if ( config.canQuickPrint )
                             this.btnPrintQuick = createTitleButton('toolbar__icon icon--inverse btn-quick-print', $html.findById('#slot-hbtn-print-quick'), undefined, 'bottom', 'big', 'Q');
@@ -1002,7 +1019,7 @@ define([
                     } else
                         $html.find('#slot-btn-edit-mode').hide();
 
-                    if (config.canStartFilling) {
+                    if (config.showStartFillingButton) {
                         me.btnStartFill = new Common.UI.Button({
                             cls: 'btn-text-default auto yellow',
                             caption: config.customization && config.customization.startFillingForm && config.customization.startFillingForm.text ? config.customization.startFillingForm.text : me.textStartFill,
@@ -1061,6 +1078,10 @@ define([
 
                     if ( config.canPrint && config.twoLevelHeader ) {
                         me.btnPrint = createTitleButton('toolbar__icon icon--inverse btn-print', $html.findById('#slot-btn-dt-print'), true, undefined, undefined, 'P');
+                        me.shortcutHints.PrintPreviewAndPrint = {
+                            btn: me.btnPrint,
+                            label: me.tipPrint
+                        };
                         !Common.localStorage.getBool(me.appPrefix + 'quick-access-print', true) && me.btnPrint.hide();
                     }
                     if ( config.canQuickPrint && config.twoLevelHeader ) {
@@ -1071,16 +1092,40 @@ define([
                         let save_icon = config.canSaveToFile || config.isDesktopApp && config.isOffline ? 'btn-save' : 'btn-download';
                         me.btnSave = createTitleButton('toolbar__icon icon--inverse ' + save_icon, $html.findById('#slot-btn-dt-save'), true, undefined, undefined, 'S');
                         !Common.localStorage.getBool(me.appPrefix + 'quick-access-save', true) && me.btnSave.hide();
+                        
+                        // Set hint text based on save availability and editor type
+                        if (appConfig.canSaveToFile || appConfig.isDesktopApp && appConfig.isOffline) {
+                            me.shortcutHints.Save = {
+                                btn: me.btnSave,
+                                label: me.tipSave
+                            };
+                        } else {
+                            me.btnSave.updateHint(me.tipDownload);
+                        }
                     }
                     me.btnUndo = createTitleButton('toolbar__icon icon--inverse btn-undo icon-rtl', $html.findById('#slot-btn-dt-undo'), true, undefined, undefined, 'Z',
                                                     [Common.enumLock.undoLock, Common.enumLock.fileMenuOpened, Common.enumLock.lostConnect]);
                     !Common.localStorage.getBool(me.appPrefix + 'quick-access-undo', true) && me.btnUndo.hide();
+                    me.shortcutHints.EditUndo = {
+                        btn: me.btnUndo,
+                        label: me.tipUndo
+                    };
+                    
                     me.btnRedo = createTitleButton('toolbar__icon icon--inverse btn-redo icon-rtl', $html.findById('#slot-btn-dt-redo'), true, undefined, undefined, 'Y',
                                                     [Common.enumLock.redoLock, Common.enumLock.fileMenuOpened, Common.enumLock.lostConnect]);
                     !Common.localStorage.getBool(me.appPrefix + 'quick-access-redo', true) && me.btnRedo.hide();
+                    me.shortcutHints.EditRedo = {
+                        btn: me.btnRedo,
+                        label: me.tipRedo
+                    };
+
                     if (isPEEditor) {
-                    me.btnStartOver= createTitleButton('toolbar__icon icon--inverse btn-preview', $html.findById('#slot-btn-dt-start-over'), true, undefined, undefined, 'O');
-                    !Common.localStorage.getBool(me.appPrefix + 'quick-access-start-over', true) && me.btnStartOver.hide();
+                        me.btnStartOver= createTitleButton('toolbar__icon icon--inverse btn-preview', $html.findById('#slot-btn-dt-start-over'), true, undefined, undefined, 'O');
+                        !Common.localStorage.getBool(me.appPrefix + 'quick-access-start-over', true) && me.btnStartOver.hide();
+                        me.shortcutHints.DemonstrationStartPresentation = {
+                            btn: me.btnStartOver,
+                            label: me.tipStartOver
+                        };
                     }
                     me.btnQuickAccess = new Common.UI.Button({
                         cls: 'btn-header no-caret',
@@ -1112,7 +1157,7 @@ define([
                         element.addClass('hidden');
                     } else if (value.logo.image || value.logo.imageDark || value.logo.imageLight) {
                         _logoImage = logo.image;
-                        element.html('<img src="' + _logoImage + '" style="max-width:100px; max-height:20px; margin: 0;"/>');
+                        element.html('<img src="' + _logoImage + '" style="max-width:300px; max-height:20px; margin: 0;"/>');
                         element.css({'background-image': 'none', width: 'auto'});
                         (value.logo.url || value.logo.url===undefined) && element.addClass('link');
                     }
@@ -1161,7 +1206,7 @@ define([
                 this.fileExtention = idx>0 ? this.documentCaption.substring(idx) : '';
                 this.isModified && (value += '*');
                 this.readOnly && (value += ' (' + this.textReadOnly + ')');
-                if ( $labelDocName ) {
+                if ( $labelDocName && !this.withoutExt ) {
                     this.setDocTitle( value );
                 }
                 return value;
@@ -1357,10 +1402,6 @@ define([
                     if (me.btnUserName) {
                         me.btnUserName.setDisabled(lock);
                     }
-                } else if ( alias == 'search' ) {
-                    if (me.btnSearch) {
-                        me.btnSearch.setDisabled(lock);
-                    }
                 } else if ( alias == 'startfill' ) {
                     me.btnStartFill && me.btnStartFill.setDisabled(lock);
                 } else {
@@ -1370,6 +1411,7 @@ define([
                     switch ( alias ) {
                     case 'undo': _lockButton(me.btnUndo); break;
                     case 'redo': _lockButton(me.btnRedo); break;
+                    case 'search': _lockButton(me.btnSearch); break;
                     case 'mode': _lockButton(me.btnDocMode ? me.btnDocMode : me.btnPDFMode); break;
                     default: break;
                     }

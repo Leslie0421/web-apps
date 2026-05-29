@@ -1,1 +1,5 @@
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 22 22"><g><path d="M22,12H12v10h-1V12H1v-1h10V1h1v10h10V12z"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <g class="icon-plus">
+    <path stroke="#444" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3.724v16.552M20.276 12H3.724" class="icon-stroke-gray-primary"/>
+  </g>
+</svg>

@@ -1,3 +1,38 @@
+/*
+ * Copyright (C) Ascensio System SIA, 2009-2026
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
+ *
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * No trademark rights are granted under this License.
+ *
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import {action, observable, computed, makeObservable} from 'mobx';
 import CThumbnailLoader from '../../../../common/mobile/utils/CThumbnailLoader';
 
@@ -17,6 +52,7 @@ export class storeTextSettings {
             typeBullets: observable,
             typeNumbers: observable,
             paragraphAlign: observable,
+            isRtlTextDirection: observable,
             paragraphValign: observable,
             canIncreaseIndent: observable,
             canDecreaseIndent: observable,
@@ -40,6 +76,7 @@ export class storeTextSettings {
             resetBullets: action,
             resetNumbers: action,
             resetParagraphAlign: action,
+            resetRtlTextDirection: action,
             resetParagraphValign: action,
             resetTextColor: action,
             changeCustomTextColors: action,
@@ -75,6 +112,7 @@ export class storeTextSettings {
     isItalic = false;
     isUnderline = false;
     isStrikethrough = false;
+    isRtlTextDirection = false;
     typeBaseline = undefined;
     listType = undefined;
     typeBullets = undefined;
@@ -105,12 +143,15 @@ export class storeTextSettings {
         this.iconHeight = Asc.FONT_THUMBNAIL_HEIGHT || 28;
         this.thumbCanvas = document.createElement('canvas');
         this.thumbContext = this.thumbCanvas.getContext('2d');
+        const lang = (Common.Locale.currentLang || '').toLowerCase();
+        const eaSprite = (lang === 'zh' || lang === 'ja' || lang === 'ko');
+        const sprite = eaSprite ? 'fonts_thumbnail_ea' : 'fonts_thumbnail';
         this.thumbs = [
-            {ratio: 1, path: '../../../../../sdkjs/common/Images/fonts_thumbnail.png', width: this.iconWidth, height: this.iconHeight},
-            {ratio: 1.25, path: '../../../../../sdkjs/common/Images/fonts_thumbnail@1.25x.png', width: this.iconWidth * 1.25, height: this.iconHeight * 1.25},
-            {ratio: 1.5, path: '../../../../../sdkjs/common/Images/fonts_thumbnail@1.5x.png', width: this.iconWidth * 1.5, height: this.iconHeight * 1.5},
-            {ratio: 1.75, path: '../../../../../sdkjs/common/Images/fonts_thumbnail@1.75x.png', width: this.iconWidth * 1.75, height: this.iconHeight * 1.75},
-            {ratio: 2, path: '../../../../../sdkjs/common/Images/fonts_thumbnail@2x.png', width: this.iconWidth * 2, height: this.iconHeight * 2}
+        {ratio: 1, path: `../../../../../sdkjs/common/Images/${sprite}.png`, width: this.iconWidth, height: this.iconHeight},
+        {ratio: 1.25, path: `../../../../../sdkjs/common/Images/${sprite}@1.25x.png`, width: this.iconWidth * 1.25, height: this.iconHeight * 1.25},
+        {ratio: 1.5, path: `../../../../../sdkjs/common/Images/${sprite}@1.5x.png`, width: this.iconWidth * 1.5, height: this.iconHeight * 1.5},
+        {ratio: 1.75, path: `../../../../../sdkjs/common/Images/${sprite}@1.75x.png`, width: this.iconWidth * 1.75, height: this.iconHeight * 1.75},
+        {ratio: 2, path: `../../../../../sdkjs/common/Images/${sprite}@2x.png`, width: this.iconWidth * 2, height: this.iconHeight * 2}
         ];
 
         const applicationPixelRatio = Common.Utils.applicationPixelRatio();
@@ -245,6 +286,10 @@ export class storeTextSettings {
                 break;
         }
         this.paragraphValign = value;
+    }
+
+    resetRtlTextDirection (isRtl) {
+        this.isRtlTextDirection = isRtl;
     }
 
     resetTextColor (color) {

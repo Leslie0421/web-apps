@@ -1,3 +1,37 @@
+/*
+ * Copyright (C) Ascensio System SIA, 2009-2026
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
+ *
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * No trademark rights are granted under this License.
+ *
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 
 import React, { Component, Fragment } from 'react'
 import { inject } from "mobx-react";
@@ -11,6 +45,7 @@ import {LocalStorage} from "../../../../common/mobile/utils/LocalStorage.mjs";
 import About from '../../../../common/mobile/lib/view/About';
 import { Device } from '../../../../common/mobile/utils/device';
 import { Themes } from '../../../../common/mobile/lib/controller/Themes.jsx';
+import PluginsController from '../../../../common/mobile/lib/controller/Plugins.jsx';
 import { processArrayScripts } from '../../../../common/mobile/utils/processArrayScripts.js';
 import '../../../../common/main/lib/util/LanguageInfo.js'
 
@@ -127,16 +162,16 @@ class MainController extends Component {
                     var coEditMode = 'strict';
                     docInfo.put_CoEditingMode(coEditMode);
 
-                    let enable = false;//!this.editorConfig.customization || (this.editorConfig.customization.macros !== false);
+                    let enable = false; //!this.editorConfig.customization || (this.editorConfig.customization.macros!==false);
                     docInfo.asc_putIsEnabledMacroses(!!enable);
-                    enable = false;//!this.editorConfig.customization || (this.editorConfig.customization.plugins !== false);
+                    enable = !this.editorConfig.customization || (this.editorConfig.customization.plugins!==false);
                     docInfo.asc_putIsEnabledPlugins(!!enable);
                 }
 
                 this.api.asc_registerCallback('asc_onGetEditorPermissions', onEditorPermissions);
                 this.api.asc_registerCallback('asc_onLicenseChanged', this.onLicenseChanged.bind(this));
                 this.api.asc_setDocInfo(docInfo);
-                this.api.asc_getEditorPermissions(this.editorConfig.licenseUrl, this.editorConfig.customerId);
+                this.api.asc_getEditorPermissions();
 
                 // Visio Info
 
@@ -416,11 +451,10 @@ class MainController extends Component {
         const { t } = this.props;
         const _t = t('Controller.Main', {returnObjects:true});
 
-        const warnNoLicense  = _t.warnNoLicense.replace(/%1/g, __COMPANY_NAME__);
+        const warnNoResources  = _t.warnNoResources.replace(/%1/g, __COMPANY_NAME__);
         const warnNoLicenseUsers = _t.warnNoLicenseUsers.replace(/%1/g, __COMPANY_NAME__);
         const textNoLicenseTitle = _t.textNoLicenseTitle.replace(/%1/g, __COMPANY_NAME__);
-        const warnLicenseExceeded = _t.warnLicenseExceeded.replace(/%1/g, __COMPANY_NAME__);
-        const warnLicenseUsersExceeded = _t.warnLicenseUsersExceeded.replace(/%1/g, __COMPANY_NAME__);
+        const textNoResourcesTitle = _t.textNoResourcesTitle.replace(/%1/g, __COMPANY_NAME__);
 
         const appOptions = this.props.storeAppOptions;
         if (appOptions.config.mode !== 'view' && !EditorUIController.isSupportEditFeature()) {
@@ -459,15 +493,19 @@ class MainController extends Component {
         } else if (this._state.licenseType) {
             let license = this._state.licenseType;
             let buttons = [{ text: _t.textOk }];
+            let title = textNoLicenseTitle;
             if ((appOptions.trialMode & Asc.c_oLicenseMode.Limited) !== 0 &&
                 (license === Asc.c_oLicenseResult.SuccessLimit ||
                     appOptions.permissionsLicense === Asc.c_oLicenseResult.SuccessLimit)
             ) {
                 license = _t.warnLicenseLimitedRenewed;
             } else if (license === Asc.c_oLicenseResult.Connections || license === Asc.c_oLicenseResult.UsersCount) {
-                license = (license===Asc.c_oLicenseResult.Connections) ? warnLicenseExceeded : warnLicenseUsersExceeded;
+                title = _t.titleReadOnly;
+                license = (license===Asc.c_oLicenseResult.Connections) ? _t.tipLicenseExceeded : _t.tipLicenseUsersExceeded;
             } else {
-                license = (license === Asc.c_oLicenseResult.ConnectionsOS) ? warnNoLicense : warnNoLicenseUsers;
+                if (license === Asc.c_oLicenseResult.ConnectionsOS)
+                    title = textNoResourcesTitle;
+                license = (license === Asc.c_oLicenseResult.ConnectionsOS) ? warnNoResources : warnNoLicenseUsers;
                 buttons = [{
                     text: _t.textBuyNow,
                     bold: true,
@@ -490,18 +528,11 @@ class MainController extends Component {
                 Common.Notifications.trigger('api:disconnect');
             }
 
-            let value = LocalStorage.getItem("ve-license-warning");
-            value = (value !== null) ? parseInt(value) : 0;
-            const now = (new Date).getTime();
-
-            if (now - value > 86400000) {
-                LocalStorage.setItem("ve-license-warning", now);
-                f7.dialog.create({
-                    title: textNoLicenseTitle,
-                    text : license,
-                    buttons: buttons
-                }).open();
-            }
+            f7.dialog.create({
+                title: title,
+                text : license,
+                buttons: buttons
+            }).open();
         } else {
             if (!appOptions.isDesktopApp && !appOptions.canBrandingExt &&
                 appOptions.config && appOptions.config.customization && (appOptions.config.customization.loaderName || appOptions.config.customization.loaderLogo)) {
@@ -822,14 +853,14 @@ class MainController extends Component {
             docInfo.put_Format(this.document.fileType);
             docInfo.put_Lang(this.editorConfig.lang);
             docInfo.put_Mode(this.editorConfig.mode);
-            docInfo.put_Permissions(this.permissions);
+            docInfo.put_Permissions(this.document.permissions);
             docInfo.put_DirectUrl(data.document && data.document.directUrl ? data.document.directUrl : this.document.directUrl);
             docInfo.put_VKey(data.document && data.document.vkey ?  data.document.vkey : this.document.vkey);
             docInfo.put_EncryptedInfo(data.editorConfig && data.editorConfig.encryptionKeys ? data.editorConfig.encryptionKeys : this.editorConfig.encryptionKeys);
 
-            let enable = false;//!this.editorConfig.customization || (this.editorConfig.customization.macros!==false);
+            let enable = false; //!this.editorConfig.customization || (this.editorConfig.customization.macros!==false);
             docInfo.asc_putIsEnabledMacroses(!!enable);
-            enable = false;//!this.editorConfig.customization || (this.editorConfig.customization.plugins!==false);
+            enable = !this.editorConfig.customization || (this.editorConfig.customization.plugins!==false);
             docInfo.asc_putIsEnabledPlugins(!!enable);
 
             // let coEditMode = !(this.editorConfig.coEditing && typeof this.editorConfig.coEditing == 'object') ? 'fast' : // fast by default
@@ -847,6 +878,7 @@ class MainController extends Component {
                 <LongActionsController />
                 <ErrorController LoadingDocument={this.LoadingDocument}/>
                 <CollaborationController />
+                <PluginsController />
                 <Themes />
             </Fragment>
             )

@@ -1,6 +1,6 @@
 {
   "About": {
-    "textAbout": "O",
+    "textAbout": "U vezi",
     "textAddress": "Adresa",
     "textBack": "Nazad",
     "textEditor": "Pregledač dijagrama",
@@ -30,7 +30,7 @@
   "ContextMenu": {
     "menuCancel": "Otkaži",
     "textOk": "U redu",
-    "txtWarnUrl": "Kliknuti na ovaj link može biti štetno za vaš uređaj i podatke.<br>Da li ste sigurni da želite da nastavite?"
+    "txtWarnUrl": "Klik na ovaj link može biti štetan za vaš uređaj i podatke. Da biste zaštitili svoj računar, klikćite samo na hiperveze koje dolaze iz pouzdanih izvora. Ova lokacija može biti nesigurna:<br><br>{0}<br><br>Da li ste sigurni da želite da nastavite?"
   },
   "Controller": {
     "Main": {
@@ -40,7 +40,6 @@
       "criticalErrorTitle": "Greška",
       "errorAccessDeny": "Pokušavate da izvršite radnju za koju nemate prava.<br>Molimo, kontaktirajte svog administratora.",
       "errorOpensource": "Koristeći besplatnu Community verziju, možete otvarati dokumente samo za pregled. Da biste pristupili web uređivačima za mobilne uređaje, potrebna je komercijalna licenca.",
-      "errorProcessSaveResult": "Čuvanje neuspešno.",
       "errorServerVersion": "Verzija uređivača je ažurirana. Stranica će biti ponovo učitana da bi se primenile promene.",
       "errorUpdateVersion": "Verzija datoteke je promenjena. Stranica će biti ponovo učitana.",
       "leavePageText": "Imate nesačuvane promene u ovom dokumentu. Kliknite 'Ostanite na ovoj stranici' da biste sačekali automatsko čuvanje. Kliknite 'Napustite ovu stranicu' da biste odbacili sve nesačuvane promene.",
@@ -53,23 +52,25 @@
       "textGuest": "Gost",
       "textNo": "Ne",
       "textNoLicenseTitle": "Limit licence dostignut",
+      "textNoResourcesTitle": "Nedovoljno resursa",
       "textOk": "U redu",
       "textOpenFile": "Unesite lozinku za otvaranje datoteke",
       "textPaidFeature": "Plaćena funkcija ",
       "textYes": "Da",
+      "tipLicenseExceeded": "Dokument je otvoren u režimu samo za čitanje jer je dostignut maksimalni broj istovremenih veza dozvoljenih licencom.<br><br>Molimo pokušajte ponovo kasnije ili kontaktirajte vlasnika dokumenta ako vam je potreban pristup za uređivanje.",
+      "tipLicenseUsersExceeded": "Dokument je otvoren u režimu samo za čitanje jer je dostignut maksimalni broj korisnika kojima je licenca dozvolila uređivanje dokumenata.<br><br>Molimo pokušajte ponovo kasnije ili kontaktirajte vlasnika dokumenta ako vam je potreban pristup za uređivanje.",
       "titleLicenseExp": "Licenca je istekla",
       "titleLicenseNotActive": "Licenca nije aktivna",
+      "titleReadOnly": "Režim samo za čitanje",
       "titleServerVersion": "Uređivač ažuriran",
       "titleUpdateVersion": "Verzija promenjena",
       "txtIncorrectPwd": "Lozinka je netačna",
-      "warnLicenseAnonymous": "Pristup odbijen za anonimne korisnike.<br>Ovaj dokument će biti otvoren samo za pregled.",
+      "warnLicenseAnonymous": "Pristup odbijen za anonimne korisnike.<br>Ovaj dokument će biti otvoren samo za gledanje.",
       "warnLicenseBefore": "Licenca nije aktivna.<br>Molimo kontaktirajte vašeg administratora.",
-      "warnLicenseExceeded": "Dostigli ste limit za istovremene veze sa %1 uređivačima. Ovaj dokument će biti otvoren samo za pregled. Kontaktirajte svog administratora da saznate više.",
       "warnLicenseExp": "Vaša licenca je istekla. Molimo, ažurirajte vašu licencu i osvežite stranicu.",
       "warnLicenseLimitedNoAccess": "Licenca je istekla. Nemate pristup funkcijama za uređivanje dokumenata. Molimo kontaktirajte svog administratora.",
       "warnLicenseLimitedRenewed": "Licenca mora biti obnovljena. Imate ograničen pristup funkcijama za uređivanje dokumenata.<br>Molimo kontaktirajte svog administratora da biste dobili puni pristup",
-      "warnLicenseUsersExceeded": "Dostigli ste korisnički limit za %1 urednike. Kontaktirajte svog administratora da saznate više.",
-      "warnNoLicense": "Dostigli ste limit za istovremene veze sa %1 uređivačima. Ovaj dokument će biti otvoren samo za pregled. Kontaktirajte prodajni tim %1 za personalizovane uslove nadogradnje.",
+      "warnNoResources": "Server %1 nema dovoljno resursa da otvori ovaj dokument za uređivanje. Ovaj dokument biće otvoren samo za pregledanje.",
       "warnNoLicenseUsers": "Dostigli ste limit korisnika za %1 uređivače. Kontaktirajte prodajni tim %1 za personalizovane uslove nadogradnje.",
       "warnProcessRightsChange": "Nemate dozvolu za uređivanje datoteke."
     }
@@ -83,6 +84,7 @@
     "errorAccessDeny": "Pokušavate da izvršite radnju za koju nemate prava.<br>Molimo kontaktirajte svog administratora.",
     "errorBadImageUrl": "URL slike je netačan",
     "errorConnectToServer": "Ne može da se sačuva ovaj dokument. Proverite vaša podešavanja konekcije ili kontaktirajte vašeg admina.<br>Kada kliknete na \"OK\" dugme, bićete podstaknuti da preuzmete dokument.",
+    "errorCopyDisabled": "Zbog sigurnosnih razloga, sadržaj ovog dokumenta ne može biti kopiran.",
     "errorDatabaseConnection": "Spoljašnja greška.<br>Greška u konekciji sa bazom podataka. Molimo, kontaktirajte podršku.",
     "errorDataEncrypted": "Šifrovane promene su primljene, ali ne mogu biti dešifrovane.",
     "errorDataRange": "Neispravan opseg podataka.",
@@ -90,8 +92,10 @@
     "errorDirectUrl": "Proverite link ka dokumentu.<br>Ovaj link mora biti direktan link za preuzimanje datoteke.",
     "errorEditingDownloadas": "Greška je nastala u toku rada sa dokumentom.<br>Koristite \"Preuzmi\" opciju da sačuvate rezervnu kopiju fajla lokalno. ",
     "errorEmailClient": "Nijedan email klijent nije mogao biti pronađen",
+    "errorFileNotAssembled": "Ovaj fajl je otvoren sa rezervne kopije sa servera i nije sačuvan na skladište.<br>Koristite opciju 'Sačuvaj kao...' da biste ga sačuvali na disk.",
     "errorFilePassProtect": "Datoteka je zaštićena lozinkom i nije mogla biti otvorena.",
     "errorFileSizeExceed": "Veličina datoteke premašuje ograničenje vašeg servera.<br>Molimo, kontaktirajte administratora.",
+    "errorForcedViewMode": "Ovaj fajl je otvoren u režimu prikaza.<br>Fajl je zaključan za uređivanje ili vaša prava pristupa ne dozvoljavaju izmenu.",
     "errorForceSave": "Greška se pojavila u toku čuvanja fajla. Molimo koristite \"Preuzmi kao\" opciju da sačuvate fajl na hard drajv vašeg kompjutera ili pokušajte ponovo kasnije.",
     "errorInconsistentExt": "Greška se pojavila u toku otvaranja fajla.<br>Sadržaj fajla se ne odgovara ekstenziji datoteke.",
     "errorInconsistentExtDocx": "Greška se pojavila prilikom otvaranja fajla.<br>Sadržaj fajla odgovara tekstualnim dokumentima (npr docx), ali ekstenzija datoteke nije dosledna: %1.",
@@ -172,7 +176,7 @@
     },
     "Settings": {
       "notcriticalErrorTitle": "Upozorenje",
-      "textAbout": "O",
+      "textAbout": "U vezi",
       "textAddress": "adresa:",
       "textApplication": "Aplikacija",
       "textApplicationSettings": "Podešavanja Aplikacije",

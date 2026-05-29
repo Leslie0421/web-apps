@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *    Window.js
@@ -158,6 +161,8 @@ define([
                 minheight: 0,
                 enableKeyEvents: true,
                 automove: true,
+                autoPosOnResize: 'none',    //center, relative
+                transparentMask: false,
                 role: 'dialog'
         };
 
@@ -370,6 +375,9 @@ define([
                 top < topedge ? (top = topedge) : top > this.dragging.maxy && (top = this.dragging.maxy);
 
                 this.$window.css({left: left, top: top});
+
+                this.dragging.wasDragged = true;
+                this.initConfig.autoPosOnResize == 'relative' && _calcWindowPositionRatio.call(this);
             }
         }
 
@@ -377,6 +385,35 @@ define([
             if (data.type == 'mouseup' && this.dragging.enabled) {
                 _mouseup.call(this);
             }
+        }
+
+        function _onResizeWindow() {
+            if(this.initConfig.autoPosOnResize == 'center' && !this.dragging.wasDragged) {
+                this.setPosition();
+            } else if(this.initConfig.autoPosOnResize == 'relative' && this.windowPositionRatio) {
+                const documentGeometry = _readDocumetGeometry();
+                const newPos = {
+                    x: documentGeometry.width * this.windowPositionRatio.left - (this.getWidth() / 2),
+                    y: documentGeometry.height * this.windowPositionRatio.top - (this.getHeight() / 2),
+                };
+                this.setPosition(newPos.x, newPos.y);
+            }
+
+            if(this.initConfig.automove) {
+                _onResizeMove.call(this);
+            }
+        }
+
+        function _calcWindowPositionRatio(){
+            const documentGeometry = _readDocumetGeometry();
+            const windowCenter = {
+                left: this.getLeft() + this.getWidth() / 2,
+                top: this.getTop() + this.getHeight() / 2
+            };
+            this.windowPositionRatio = {
+                left: windowCenter.left / documentGeometry.width,
+                top: windowCenter.top / documentGeometry.height,
+            };
         }
 
         function _onResizeMove(){
@@ -552,14 +589,11 @@ define([
                             (Math.max(text.width(), check.length>0 ? $(check).find('.checkbox-indeterminate').outerWidth(true) : 0)));
                     window.setSize(width, parseInt(body.css('height')) + parseInt(header.css('height')));
                 } else {
-                    text.css('white-space', 'normal');
-                    // 自适应百分比宽度
-                    if (options.width && options.width.includes  && options.width.includes('%')) {                  
-                        const main_width = _readDocumetGeometry().width;
-                        options.width = parseInt(main_width * (Number(options.width.replace('%','')) / 100))
-        
-                        if(main_width <= 600) options.width = main_width * 0.8
-                    }
+                    text.css({
+                        'white-space': 'normal',
+                        'overflow-wrap': 'break-word',
+                        'word-wrap': 'break-word'
+                    });
                     window.setWidth(options.width);
                     text_cnt.height(Math.max(text.height(), icon_height) + ((check.length>0) ? (check.height() + parseInt(check.css('margin-top'))) : 0));
                     body.height(parseInt(text_cnt.css('height')) + parseInt(footer.css('height')));
@@ -677,7 +711,7 @@ define([
                     _.each(options.buttons, function(b){
                         if (typeof(b) == 'object') {
                             if (b.value !== undefined) {
-                                var item = {value: b.value, text: b.caption, cls: 'auto' + ((b.primary || options.primary==b.value) ? ' primary' : '')};
+                                var item = {value: b.value, text: b.caption, cls: 'auto' + ((b.primary || options.primary==b.value) ? ' primary' : '') + (b.cls ? ' ' + b.cls : '')};
                                 b.id && (item.id = b.id);
                                 newBtns.push(item);
                             }
@@ -803,7 +837,7 @@ define([
                         mask.attr('counter', parseInt(mask.attr('counter'))+1);
                         mask.show();
                     } else {
-                        var maskOpacity = $(':root').css('--modal-window-mask-opacity');
+                        var maskOpacity = this.initConfig.transparentMask ? 0 : $(':root').css('--modal-window-mask-opacity');
 
                         mask.css('opacity', 0);
                         mask.attr('counter', parseInt(mask.attr('counter'))+1);
@@ -830,15 +864,18 @@ define([
                 } else
                 if (!this.$window.is(':visible')) {
                     this.$window.css({opacity: 0});
+                    (_.isNumber(x) && _.isNumber(y)) && this.setPosition(x, y);
                     _setVisible.call(this);
-                    this.$window.show()
+                    this.$window.show();
                 }
 
                 $(document).on('keydown.' + this.cid, this.binding.keydown);
-                if(this.initConfig.automove){
-                    this.binding.windowresize = _.bind(_onResizeMove, this);
+                if(this.initConfig.automove || this.initConfig.autoPosOnResize != 'none'){
+                    this.binding.windowresize = _.bind(_onResizeWindow, this);
                     $(window).on('resize', this.binding.windowresize);
                 }
+
+                this.initConfig.autoPosOnResize == 'relative' && _calcWindowPositionRatio.call(this);
 
                 var me = this;
 
@@ -890,7 +927,7 @@ define([
 
             close: function(suppressevent) {
                 $(document).off('keydown.' + this.cid);
-                this.initConfig.automove && $(window).off('resize', this.binding.windowresize);
+                this.binding.windowresize && $(window).off('resize', this.binding.windowresize);
                 if ( this.initConfig.header ) {
                     this.$window.find('.header').off('mousedown', this.binding.dragStart);
                 }
@@ -910,7 +947,7 @@ define([
 
                     if ( hide_mask ) {
                         if (this.options.animate !== false) {
-                            var maskOpacity = $(':root').css('--modal-window-mask-opacity');
+                            var maskOpacity = this.initConfig.transparentMask ? 0 : $(':root').css('--modal-window-mask-opacity');
                             mask.css(_getTransformation(0));
 
                             setTimeout(function () {
@@ -938,7 +975,7 @@ define([
 
             hide: function() {
                 $(document).off('keydown.' + this.cid);
-                this.initConfig.automove && $(window).off('resize', this.binding.windowresize);
+                this.binding.windowresize && $(window).off('resize', this.binding.windowresize);
                 if (this.$window) {
                     if (this.initConfig.modal) {
                         var mask = _getMask(),
@@ -952,7 +989,7 @@ define([
 
                         if ( hide_mask ) {
                             if (this.options.animate !== false) {
-                                var maskOpacity = $(':root').css('--modal-window-mask-opacity');
+                                var maskOpacity = this.initConfig.transparentMask ? 0 : $(':root').css('--modal-window-mask-opacity');
                                 mask.css(_getTransformation(0));
 
                                 setTimeout(function () {
@@ -987,7 +1024,7 @@ define([
             },
 
             setWidth: function(width) {
-                if (width >= 0) {
+                if (this.$window && width >= 0) {
                     var min = parseInt(this.$window.css('min-width'));
                     width < min && (width = min);
                     width -= (parseInt(this.$window.css('border-left-width')) + parseInt(this.$window.css('border-right-width')));
@@ -996,11 +1033,11 @@ define([
             },
 
             getWidth: function() {
-                return parseInt(this.$window.css('width'));
+                return this.$window ? parseInt(this.$window.css('width')) : undefined;
             },
 
             setHeight: function(height) {
-                if (height >= 0) {
+                if (this.$window && height >= 0) {
                     var min = parseInt(this.$window.css('min-height'));
                     height < min && (height = min);
                     height -= (parseInt(this.$window.css('border-bottom-width')) + parseInt(this.$window.css('border-top-width')));
@@ -1014,7 +1051,7 @@ define([
             },
 
             getHeight: function() {
-                return parseInt(this.$window.css('height'));
+                return this.$window ? parseInt(this.$window.css('height')) : undefined;
             },
 
             setSize: function(w, h) {
@@ -1059,14 +1096,14 @@ define([
             setResizable: function(resizable, minSize, maxSize) {
                 if (resizable !== this.resizable) {
                     if (resizable) {
-                        var bordersTemplate = '<div class="resize-border left" style="top:' + ((this.initConfig.header) ? '33' : '5') + 'px; bottom: 5px; height: auto; border-right-style: solid; cursor: w-resize;"></div>' +
-                            '<div class="resize-border left bottom" style="border-bottom-left-radius: 5px; cursor: sw-resize;"></div>' +
+                        var bordersTemplate = '<div class="resize-border left bottom" style="cursor: sw-resize;"></div>' +
+                            '<div class="resize-border left" style="top:' + ((this.initConfig.header) ? '33' : '5') + 'px; bottom: 5px; height: auto; border-right-style: solid; cursor: w-resize;"></div>' +
                             '<div class="resize-border bottom" style="left: 4px; right: 4px; width: auto; z-index: 2; border-top-style: solid; cursor: s-resize;"></div>' +
-                            '<div class="resize-border right bottom" style="border-bottom-right-radius: 5px; cursor: se-resize;"></div>' +
+                            '<div class="resize-border right bottom" style="cursor: se-resize;"></div>' +
                             '<div class="resize-border right" style="top:' + ((this.initConfig.header) ? '33' : '5') + 'px; bottom: 5px; height: auto; border-left-style: solid; cursor: e-resize;"></div>' +
-                            '<div class="resize-border left top" style="border-top-left-radius: 5px; cursor: nw-resize;"></div>' +
+                            '<div class="resize-border left top" style="cursor: nw-resize;"></div>' +
                             '<div class="resize-border top" style="left: 4px; right: 4px; width: auto; z-index: 2; border-bottom-style:' + ((this.initConfig.header) ? "none" : "solid") + '; cursor: n-resize;"></div>' +
-                            '<div class="resize-border right top" style="border-top-right-radius: 5px; cursor: ne-resize;"></div>';
+                            '<div class="resize-border right top" style="cursor: ne-resize;"></div>';
                         if (this.initConfig.header)
                             bordersTemplate += '<div class="resize-border left" style="top: 5px; height: 28px; cursor: w-resize;"></div>' +
                                                '<div class="resize-border right" style="top: 5px; height: 28px; cursor: e-resize;"></div>';

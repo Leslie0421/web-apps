@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  Statusbar.js
@@ -68,6 +71,22 @@ define([
                 },
                 'ViewTab': {
                     'statusbar:setcompact': _.bind(this.onChangeViewMode, this)
+                },
+                'Toolbar': {
+                    'sheet:setcolor': _.bind(this.setWorksheetColor, this),
+                    'sheet:changename': _.bind(function(){
+                        this.api.asc_closeCellEditor();
+                        this.renameWorksheet();
+                    },this),
+                    'sheet:move': _.bind(function (obj, index) {
+                        this.moveWorksheet(index);
+                        }, this),
+                    'sheet:show': _.bind(function (obj, index) {
+                        this.hideWorksheet(false, index);
+                    }, this),
+                    'sheet:hide': _.bind(function (obj, index) {
+                        this.hideWorksheet(true, index);
+                    }, this)
                 }
             });
         },
@@ -81,11 +100,21 @@ define([
         },
 
         onLaunch: function() {
-            this.statusbar = this.createView('Statusbar').render();
+            this.statusbar = this.createView('Statusbar', { controller: this }).render();
             this.statusbar.$el.css('z-index', 10);
             this.statusbar.labelZoom.css('min-width', 80);
             this.statusbar.labelZoom.text(Common.Utils.String.format(this.zoomText, 100));
             this.statusbar.zoomMenu.on('item:click', _.bind(this.menuZoomClick, this));
+            this.$measureSpan = $('<span>').css({
+                position: 'absolute',
+                visibility: 'hidden',
+                whiteSpace: 'pre',
+                top: 0,
+                left: 0,
+                margin: 0,
+                padding: 0,
+                border: 'none'
+            }).appendTo(document.body);
 
             this.bindViewEvents(this.statusbar, this.events);
 
@@ -190,10 +219,10 @@ define([
             this.api.asc_registerCallback('asc_onFilterInfo',   _.bind(this.onApiFilterInfo , this));
             this.api.asc_registerCallback('asc_onActiveSheetChanged', _.bind(this.onApiActiveSheetChanged, this));
             this.api.asc_registerCallback('asc_onRefreshNamedSheetViewList', _.bind(this.onRefreshNamedSheetViewList, this));
+            this.api.asc_registerCallback('asc_onShowProtectedChartPopup',   _.bind(this.onShowProtectedChartPopup, this));
             this.api.asc_registerCallback('asc_generateNewSheetNames', _.bind(function (arrNames, callback) {
                 callback(this.generateSheetNames(false, undefined, arrNames));
             }, this));
-
             this.statusbar.setApi(api);
         },
 
@@ -234,8 +263,15 @@ define([
             this.SetDisabled(true);
         },
 
-        SetDisabled: function(state) {
-            this.statusbar.setMode({isDisconnected: state});
+        SetDisabled: function(state, type) {
+            const mode = {};
+            if(type == 'background-open') {
+                mode.isBackgroundOpen = state;
+            } else {
+                mode.isDisconnected = state;
+            }
+
+            this.statusbar.setMode(mode);
             this.statusbar.update();
         },
 
@@ -245,7 +281,7 @@ define([
             this.statusbar.btnAddWorksheet.setDisabled(locked || this.api.isCellEdited || this.statusbar.rangeSelectionMode==Asc.c_oAscSelectionDialogType.Chart ||
                                                                                           this.statusbar.rangeSelectionMode==Asc.c_oAscSelectionDialogType.FormatTable||
                                                                                           this.statusbar.rangeSelectionMode==Asc.c_oAscSelectionDialogType.PrintTitles ||
-                                                       this.api.asc_isProtectedWorkbook());
+                                                       this.api.asc_isProtectedWorkbook() || !!this.statusbar.mode.isExternalChart);
             var item, i = this.statusbar.tabbar.getCount();
             while (i-- > 0) {
                 item = this.statusbar.tabbar.getAt(i);
@@ -279,7 +315,7 @@ define([
 
         onChangeProtectWorkbook: function() {
             var wbprotected = this.api.asc_isProtectedWorkbook();
-            this.statusbar.btnAddWorksheet.setDisabled(this.api.isCellEdited || this.api.asc_isWorkbookLocked() || wbprotected || this.statusbar.rangeSelectionMode!=Asc.c_oAscSelectionDialogType.None);
+            this.statusbar.btnAddWorksheet.setDisabled(this.api.isCellEdited || this.api.asc_isWorkbookLocked() || wbprotected || this.statusbar.rangeSelectionMode!=Asc.c_oAscSelectionDialogType.None || !!this.statusbar.mode.isExternalChart);
             var count = this.statusbar.tabbar.getCount(), tab;
             for (var i = count; i-- > 0; ) {
                 tab = this.statusbar.tabbar.getAt(i);
@@ -322,7 +358,7 @@ define([
             statusbar.btnZoomUp.setDisabled(disable);
             statusbar.btnZoomDown.setDisabled(disable);
             statusbar.labelZoom[disable?'addClass':'removeClass']('disabled');
-            statusbar.btnAddWorksheet.setDisabled(disable || this.api.asc_isWorkbookLocked() || this.api.asc_isProtectedWorkbook() || statusbar.rangeSelectionMode!=Asc.c_oAscSelectionDialogType.None);
+            statusbar.btnAddWorksheet.setDisabled(disable || this.api.asc_isWorkbookLocked() || this.api.asc_isProtectedWorkbook() || statusbar.rangeSelectionMode!=Asc.c_oAscSelectionDialogType.None || !!statusbar.mode.isExternalChart);
 
             statusbar.$el.find('#statusbar_bottom li span').attr('oo_editor_input', !disableAdd);
         },
@@ -331,7 +367,7 @@ define([
             this.statusbar.$el.css('z-index', '');
             this.statusbar.tabMenu.on('item:click', _.bind(this.onTabMenu, this));
             this.statusbar.btnAddWorksheet.on('click', _.bind(this.onAddWorksheetClick, this));
-            if (!Common.UI.LayoutManager.isElementVisible('statusBar-actionStatus') || this.statusbar.mode.isEditOle) {
+            if (!Common.UI.LayoutManager.isElementVisible('statusBar-actionStatus') || this.statusbar.mode.isEditOle|| this.statusbar.mode.isEditDiagram) {
                 this.statusbar.customizeStatusBarMenu.items[0].setVisible(false);
                 this.statusbar.customizeStatusBarMenu.items[1].setVisible(false);
                 this.statusbar.boxAction.addClass('hide');
@@ -350,7 +386,7 @@ define([
         onRangeDialogMode: function (mode) {
             var islocked = this.statusbar.tabbar.hasClass('coauth-locked'),
                 currentIdx = this.api.asc_getActiveWorksheetIndex();
-            this.statusbar.btnAddWorksheet.setDisabled(islocked || this.api.isCellEdited || this.api.asc_isProtectedWorkbook() || mode!=Asc.c_oAscSelectionDialogType.None);
+            this.statusbar.btnAddWorksheet.setDisabled(islocked || this.api.isCellEdited || this.api.asc_isProtectedWorkbook() || mode!=Asc.c_oAscSelectionDialogType.None || !!this.statusbar.mode.isExternalChart);
             this.statusbar.btnSheetList[mode==Asc.c_oAscSelectionDialogType.FormatTable || mode==Asc.c_oAscSelectionDialogType.PrintTitles ? 'addClass' : 'removeClass']('disabled');
 
             var item, i = this.statusbar.tabbar.getCount();
@@ -513,48 +549,182 @@ define([
             }
         },
 
-        renameWorksheet: function() {
+        isAllowedChar(char) {
+            return !/[:\\/*?\[\]]/.test(char);
+        },
+
+        isValidWorksheetName(name) {
+            return !/^'|'$/.test(name) && !/[:\\/*?\[\]]/.test(name);
+        },
+
+        updateInputWidth($input, $tabEl) {
+            this.$measureSpan.text($input.val() || ' ').css({
+                fontWeight: $input.css('font-weight'),
+                fontSize: $input.css('font-size'),
+                fontFamily: $input.css('font-family'),
+                letterSpacing: $input.css('letter-spacing'),
+                lineHeight: $input.css('line-height'),
+                fontStyle: $input.css('font-style'),
+                fontVariant: $input.css('font-variant')
+            });
+            const width = this.$measureSpan.width();
+            $input.width(width);
+            $tabEl.width(width);
+        },
+
+        showRenameError(message, $input) {
             var me = this;
-            var wc = me.api.asc_getWorksheetsCount(), items = null;
-            if (wc > 0) {
-                var sindex = me.api.asc_getActiveWorksheetIndex();
-                if (me.api.asc_isWorksheetLockedOrDeleted(sindex)) {
-                    return;
-                }
-
-                var value = Common.Utils.InternalSettings.get("sse-settings-coauthmode");
-                if (!value) {
-                    items = [];
-                    while (wc--) {
-                        if (sindex !== wc) {
-                            items.push(me.api.asc_getWorksheetName(wc).toLowerCase());
-                        }
+            _.defer(function() {
+                Common.UI.error({
+                    msg: message,
+                    maxwidth: 600,
+                    callback: function() {
+                        _.delay(function() {
+                            me.isRenameErrorShown = false;
+                            $input.focus().select();
+                        }, 50);
                     }
-                }
+                });
+            });
+        },
 
-                var tab = me.statusbar.tabbar.tabs[me.statusbar.tabbar.getActive()];
-                var top = Common.Utils.getPosition(me.statusbar.$el).top - 115,
-                    left = Common.Utils.getOffset(tab.$el).left;
-
-                var current = me.api.asc_getWorksheetName(me.api.asc_getActiveWorksheetIndex());
-                var win = (new SSE.Views.Statusbar.RenameDialog({
-                    current: current,
-                    names: items,
-                    api: me.api,
-                    handler: function (btn, s) {
-                        if (btn == 'ok' && s != current) {
-                            me.api.asc_renameWorksheet(s);
-                        }
-                        me.api.asc_enableKeyEvents(true);
-                    }
-                }));
-                if (typeof win.options.width == "number") {
-                    var bodywidth = $('body').width();
-                    if (left+win.options.width > bodywidth)
-                        left = bodywidth - win.options.width - 5;
+        finishRename({ save, $input, $tabEl, tab, otherNames }) {
+            const me = this;
+            let newName = $input.val();
+            const currentName = tab.label;
+            if (save) {
+                if (newName === '' || !me.isValidWorksheetName(newName)) {
+                    if (me.isRenameErrorShown) return false;
+                    me.isRenameErrorShown = true;
+                    me.showRenameError(this.errSheetNameRules, $input);
+                    return false;
                 }
-                win.show(left, top);
+                if (otherNames.includes(newName.toLowerCase())) {
+                    if (me.isRenameErrorShown) return false;
+                    me.isRenameErrorShown = true;
+                    me.showRenameError(this.errNameExists, $input);
+                    return false;
+                }
+                if (newName !== currentName) {
+                    me.api.asc_renameWorksheet(newName, tab.sheetid);
+                    me.renameInputVal = null;
+                    me.renamingWorksheet = null;
+                }
+            } else {
+                newName = currentName;
             }
+            $input.remove();
+            $tabEl.append(document.createTextNode(newName));
+            $tabEl.attr('tabtitle', newName);
+            tab.$el.attr('data-label', newName);
+            me.renameInputCaret = null;
+            return true;
+        },
+
+        createRenameInput(currentName) {
+            return $('<input type="text" class="inline-rename" maxlength="31" spellcheck="false"/>').val(currentName).css({
+                color: 'inherit',
+                backgroundColor: 'transparent',
+                boxSizing: 'border-box',
+                padding: 0,
+                height: '80%',
+                border: 'none',
+                letterSpacing: '0.01em',
+                fontSize: 'inherit',
+                fontFamily: 'inherit',
+                outline: 'none',
+                margin: 0,
+                lineHeight: 'inherit',
+                cursor: 'text'
+            });
+        },
+
+        bindRenameEvents($input, $tabEl, tab, currentName, otherNames, originalWidth) {
+            const me = this;
+
+            $input.on('keypress', function(e) {
+                const char = String.fromCharCode(e.which || e.keyCode);
+                if (!me.isAllowedChar(char) && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+
+            $input.on('input', function() {
+                me.renameInputVal = $input.val();
+                me.renameInputCaret = $input[0].selectionStart;
+                me.updateInputWidth($input, $tabEl);
+                me.onWindowResize();
+            });
+
+            $input.on('blur', function(e) {
+                if (!me.isRenameErrorShown) {
+                    me.renamingWorksheet = null;
+                    me.finishRename({ save: true, $input, $tabEl, tab, otherNames });
+                }
+                e.stopPropagation();
+            });
+
+            $input.on('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    me.renamingWorksheet = null;
+                    me.finishRename({ save: true, $input, $tabEl, tab, otherNames });
+                } else if (e.key === 'Escape') {
+                    me.renamingWorksheet = null;
+                    me.finishRename({ save: false, $input, $tabEl, tab, otherNames });
+                    $tabEl.width(originalWidth);
+                    $input.remove();
+                    me.onWindowResize();
+                }
+                e.stopPropagation();
+            });
+
+            $input.on('click', function(e) {
+                e.stopPropagation()
+            });
+        },
+
+        renameWorksheet(sheetFromUpdate, fromUpdate) {
+            const me = this;
+            me.isRenameErrorShown = false;
+            me.renamingWorksheet = this.api.asc_getActiveWorksheetId();
+            const sindex = me.api.asc_getActiveWorksheetIndex();
+            if (me.api.asc_isWorksheetLockedOrDeleted(sindex)) return;
+
+            const wc = me.api.asc_getWorksheetsCount();
+
+            var tab = sheetFromUpdate ? _.findWhere(me.statusbar.tabbar.tabs, { sheetid: sheetFromUpdate }) : _.findWhere(me.statusbar.tabbar.tabs, { sheetindex: sindex });
+            var currentName = sheetFromUpdate ? me.renameInputVal : me.api.asc_getWorksheetName(sindex);
+            if (!tab) return;
+            const $tabEl = tab.$el.find('span');
+            if ($tabEl.find('input.inline-rename').length > 0) return;
+
+            const otherNames = Array.from({ length: wc }, function(_, i) {
+                return i !== sindex ? me.api.asc_getWorksheetName(i).toLowerCase() : null;
+            }
+            ).filter(Boolean);
+
+            $tabEl.contents().filter(function(_, node) {
+                return node.nodeType === 3;
+            }).remove();
+
+            setTimeout(function() {
+                const originalWidth = $tabEl.width();
+                const $input = me.createRenameInput(currentName);
+
+                $tabEl.append($input);
+                me.updateInputWidth($input, $tabEl);
+                if (fromUpdate) {
+                    $input[0].focus();
+                    $input[0].setSelectionRange(me.renameInputCaret, me.renameInputCaret);
+                } else {
+                    $input.focus().select();
+                }
+                if (!tab.isActive()) {
+                    me.api.asc_showWorksheet(tab.sheetindex);
+                }
+                me.bindRenameEvents($input, $tabEl, tab, currentName, otherNames, originalWidth);
+            }, 10);
         },
 
         moveWorksheet: function(selectArr, cut, silent, indTo) {
@@ -596,6 +766,7 @@ define([
                 spreadsheetName: me.api.asc_getDocumentName(),
                 isDesktopApp: me.statusbar.mode.isDesktopApp,
                 isOffline: me.statusbar.mode.isOffline,
+                hiddenWorksheets: me.statusbar.getHiddenWorksheets(),
                 handler : function(result, i, copy, workbook) {
                     btn = result;
                     if (btn == 'ok') {
@@ -641,9 +812,23 @@ define([
         onAddWorksheetClick: function(o, index, opts) {
             if (this.api) {
                 this.api.asc_closeCellEditor();
-                this.api.asc_addWorksheet(this.createSheetName());
 
-                Common.NotificationCenter.trigger('comments:updatefilter', ['doc', 'sheet' + this.api.asc_getActiveWorksheetId()], false);  //  hide popover
+                if (this.statusbar.mode.spreadsheet.fileType.toLowerCase()==='csv') {
+                    Common.UI.warning({
+                        msg: this.warnAddSheetCsv,
+                        buttons: [{value: 'ok', caption: this.textContinue}, 'cancel'],
+                        maxwidth: 500,
+                        callback: _.bind(function (btn) {
+                            if (btn == 'ok') {
+                                this.api.asc_addWorksheet(this.createSheetName());
+                                Common.NotificationCenter.trigger('comments:updatefilter', ['doc', 'sheet' + this.api.asc_getActiveWorksheetId()], false);  //  hide popover
+                            }
+                        }, this)
+                    });
+                } else {
+                    this.api.asc_addWorksheet(this.createSheetName());
+                    Common.NotificationCenter.trigger('comments:updatefilter', ['doc', 'sheet' + this.api.asc_getActiveWorksheetId()], false);  //  hide popover
+                }
             }
             Common.NotificationCenter.trigger('edit:complete', this.statusbar);
         },
@@ -716,6 +901,7 @@ define([
                     var clr,
                         effectcolors = Common.Utils.ThemeColor.getEffectColors();
 
+                    if (!effectcolors) return;
                     for (var i = 0; i < effectcolors.length; ++i) {
                         if (typeof(picker.currentColor) == 'object' &&
                             clr === undefined &&
@@ -964,6 +1150,14 @@ define([
             return tabIndArr;
         },
 
+        onShowProtectedChartPopup: function(value) {
+            if (this.statusbar && this.statusbar.mode && this.statusbar.mode.isEditDiagram) {
+                this.statusbar.mode.isExternalChart = !!value;
+                this.statusbar.btnAddWorksheet.setDisabled(this.api.isCellEdited || this.api.asc_isWorkbookLocked() || this.api.asc_isProtectedWorkbook() || this.statusbar.rangeSelectionMode!==Asc.c_oAscSelectionDialogType.None || this.statusbar.mode.isExternalChart);
+
+            }
+        },
+
         zoomText        : 'Zoom {0}%',
         errorLastSheet  : 'Workbook must have at least one visible worksheet.',
         errorRemoveSheet: 'Can\'t delete the worksheet.',
@@ -971,6 +1165,8 @@ define([
         strSheet        : 'Sheet',
         textSheetViewTip: 'You are in Sheet View mode. Filters and sorting are visible only to you and those who are still in this view.',
         textSheetViewTipFilters: 'You are in Sheet View mode. Filters are visible only to you and those who are still in this view.',
-        textDisconnect: '<b>Connection is lost</b><br>Trying to connect. Please check connection settings.'
+        textDisconnect: '<b>Connection is lost</b><br>Trying to connect. Please check connection settings.',
+        errSheetNameRules : "<b>You typed an invalid sheet name:</b><br>- A sheet name cannot be empty.<br>- A sheet name cannot contain the following characters: \ / * ? [ ] : or the character ' as first or last character.",
+        errNameExists   : 'Sheet with such a name already exists.'
     }, SSE.Controllers.Statusbar || {}));
 });

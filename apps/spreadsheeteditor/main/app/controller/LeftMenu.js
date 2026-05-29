@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 define([
     'core',
@@ -262,6 +265,7 @@ define([
             if (this.mode.isEdit && Common.UI.FeaturesManager.canChange('spellcheck')) {
                 Common.UI.LayoutManager.isElementVisible('leftMenu-spellcheck') && this.leftMenu.btnSpellcheck.show();
                 this.leftMenu.setOptionsPanel('spellcheck', this.getApplication().getController('Spellcheck').getView('Spellcheck'));
+                this.leftMenu.clearMoreButton();
                 this.leftMenu.setButtons();
                 this.leftMenu.setMoreButton();
             }
@@ -344,7 +348,7 @@ define([
         showLostDataWarning: function(callback) {
             Common.UI.warning({
                 title: this.textWarning,
-                msg: this.warnDownloadAs,
+                msg: this.warnDownloadCsv,
                 buttons: ['ok', 'cancel'],
                 callback: _.bind(function (btn) {
                     if (btn == 'ok') {
@@ -354,78 +358,68 @@ define([
             });
         },
 
+        showLostDataWarningOds: function(callback) {
+            Common.UI.warning({
+                title: this.textWarning,
+                msg: this.warnDownloadOds,
+                buttons: ['ok', 'cancel'],
+                maxwidth: 600,
+                callback: _.bind(function (btn) {
+                    if (btn == 'ok') {
+                        callback.call();
+                    }
+                }, this)
+            });
+        },
+
         clickSaveAsFormat: function(menu, format) {
+            var me = this,
+                callback = function () {
+                    me.api.asc_DownloadAs(new Asc.asc_CDownloadOptions(format));
+                    menu.hide();
+                };
             if (format == Asc.c_oAscFileType.CSV) {
-                var me = this;
-                if (this.api.asc_getWorksheetsCount()>1) {
-                    Common.UI.warning({
-                        title: this.textWarning,
-                        msg: this.warnDownloadCsvSheets,
-                        buttons: [{value: 'ok', caption: this.textSave}, 'cancel'],
-                        callback: _.bind(function (btn) {
-                            if (btn == 'ok') {
-                                me.showLostDataWarning(function () {
-                                    Common.NotificationCenter.trigger('download:advanced', Asc.c_oAscAdvancedOptionsID.CSV, me.api.asc_getAdvancedOptions(), 2, new Asc.asc_CDownloadOptions(format));
-                                    menu.hide();
-                                });
-                            }
-                        }, this)
-                    });
-                } else
-                    this.showLostDataWarning(function () {
-                        Common.NotificationCenter.trigger('download:advanced', Asc.c_oAscAdvancedOptionsID.CSV, me.api.asc_getAdvancedOptions(), 2, new Asc.asc_CDownloadOptions(format));
-                        menu.hide();
-                    });
+                this.showLostDataWarning(function () {
+                    Common.NotificationCenter.trigger('download:advanced', Asc.c_oAscAdvancedOptionsID.CSV, me.api.asc_getAdvancedOptions(), 2, new Asc.asc_CDownloadOptions(format));
+                    menu.hide();
+                });
             } else if (format == Asc.c_oAscFileType.PDF || format == Asc.c_oAscFileType.PDFA) {
                 menu.hide();
                 Common.NotificationCenter.trigger('download:settings', this.leftMenu, format);
+            } else if (format == Asc.c_oAscFileType.ODS) {
+                this.showLostDataWarningOds(callback);
             } else {
-                this.api.asc_DownloadAs(new Asc.asc_CDownloadOptions(format));
-                menu.hide();
+                callback();
             }
         },
 
         clickSaveCopyAsFormat: function(menu, format, ext, wopiPath) {
+            var me = this,
+                callback = function() {
+                    me.isFromFileDownloadAs = ext;
+                    var options = new Asc.asc_CDownloadOptions(format, true);
+                    options.asc_setIsSaveAs(true);
+                    wopiPath && options.asc_setWopiSaveAsPath(wopiPath);
+                    me.api.asc_DownloadAs(options);
+                    menu.hide();
+                };
             if (format == Asc.c_oAscFileType.CSV) {
-                var me = this;
-                if (this.api.asc_getWorksheetsCount()>1) {
-                    Common.UI.warning({
-                        title: this.textWarning,
-                        msg: this.warnDownloadCsvSheets,
-                        buttons: [{value: 'ok', caption: this.textSave}, 'cancel'],
-                        callback: _.bind(function (btn) {
-                            if (btn == 'ok') {
-                                me.showLostDataWarning(function () {
-                                    me.isFromFileDownloadAs = ext;
-                                    var options = new Asc.asc_CDownloadOptions(format, true);
-                                    options.asc_setIsSaveAs(true);
-                                    wopiPath && options.asc_setWopiSaveAsPath(wopiPath);
-                                    Common.NotificationCenter.trigger('download:advanced', Asc.c_oAscAdvancedOptionsID.CSV, me.api.asc_getAdvancedOptions(), 2, options);
-                                    menu.hide();
-                                });
-                            }
-                        }, this)
-                    });
-                } else
-                    me.showLostDataWarning(function () {
-                        me.isFromFileDownloadAs = ext;
-                        var options = new Asc.asc_CDownloadOptions(format, true);
-                        options.asc_setIsSaveAs(true);
-                        wopiPath && options.asc_setWopiSaveAsPath(wopiPath);
-                        Common.NotificationCenter.trigger('download:advanced', Asc.c_oAscAdvancedOptionsID.CSV, me.api.asc_getAdvancedOptions(), 2, options);
-                        menu.hide();
-                    });
+                me.showLostDataWarning(function () {
+                    me.isFromFileDownloadAs = ext;
+                    var options = new Asc.asc_CDownloadOptions(format, true);
+                    options.asc_setIsSaveAs(true);
+                    wopiPath && options.asc_setWopiSaveAsPath(wopiPath);
+                    Common.NotificationCenter.trigger('download:advanced', Asc.c_oAscAdvancedOptionsID.CSV, me.api.asc_getAdvancedOptions(), 2, options);
+                    menu.hide();
+                });
             } else if (format == Asc.c_oAscFileType.PDF || format == Asc.c_oAscFileType.PDFA) {
                 this.isFromFileDownloadAs = ext;
                 menu.hide();
                 Common.NotificationCenter.trigger('download:settings', this.leftMenu, format, true, wopiPath);
+            } else if (format == Asc.c_oAscFileType.ODS) {
+                this.showLostDataWarningOds(callback);
             } else {
-                this.isFromFileDownloadAs = ext;
-                var options = new Asc.asc_CDownloadOptions(format, true);
-                options.asc_setIsSaveAs(true);
-                wopiPath && options.asc_setWopiSaveAsPath(wopiPath);
-                this.api.asc_DownloadAs(options);
-                menu.hide();
+                callback();
             }
         },
 
@@ -816,6 +810,9 @@ define([
             switch (s) {
                 case 'replace':
                 case 'search':
+                    if ( this.leftMenu.menuFile.isVisible() ) {
+                        return false;
+                    }
                     if (this.mode.isEditMailMerge || this.mode.isEditOle) {
                         this.leftMenu.fireEvent('search:show');
                         return false;
@@ -856,14 +853,14 @@ define([
                     if ( this.mode.canDownload ) {
                         if (this.mode.isDesktopApp && this.mode.isOffline) {
                             this.api.asc_DownloadAs();
-                        } else {
+                        } else if (!this.isEditFormula) {
                             Common.UI.Menu.Manager.hideAll();
                             this.leftMenu.showMenu('file:saveas');
                         }
                     }
                     return false;
                 case 'help':
-                    if ( this.mode.canHelp ) {                   // TODO: unlock 'help' panel for 'view' mode
+                    if ( this.mode.canHelp && !this.isEditFormula) { // TODO: unlock 'help' panel for 'view' mode
                         Common.UI.Menu.Manager.hideAll();
                         this.api.asc_closeCellEditor();
                         this.leftMenu.showMenu('file:help');
@@ -871,8 +868,10 @@ define([
 
                     return false;
                 case 'file':
-                    Common.UI.Menu.Manager.hideAll();
-                    this.leftMenu.showMenu('file');
+                    if (!this.isEditFormula) {
+                        Common.UI.Menu.Manager.hideAll();
+                        this.leftMenu.showMenu('file');
+                    }
 
                     return false;
                 case 'escape':
@@ -919,13 +918,13 @@ define([
                     break;
                 /** coauthoring begin **/
                 case 'chat':
-                    if (this.mode.canCoAuthoring && this.mode.canChat && !this.mode.isLightVersion) {
+                    if (this.mode.canCoAuthoring && this.mode.canChat && !this.mode.isLightVersion && !this.isEditFormula) {
                         Common.UI.Menu.Manager.hideAll();
                         this.leftMenu.showMenu('chat');
                     }
                     return false;
                 case 'comments':
-                    if (this.mode.canCoAuthoring && this.mode.canViewComments && !this.mode.isLightVersion) {
+                    if (this.mode.canCoAuthoring && this.mode.canViewComments && !this.mode.isLightVersion && !this.isEditFormula) {
                         Common.UI.Menu.Manager.hideAll();
                         this.leftMenu.showMenu('comments');
                         this.getApplication().getController('Common.Controllers.Comments').onAfterShow();
@@ -948,14 +947,14 @@ define([
         },
 
         onApiEditCell: function(state) {
-            var isEditFormula = (state == Asc.c_oAscCellEditorState.editFormula);
+            this.isEditFormula = (state == Asc.c_oAscCellEditorState.editFormula);
 
-            this.leftMenu.btnAbout.setDisabled(isEditFormula);
-            this.leftMenu.btnSearchBar.setDisabled(isEditFormula);
-            this.leftMenu.btnSpellcheck.setDisabled(isEditFormula);
+            this.leftMenu.btnAbout.setDisabled(this.isEditFormula);
+            this.leftMenu.btnSearchBar.setDisabled(this.isEditFormula);
+            this.leftMenu.btnSpellcheck.setDisabled(this.isEditFormula);
             if (this.mode.canPlugins && this.leftMenu.panelPlugins) {
-                Common.Utils.lockControls(Common.enumLock.editFormula, isEditFormula, {array: this.leftMenu.panelPlugins.lockedControls});
-                this.leftMenu.panelPlugins.setLocked(isEditFormula);
+                Common.Utils.lockControls(Common.enumLock.editFormula, this.isEditFormula, {array: this.leftMenu.panelPlugins.lockedControls});
+                this.leftMenu.panelPlugins.setLocked(this.isEditFormula);
             }
         },
 

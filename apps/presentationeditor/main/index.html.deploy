@@ -29,7 +29,7 @@
             --sk-canvas-line: rgba(0,0,0,.05);
         }
 
-        .theme-night .loadmask {
+        .theme-night .loadmask, .theme-type-dark .loadmask {
             --sk-height-toolbar-controls: 84px; 
             --sk-layout-padding-toolbar: 0 10px;
             --sk-border-radius-toolbar: 8px;
@@ -337,6 +337,7 @@
     <script src="../../../../../apps/common/main/lib/util/themeinit.js?__inline=true"></script>
 </head>
 <body role="application">
+    <div class="inlined-svg"></div>
     <script src="../../../../../apps/common/main/lib/util/htmlutils.js?__inline=true"></script>
     <script src="../../../../../apps/common/main/lib/util/docserviceworker.js?__inline=true"></script>
     <div id="loading-mask" class="loadmask">
@@ -445,7 +446,6 @@
     <inline src="../../common/main/resources/img/toolbar/equationicons.svg" />
     <inline src="../../common/main/resources/img/right-panels/arrows.svg" />
     <inline src="../../common/main/resources/img/combo-border-size/BorderSize.svg" />
-    <div class="inlined-svg"></div>
     <script src="../../../../../../sdkjs/common/device_scale.js?__inline=true"></script>
 
     <script>

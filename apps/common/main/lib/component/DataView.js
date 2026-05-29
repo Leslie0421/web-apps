@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  DataView.js
@@ -142,7 +145,7 @@ define([
 
             el.html(this.template(this.model.toJSON()));
             el.addClass('item canfocused');
-            el.toggleClass('selected', this.model.get('selected') && this.model.get('allowSelected'));
+            el.toggleClass('selected', !!this.model.get('selected') && this.model.get('allowSelected'));
             el.attr('tabindex', this.options.tabindex || 0);
             el.attr('role', this.options.role ? this.options.role : 'listitem');
             
@@ -220,7 +223,7 @@ define([
             if (_.isUndefined(this.model.id))
                 return this;
             var el = this.$el || $(this.el);
-            el.toggleClass('selected', this.model.get('selected') && this.model.get('allowSelected'));
+            el.toggleClass('selected', !!this.model.get('selected') && this.model.get('allowSelected'));
             el.toggleClass('disabled', !!this.model.get('disabled'));
 
             this.trigger('change', this, this.model);
@@ -672,10 +675,11 @@ define([
                 });
             }
 
+            this.attachKeyEvents();
+
             if (this.disabled)
                 this.setDisabled(this.disabled);
 
-            this.attachKeyEvents();
             this.lastSelectedRec = null;
             this._layoutParams = undefined;
         },
@@ -989,7 +993,7 @@ define([
             if (this.enableKeyEvents && this.handleSelect) {
                 var el = $(this.el).find('.inner').addBack().filter('.inner');
                 el.addClass('canfocused');
-                el.attr('tabindex', this.tabindex.toString());
+                el.attr('tabindex', (this.tabindex || 0).toString());
                 el.on((this.parentMenu && this.useBSKeydown) ? 'dataview:keydown' : 'keydown', _.bind(this.onKeyDown, this));
                 el.on((this.parentMenu && this.useBSKeydown) ? 'dataview:keyup' : 'keyup', _.bind(this.onKeyUp, this));
             }
@@ -1013,6 +1017,12 @@ define([
             disabled = !!disabled;
             this.disabled = disabled;
             $(this.el).find('.inner').addBack().filter('.inner').toggleClass('disabled', disabled);
+
+            if (this.tabindex!==undefined) {
+                var el = $(this.el).find('.inner').addBack().filter('.inner');
+                disabled && (this.tabindex = el.attr('tabindex'));
+                el.attr('tabindex', disabled ? "-1" : this.tabindex);
+            }
         },
 
         isDisabled: function() {
@@ -1404,9 +1414,9 @@ define([
                 if (data.keyCode==Common.UI.Keys.RETURN) {
                     if (this.selectedBeforeHideRec) // only for ComboDataView menuPicker
                         rec = this.selectedBeforeHideRec;
-                    if (this.canAddRecents) // only for DaraViewShape
+                    if (this.canAddRecents) // only for DataViewShape
                         this.addRecentItem(rec);
-                    this.trigger('item:click', this, this, rec, e);
+                    rec && this.trigger('item:click', this, this, rec, e);
                     if (this.parentMenu)
                         this.parentMenu.hide();
                 } else {
@@ -1880,6 +1890,8 @@ define([
             this.addRecentItem(record);
         },
         addRecentItem: function (rec) {
+            if (!rec) return;
+
             var me = this,
                 exist = false,
                 type = rec.get('data').shapeType,

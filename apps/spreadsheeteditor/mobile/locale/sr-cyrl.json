@@ -95,7 +95,6 @@
       "criticalErrorTitle": "Грешка",
       "errorAccessDeny": "Покушавате да изведете акцију на коју немате права.<br>Молимо контактирајте вашег админа.",
       "errorOpensource": "Користећи бесплатну верзију Заједнице, можете отворити документ само за преглед. Да бисте приступили мобилним веб уређивачима, потребна је комерцијална лиценца.",
-      "errorProcessSaveResult": "Чување је неуспешно.",
       "errorServerVersion": "Верзија уређивача је ажурирана. Страница ће бити поново учитана да се примене промене.",
       "errorUpdateVersion": "Верзија фајла је промењена. Страница ће бити поново учитана.",
       "leavePageText": "Имате несачуване промене у овом документу. Кликните 'Остани на овој страници' да сачекате на ауточување. Кликните 'Напусти ову страницу' да одбаците све несачуване промене.",
@@ -222,6 +221,7 @@
       "textNo": "Не",
       "textNoChoices": "Нема опција за испуњавање ћелије.<br>Само текст вредности из колоне могу бити одабране за замену.",
       "textNoLicenseTitle": "Лимит лиценце достигнут",
+      "textNoResourcesTitle": "Недовољно ресурса",
       "textNoMatches": "Без поклапања",
       "textOk": "OK",
       "textPaidFeature": "Плаћена функција",
@@ -238,15 +238,18 @@
       "titleUpdateVersion": "Верзија промењена",
       "warnLicenseAnonymous": "Приступ одбијен за анонимне кориснике.<br>Овај документ ће бити отворен само за приказ.",
       "warnLicenseBefore": "Лиценца није активна.<br>Молимо контактирајте вашег администратора.",
-      "warnLicenseExceeded": "Достигли сте лимит за истовремене конекције за %1 уреднике. Овај документ ће бити отворен само за приказ. Контактирајте свог администратора да сазнате више.",
       "warnLicenseExp": "Ваша лиценца је истекла. Молимо ажурирајте своју лиценцу и освежите страницу.",
       "warnLicenseLimitedNoAccess": "Лиценца истекла. Немате приступ функционалности уређивања документа. Молимо контактирајте свог администратора.",
       "warnLicenseLimitedRenewed": "Лиценца треба да буде обновљена. Имате ограничен приступ функционалности уређивања документа.<br>Молимо контактирајте вашег администратора да добијете потпуни приступ",
-      "warnLicenseUsersExceeded": "Достигли сте кориснички лимит за %1 уреднике. Контактирајте свог администратора да сазнате више.",
-      "warnNoLicense": "Достигли сте лимит за истовремене конекције за %1 уреднике. Овај документ ће бити отворен само за приказ. Контактирајте %1 тим за продају за личне услове надоградње.",
+      "warnNoResources": "Сервер %1 нема довољно ресурса да отвори овај документ за уређивање. Овај документ биће отворен само за прегледање.",
       "warnNoLicenseUsers": "Достигли сте кориснички лимит за %1 уреднике. Контактирајте %1 тим за продају за личне услове надоградње.",
       "warnProcessRightsChange": "Немате дозволу да уређујете овај фајл."
     }
+  },
+  "Draw": {
+    "textColor": "Боја",
+    "textCustomColor": "Прилагођена боја",
+    "textOpacity": "Непрозирност"
   },
   "Error": {
     "convertationTimeoutText": "Временско ограничење преобраћања прекорачено.",
@@ -371,8 +374,7 @@
     "uploadDocSizeMessage": "Максимум лимит величине документа прекорачен.",
     "uploadImageExtMessage": "Непознати формат слике.",
     "uploadImageFileCountMessage": "Нема отпремљених слика.",
-    "uploadImageSizeMessage": "Слика је превелика. Максимум величина је 25 МБ.",
-    "criticalErrorExtTextClose": "Press 'OK' to close the editor."
+    "uploadImageSizeMessage": "Слика је превелика. Максимум величина је 25 МБ."
   },
   "LongActions": {
     "advDRMPassword": "Лозинка",
@@ -421,6 +423,7 @@
   "Statusbar": {
     "notcriticalErrorTitle": "Упозорење",
     "textCancel": "Откажи",
+    "textContinue": "Настави",
     "textDelete": "Избриши",
     "textDuplicate": "Дуплицирај",
     "textErrNameExists": "Радни лист са овим именом већ постоји.",
@@ -450,10 +453,8 @@
     "stayButtonText": "Остани на овој страници",
     "textCloseHistory": "Затвори Историју",
     "textEnterNewFileName": "Унеси ново име фајла",
-    "textRenameFile": "Преименуј фајл",
-    "btnRestartNow": "Restart now",
     "textOk": "OK",
-    "textSwitchToDesktop": "Switch to Desktop"
+    "textRenameFile": "Преименуј фајл"
   },
   "View": {
     "Add": {
@@ -518,14 +519,15 @@
       "txtNotUrl": "Ово поље би требало да буде URL у \"http://www.example.com\" формату",
       "txtSorting": "Сортирање",
       "txtSortSelected": "Сортирај одабрано",
-      "txtYes": "Да",
-      "textDrawing": "Drawing"
+      "txtYes": "Да"
     },
     "Edit": {
       "notcriticalErrorTitle": "Упозорење",
       "textAccounting": "Рачуноводство",
       "textActualSize": "Стварна величина",
       "textAddCustomColor": "Додај прилагођену боју",
+      "textAdditional": "Додатно",
+      "textAdditionalFormatting": "Додатно форматирање",
       "textAddress": "Адреса",
       "textAlign": "Поравнај",
       "textAlignBottom": "Поравнај дно",
@@ -535,6 +537,7 @@
       "textAlignRight": "Поравнај десно",
       "textAlignTop": "Поравнај горе",
       "textAllBorders": "Све границе",
+      "textAllCaps": "Сва велика слова",
       "textAngleClockwise": "Угао у смеру казаљке на сату",
       "textAngleCounterclockwise": "Угао супротан смеру казаљке на сату",
       "textArrange": "Распореди",
@@ -545,6 +548,7 @@
       "textAxisPosition": "Положај осе",
       "textAxisTitle": "Наслов осе",
       "textBack": "Назад",
+      "textBaseline": "Полазна линија",
       "textBetweenTickMarks": "Између квачица",
       "textBillions": "Билиони",
       "textBorder": "Граница",
@@ -561,6 +565,7 @@
       "textChartTitle": "Графикон наслов",
       "textClearFilter": "Обриши филтер",
       "textColor": "Боја",
+      "textContextTextDirection": "Контекст",
       "textCreateCustomFormat": "Креирај прилагођени формат",
       "textCreateFormat": "Креирај формат",
       "textCross": "Крст",
@@ -582,6 +587,7 @@
       "textDisplayUnits": "Јединице екрана",
       "textDollar": "Долар",
       "textDone": "Готово",
+      "textDoubleStrikethrough": "Дупло прецртавање",
       "textEditLink": "Уреди линк",
       "textEffects": "Ефекти",
       "textEmptyImgUrl": "Морате да спецификујете URL слике.",
@@ -630,10 +636,12 @@
       "textLeftBorder": "Лева граница",
       "textLeftOverlay": "Лево преклапање",
       "textLegend": "Легенда",
+      "textLetterSpacing": "Размак између слова",
       "textLink": "Линк",
       "textLinkSettings": "Подешавања линка",
       "textLinkType": "Тип линка",
       "textLow": "Ниско",
+      "textLtrTextDirection": "С лева на десно",
       "textMajor": "Главно",
       "textMajorAndMinor": "Главни и нижи",
       "textMajorType": "Главни тип",
@@ -677,6 +685,7 @@
       "textRotateTextDown": "Ротирај текст доле",
       "textRotateTextUp": "Ротирај текст горе",
       "textRouble": "Рубља",
+      "textRtlTextDirection": "С десна на лево",
       "textSave": "Сачувај",
       "textScientific": "Научно",
       "textScreenTip": "Савет за екран",
@@ -687,11 +696,16 @@
       "textShape": "Облик",
       "textSheet": "Лист",
       "textSize": "Величина",
+      "textSmallCaps": "Мали капитални",
+      "textStrikethrough": "Прецртано",
       "textStyle": "Стил",
+      "textSubscript": "Доњи индекс",
+      "textSuperscript": "Надиндекс",
       "textTenMillions": "10 000 000",
       "textTenThousands": "10 000",
       "textText": "Текст",
       "textTextColor": "Текст боја",
+      "textTextDirection": "Правац текста",
       "textTextFormat": "Текст формат",
       "textTextOrientation": "Текст оријентација",
       "textThick": "Дебело",
@@ -868,11 +882,5 @@
       "txtZh": "Кинески",
       "warnDownloadAs": "Ако наставите да чувате у овом формату све карактеристике осим текста ће бити изгубљене.<br>Да ли сте сигурни да желите да наставите?"
     }
-  },
-  "Draw": {
-    "textColor": "Color",
-    "textCustomColor": "Custom color",
-    "textLineSize": "Line size",
-    "textOpacity": "Opacity"
   }
 }

@@ -1,3 +1,37 @@
+/*
+ * Copyright (C) Ascensio System SIA, 2009-2026
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
+ *
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * No trademark rights are granted under this License.
+ *
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 
 import React, {Component, Fragment} from 'react';
 import {inject} from "mobx-react";
@@ -20,6 +54,7 @@ import LongActionsController from "./LongActions";
 import PluginsController from '../../../../common/mobile/lib/controller/Plugins.jsx';
 import EncodingController from "./Encoding";
 import DropdownListController from "./DropdownList";
+import AddFormImageController from './add/AddFormImage.jsx';
 import { Device } from '../../../../common/mobile/utils/device';
 import { processArrayScripts } from '../../../../common/mobile/utils/processArrayScripts.js';
 import '../../../../common/main/lib/util/LanguageInfo.js'
@@ -248,11 +283,6 @@ class MainController extends Component {
                     }
                 }
 
-
-                if(/^(pdf|docxf|oform|djvu|xps|oxps)$/.test(data.doc.fileType)) {
-                    this.changeEditorBrandColorForPdf();
-                }
-
                 if(data.doc.fileType === 'pdf') {
                     if(this.permissions.fillForms === undefined) {
                         this.permissions.fillForms = this.permissions.edit !== false;
@@ -267,7 +297,7 @@ class MainController extends Component {
                 this.api.asc_registerCallback('asc_onMacrosPermissionRequest', this.onMacrosPermissionRequest.bind(this));
                 this.api.asc_registerCallback('asc_onRunAutostartMacroses', this.onRunAutostartMacroses.bind(this));
                 this.api.asc_setDocInfo(docInfo);
-                this.api.asc_getEditorPermissions(this.editorConfig.licenseUrl, this.editorConfig.customerId);
+                this.api.asc_getEditorPermissions();
 
                 // Document Info
 
@@ -366,11 +396,17 @@ class MainController extends Component {
                 this._isDocReady = true;
 
                 this.api.SetDrawingFreeze(false);
+                
+                if (appOptions.canFillForms) {
+                    this.api.asc_registerCallback('asc_onUpdateSignatures', this.showSignatureTooltip.bind(this));
+                }
 
                 Common.Notifications.trigger('preloader:close');
                 Common.Notifications.trigger('preloader:endAction', Asc.c_oAscAsyncActionType['BlockInteraction'], this.LoadingDocument);
 
                 appOptions.isRestrictedEdit && appOptions.canFillForms && this.api.asc_SetHighlightRequiredFields(true);
+
+                this.checkProtectDocumentOnAppReady();
 
                 let value = LocalStorage.getItem("de-settings-zoom");
                 const zf = (value !== null) ? parseInt(value) : (customization && customization.zoom ? parseInt(customization.zoom) : 100);
@@ -381,6 +417,8 @@ class MainController extends Component {
                 this.api.asc_setSpellCheck(value);
 
                 this.updateWindowTitle(true);
+
+                appOptions.changeAutosave(LocalStorage.itemExists('de-mobile-autosave') ? LocalStorage.getBool("de-mobile-autosave") : true);
 
                 value = LocalStorage.getBool("de-mobile-no-characters");
                 appSettings.changeNoCharacters(value);
@@ -403,7 +441,6 @@ class MainController extends Component {
                     Common.Notifications.trigger('api:disconnect');
                 }
 
-                Common.Gateway.on('processsaveresult', this.onProcessSaveResult.bind(this));
                 Common.Gateway.on('processrightschange', this.onProcessRightsChange.bind(this));
                 Common.Gateway.on('downloadas', this.onDownloadAs.bind(this));
                 Common.Gateway.on('requestclose', this.onRequestClose.bind(this));
@@ -539,6 +576,36 @@ class MainController extends Component {
         }
     }
 
+    
+    showSignatureTooltip(valid, requested) {
+        let hasSigned = false;
+        if (valid) {
+            valid.forEach(item => {
+                if (item.asc_getIsForm()) {
+                    hasSigned = true;
+                }
+            });
+        }
+        this.props.storeToolbarSettings.setIsSignatureForm(hasSigned);
+
+        if (hasSigned) {
+            const { t } = this.props;
+            const _t = t('Main', { returnObjects: true });
+            
+            f7.dialog.create({
+                text:  _t.txtSignedForm,
+                buttons: [
+                    {   
+                        text: _t.textCancel,
+                        onClick: () => {
+                            f7.dialog.close(); 
+                        }
+                    }
+                ]
+            }).open();
+        }
+    }
+
     insertImage (data) {
         if (data && (data.url || data.images)) {
             if (data.url) {
@@ -593,15 +660,6 @@ class MainController extends Component {
         }
     }
 
-    changeEditorBrandColorForPdf() {
-        const bodyElement = document.body;
-        bodyElement.classList.add('pdf-view');
-
-        if(Device.android) {
-            bodyElement.classList.add('pdf-view__android');
-        }
-    }
-
     applyMode (appOptions) {
         this.api.asc_enableKeyEvents(appOptions.isEdit);
         this.api.asc_setViewMode(!appOptions.isEdit && !appOptions.isRestrictedEdit);
@@ -618,6 +676,7 @@ class MainController extends Component {
 
         this.api.asc_registerCallback('asc_onDocumentModifiedChanged', this.onDocumentModifiedChanged.bind(this));
         this.api.asc_registerCallback('asc_onDocumentCanSaveChanged',  this.onDocumentCanSaveChanged.bind(this));
+        this.api.asc_registerCallback('asc_onCollaborativeChanges',  this.onCollaborativeChanges.bind(this));
 
         Common.Notifications.trigger('preloader:close');
         Common.Notifications.trigger('preloader:endAction', Asc.c_oAscAsyncActionType['BlockInteraction'], this.ApplyEditRights);
@@ -641,7 +700,14 @@ class MainController extends Component {
     }
 
     onDocumentCanSaveChanged (isCanSave) {
-        //
+        const storeAppOptions = this.props.storeAppOptions;
+        storeAppOptions.changeIsSaveBadgeShown(isCanSave ? !storeAppOptions.isAutosave : false);
+    }
+
+    onCollaborativeChanges () {
+        const storeAppOptions = this.props.storeAppOptions;
+        if (!storeAppOptions.isSaveBadgeShown) storeAppOptions.changeIsSaveBadgeShown(true);
+        storeAppOptions.changeSavingDocStatusText('');
     }
 
     onBeforeUnload () {
@@ -685,11 +751,10 @@ class MainController extends Component {
         const { t } = this.props;
         const _t = t('Main', {returnObjects:true});
 
-        const warnNoLicense  = _t.warnNoLicense.replace(/%1/g, __COMPANY_NAME__);
+        const warnNoResources  = _t.warnNoResources.replace(/%1/g, __COMPANY_NAME__);
         const warnNoLicenseUsers = _t.warnNoLicenseUsers.replace(/%1/g, __COMPANY_NAME__);
         const textNoLicenseTitle = _t.textNoLicenseTitle.replace(/%1/g, __COMPANY_NAME__);
-        const warnLicenseExceeded = _t.warnLicenseExceeded.replace(/%1/g, __COMPANY_NAME__);
-        const warnLicenseUsersExceeded = _t.warnLicenseUsersExceeded.replace(/%1/g, __COMPANY_NAME__);
+        const textNoResourcesTitle = _t.textNoResourcesTitle.replace(/%1/g, __COMPANY_NAME__);
 
         const appOptions = this.props.storeAppOptions;
         const isForm = appOptions.isForm;
@@ -731,15 +796,19 @@ class MainController extends Component {
         } else if (this._state.licenseType) {
             let license = this._state.licenseType;
             let buttons = [{ text: _t.textOk }];
+            let title = textNoLicenseTitle;
             if ((appOptions.trialMode & Asc.c_oLicenseMode.Limited) !== 0 &&
                 (license === Asc.c_oLicenseResult.SuccessLimit ||
                     appOptions.permissionsLicense === Asc.c_oLicenseResult.SuccessLimit)
             ) {
                 license = _t.warnLicenseLimitedRenewed;
             } else if (license === Asc.c_oLicenseResult.Connections || license === Asc.c_oLicenseResult.UsersCount) {
-                license = (license===Asc.c_oLicenseResult.Connections) ? warnLicenseExceeded : warnLicenseUsersExceeded;
+                title = _t.titleReadOnly;
+                license = (license===Asc.c_oLicenseResult.Connections) ? _t.tipLicenseExceeded : _t.tipLicenseUsersExceeded;
             } else {
-                license = (license === Asc.c_oLicenseResult.ConnectionsOS) ? warnNoLicense : warnNoLicenseUsers;
+                if (license === Asc.c_oLicenseResult.ConnectionsOS)
+                    title = textNoResourcesTitle;
+                license = (license === Asc.c_oLicenseResult.ConnectionsOS) ? warnNoResources : warnNoLicenseUsers;
                 buttons = [{
                     text: _t.textBuyNow,
                     bold: true,
@@ -763,18 +832,11 @@ class MainController extends Component {
                 Common.Notifications.trigger('api:disconnect');
             }
 
-            let value = LocalStorage.getItem("de-license-warning");
-            value = (value !== null) ? parseInt(value) : 0;
-            const now = (new Date).getTime();
-
-            if (now - value > 86400000) {
-                LocalStorage.setItem("de-license-warning", now);
-                f7.dialog.create({
-                    title: textNoLicenseTitle,
-                    text : license,
-                    buttons: buttons
-                }).open();
-            }
+            f7.dialog.create({
+                title: title,
+                text : license,
+                buttons: buttons
+            }).open();
         } else {
             if (!appOptions.isDesktopApp && !appOptions.canBrandingExt &&
                 appOptions.config && appOptions.config.customization && (appOptions.config.customization.loaderName || appOptions.config.customization.loaderLogo)) {
@@ -878,15 +940,7 @@ class MainController extends Component {
                     break;
                 case Asc.c_oAscContentControlSpecificType.Picture:
                 case Asc.c_oAscContentControlSpecificType.Signature:
-                    if (obj.pr && obj.pr.get_Lock) {
-                        let lock = obj.pr.get_Lock();
-                        if (lock == Asc.c_oAscSdtLockType.SdtContentLocked || lock == Asc.c_oAscSdtLockType.ContentLocked)
-                            return;
-                    }
-                    this.api.asc_addImage(obj);
-                    setTimeout(() => {
-                        this.api.asc_UncheckContentControlButtons();
-                    }, 500);
+                    this.onShowImageActions(obj, x, y);
                     break;
                 case Asc.c_oAscContentControlSpecificType.DropDownList:
                 case Asc.c_oAscContentControlSpecificType.ComboBox:
@@ -905,7 +959,13 @@ class MainController extends Component {
             storeTextSettings.resetTypeBaseline(typeBaseline);
         });
         this.api.asc_registerCallback('asc_onPrAlign', (align) => {
+            if (this.api.asc_isRtlTextDirection()) {
+                align = align === 0 ? 1 : align === 1 ? 0 : align;
+            }
             storeTextSettings.resetParagraphAlign(align);
+        });
+        this.api.asc_registerCallback('asc_onTextDirection', (isRtl) => {
+            storeTextSettings.resetTextDirection(isRtl);
         });
         this.api.asc_registerCallback('asc_onTextColor', (color) => {
             storeTextSettings.resetTextColor(color);
@@ -1026,6 +1086,7 @@ class MainController extends Component {
         });
 
         Common.Notifications.on('markfavorite', this.markFavorite.bind(this));
+        Common.Notifications.on('update:windowtitle', force => this.updateWindowTitle(force));
     }
 
     insertImageFromStorage(data) {
@@ -1051,16 +1112,25 @@ class MainController extends Component {
         }, 10);
     }
 
-    onChangeProtectDocument() {
+    checkProtectDocumentOnAppReady() {
+        const appOptions = this.props.storeAppOptions;
+        if ((appOptions.isRestrictedEdit || appOptions.isEdit) && !this._state.protectWarn) {
+            this._state.forceDocProtect = true;
+            this.onChangeProtectDocument();
+            this._state.forceDocProtect = false;
+        }
+    }
+
+    onChangeProtectDocument(userId) {
         const storeVersionHistory = this.props.storeVersionHistory;
         if (storeVersionHistory.isVersionHistoryMode) return;
+        const props = this.getDocProps(true);
+        if (!props) return;
 
         const { t } = this.props;
         const storeAppOptions = this.props.storeAppOptions;
-        const props = this.getDocProps(true);
         const isProtected = props && (props.isReadOnly || props.isCommentsOnly || props.isFormsOnly || props.isReviewOnly || props.isTrackedChanges);
         let textWarningDialog;
-
         if(!storeAppOptions.isReviewOnly) {
             if(props.isReviewOnly) {
                 this.api.asc_SetLocalTrackRevisions(true);
@@ -1090,15 +1160,26 @@ class MainController extends Component {
         Common.Notifications.trigger('protect:doclock', props);
 
         if(isProtected) {
-            f7.dialog.create({
-                title: t('Main.titleDialogProtectedDocument'),
-                text: textWarningDialog,
-                buttons: [
-                    {
-                        text: t('Main.textOk')
+            // userId is undefined if the current user has changed protection. in this case warning is not displayed.
+            // userId is undefined on docReady and you need to show warning, so use forceDocProtect!
+            const recUser = this.props.users.searchUserById(userId);
+            if (recUser && recUser.asc_getIdOriginal() !== this.props.users.currentUser.asc_getIdOriginal() || this._state.forceDocProtect) {
+                this._state.protectWarn && this._state.protectWarn.close();
+                this._state.protectWarn = f7.dialog.create({
+                    title: t('Main.titleDialogProtectedDocument'),
+                    text: textWarningDialog,
+                    buttons: [
+                        {
+                            text: t('Main.textOk')
+                        }
+                    ],
+                    on: {
+                        close: () => {
+                            this._state.protectWarn = null;
+                        }
                     }
-                ]
-            }).open();
+                }).open();
+            }
         }
     }
 
@@ -1211,6 +1292,29 @@ class MainController extends Component {
         }, 100)
     }
 
+    onShowImageActions(obj, x, y) {
+        if(!Device.isPhone) {
+            const boxSdk = $$('#editor_sdk');
+            let dropdownListTarget = boxSdk.find('#dropdown-image-list-target');
+
+            if (dropdownListTarget.length < 1) {
+                dropdownListTarget = $$('<div id="dropdown-image-list-target" style="position: absolute;"></div>');
+                boxSdk.append(dropdownListTarget);
+            }
+            if (y > boxSdk.height()) {
+                y = boxSdk.height();
+            }
+            dropdownListTarget.css({left: `${x}px`, top: `${y}px`});
+            Common.Notifications.trigger('openFormImageListTablet', obj, x, y, boxSdk.height(), 260);
+        } else {
+            Common.Notifications.trigger('openFormImageListPhone', obj)
+        }
+
+        setTimeout(() => {
+            this.api.asc_UncheckContentControlButtons();
+        }, 500);
+    }
+
     onShowListActions(obj, x, y) {
         if(!Device.isPhone) {
             const boxSdk = $$('#editor_sdk');
@@ -1227,20 +1331,6 @@ class MainController extends Component {
         if ( !this.appOptions.isCorePDF )
             Common.Notifications.trigger('openDropdownList', obj);
         else Common.Notifications.trigger('openPdfDropdownList', obj);
-    }
-
-    onProcessSaveResult (data) {
-        this.api.asc_OnSaveEnd(data.result);
-
-        if (data && data.result === false) {
-            const { t } = this.props;
-            const _t = t('Main', {returnObjects:true});
-
-            f7.dialog.alert(
-                (!data.message) ? _t.errorProcessSaveResult : data.message,
-                _t.criticalErrorTitle
-            );
-        }
     }
 
     onProcessRightsChange (data) {
@@ -1408,6 +1498,9 @@ class MainController extends Component {
             if (window.document.title != title) {
                 window.document.title = title;
             }
+
+            if (isModified)
+                this.props.storeAppOptions.changeSavingDocStatusText('');
 
             this._isDocReady && (this._state.isDocModified !== isModified) && Common.Gateway.setDocumentModified(isModified);
             this._state.isDocModified = isModified;
@@ -1612,7 +1705,7 @@ class MainController extends Component {
             docInfo.put_Format(this.document.fileType);
             docInfo.put_Lang(this.editorConfig.lang);
             docInfo.put_Mode(this.editorConfig.mode);
-            docInfo.put_Permissions(this.permissions);
+            docInfo.put_Permissions(this.document.permissions);
             docInfo.put_DirectUrl(data.document && data.document.directUrl ? data.document.directUrl : this.document.directUrl);
             docInfo.put_VKey(data.document && data.document.vkey ?  data.document.vkey : this.document.vkey);
             docInfo.put_EncryptedInfo(data.editorConfig && data.editorConfig.encryptionKeys ? data.editorConfig.encryptionKeys : this.editorConfig.encryptionKeys);
@@ -1647,6 +1740,7 @@ class MainController extends Component {
                 <PluginsController />
                 <EncodingController />
                 <DropdownListController />
+                <AddFormImageController />
             </Fragment>
         )
     }

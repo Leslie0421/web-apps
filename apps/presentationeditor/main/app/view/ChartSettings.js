@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  ChartSettings.js
@@ -88,6 +91,8 @@ define([
             el.html(this.template({
                 scope: this
             }));
+            this.ExternalOnlySettings = $('.external-only');
+            this.OpenLinkSettings = $('.open-link');
         },
 
         setApi: function(api) {
@@ -95,8 +100,13 @@ define([
             if (this.api) {
                 this.api.asc_registerCallback('asc_onUpdateChartStyles', _.bind(this._onUpdateChartStyles, this));
                 this.api.asc_registerCallback('asc_onAddChartStylesPreview', _.bind(this.onAddChartStylesPreview, this));
+                this.api.asc_registerCallback('asc_onStartUpdateExternalReference', _.bind(this.onStartUpdateExternalReference, this));
             }
             return this;
+        },
+
+        setMode: function(mode) {
+            this.mode = mode;
         },
 
         ChangeSettings: function(props) {
@@ -110,8 +120,18 @@ define([
                 this._noApply = true;
                 this.chartProps = props.get_ChartProperties();
 
+                var externalRef = this.chartProps.getExternalReference();
+                this.lblLinkData.text(externalRef ? this.textLinkedData : this.textData);
+                this.btnEditData.setCaption(externalRef ? this.textSelectData : this.textEditData);
+                this.ExternalOnlySettings.toggleClass('settings-hidden', !externalRef);
+                var text = externalRef ? (externalRef.asc_getSource() || '').replace(new RegExp("%20",'g')," ") : '';
+                this.linkExternalSrc.text(text);
+                this.OpenLinkSettings.toggleClass('settings-hidden', !text || !(this.mode.canRequestOpen || this.mode.isOffline));
+
                 var value = props.get_SeveralCharts() || this._locked;
-                this.btnEditData.setDisabled(value);
+                this.btnEditData.setDisabled(value || externalRef && this._state.isUpdatingReference);
+                this.btnUpdateData.setDisabled(value || this._state.isUpdatingReference);
+                this.btnEditLinks.setDisabled(this._locked);
                 this._state.SeveralCharts=value;
 
                 value = props.get_SeveralChartTypes();
@@ -267,10 +287,43 @@ define([
             this.lockedControls.push(this.btnChartType);
 
             this.btnEditData = new Common.UI.Button({
-                el: $('#chart-button-edit-data')
+                parentEl: $('#chart-button-edit-data'),
+                cls         : 'btn-toolbar align-left',
+                iconCls     : 'toolbar__icon btn-select-range',
+                caption     : this.textEditData,
+                style       : 'width: 100%;',
+                dataHint    : '1',
+                dataHintDirection: 'left',
+                dataHintOffset: 'small'
             });
-            this.btnEditData.on('click', _.bind(this.setEditData, this));
             this.lockedControls.push(this.btnEditData);
+            this.btnEditData.on('click', _.bind(this.setEditData, this));
+
+            this.btnUpdateData = new Common.UI.Button({
+                parentEl: $('#chart-button-update-data'),
+                cls         : 'btn-toolbar align-left',
+                iconCls     : 'toolbar__icon btn-update',
+                caption     : this.textUpdateData,
+                style       : 'width: 100%;',
+                dataHint    : '1',
+                dataHintDirection: 'left',
+                dataHintOffset: 'small'
+            });
+            this.lockedControls.push(this.btnUpdateData);
+            this.btnUpdateData.on('click', _.bind(this.onUpdateData, this));
+
+            this.btnEditLinks = new Common.UI.Button({
+                parentEl: $('#chart-button-edit-links'),
+                cls         : 'btn-toolbar align-left',
+                iconCls     : 'toolbar__icon btn-inserthyperlink',
+                caption     : this.textEditLinks,
+                style       : 'width: 100%;',
+                dataHint    : '1',
+                dataHintDirection: 'left',
+                dataHintOffset: 'small'
+            });
+            this.lockedControls.push(this.btnEditLinks);
+            this.btnEditLinks.on('click', _.bind(this.onEditLinks, this));
 
             this.spnWidth = new Common.UI.MetricSpinner({
                 el: $('#chart-spin-width'),
@@ -542,6 +595,9 @@ define([
 
             this.linkAdvanced = $('#chart-advanced-link');
             $(this.el).on('click', '#chart-advanced-link', _.bind(this.openAdvancedSettings, this));
+            this.linkExternalSrc = $('#chart-open-external-link');
+            $(this.el).on('click', '#chart-open-external-link', _.bind(this.openLink, this));
+            this.lblLinkData = $('#chart-data-lbl');
 
             this.NotCombinedSettings = $('.not-combined');
             this.Chart3DContainer = $('#chart-panel-3d-rotate');
@@ -579,16 +635,17 @@ define([
 
         setEditData:   function() {
             if (!Common.Controllers.LaunchController.isScriptLoaded()) return;
-            var diagramEditor = PE.getController('Common.Controllers.ExternalDiagramEditor').getView('Common.Views.ExternalDiagramEditor');
-            if (diagramEditor) {
-                diagramEditor.setEditMode(true);
-                diagramEditor.show();
+            this.api.asc_editChartInFrameEditor();
+        },
 
-                var chart = this.api.asc_getChartObject();
-                if (chart) {
-                    diagramEditor.setChartData(new Asc.asc_CChartBinary(chart));
-                }
-            }
+        onUpdateData: function() {
+            if (!Common.Controllers.LaunchController.isScriptLoaded()) return;
+            Common.NotificationCenter.trigger('data:updatereferences', [this.chartProps.getExternalReference()]);
+        },
+
+        onEditLinks: function() {
+            if (!Common.Controllers.LaunchController.isScriptLoaded()) return;
+            Common.NotificationCenter.trigger('data:externallinks');
         },
 
         onSelectType: function(btn, picker, itemView, record) {
@@ -788,6 +845,8 @@ define([
                                 {
                                     chartProps: elValue,
                                     slideSize: PE.getController('Toolbar').currentPageSize,
+                                    chartSettings: me.api.asc_getChartSettings(),
+                                    api : me.api,
                                     handler: function(result, value) {
                                         if (result == 'ok') {
                                             if (me.api) {
@@ -912,6 +971,21 @@ define([
             }
         },
 
+        openLink: function(e) {
+            if (this.linkExternalSrc.hasClass('disabled')) return;
+            Common.NotificationCenter.trigger('data:openlink', this.chartProps.getExternalReference());
+        },
+
+        onStartUpdateExternalReference: function(status) {
+            this._state.isUpdatingReference = status;
+            if (this._initSettings) return;
+
+            var externalRef = this.chartProps.getExternalReference();
+            this.btnEditData.setDisabled(this._locked || externalRef && this._state.isUpdatingReference);
+            this.btnUpdateData.setDisabled(this._locked || this._state.isUpdatingReference);
+            this.linkExternalSrc.toggleClass('disabled', this._locked || !!this._state.isUpdatingReference);
+        },
+
         setLocked: function (locked) {
             this._locked = locked;
         },
@@ -925,6 +999,7 @@ define([
                     item.setDisabled(disable);
                 });
                 this.linkAdvanced.toggleClass('disabled', disable);
+                this.linkExternalSrc.toggleClass('disabled', disable || !!this._state.isUpdatingReference);
             }
         },
 
@@ -950,6 +1025,11 @@ define([
         textWiden: 'Widen field of view',
         textRightAngle: 'Right Angle Axes',
         textAutoscale: 'Autoscale',
-        textDefault: 'Default Rotation'
+        textDefault: 'Default Rotation',
+        textUpdateData: 'Update Data',
+        textSelectData: 'Select Data',
+        textData: 'Data',
+        textEditLinks: 'Edit Links',
+        textLinkedData: 'Linked Data'
     }, PE.Views.ChartSettings || {}));
 });

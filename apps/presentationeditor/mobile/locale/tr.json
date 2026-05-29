@@ -93,7 +93,6 @@
       "criticalErrorTitle": "Hata",
       "errorAccessDeny": "Haklarınız olmayan bir işlemi gerçekleştirmeye çalışıyorsunuz.<br>Lütfen yöneticinizle iletişime geçin.",
       "errorOpensource": "Ücretsiz Topluluk sürümünü kullanarak belgeleri yalnızca görüntüleme için açabilirsiniz. Mobil web editörlerine erişmek için ticari bir lisans gereklidir.",
-      "errorProcessSaveResult": "Kaydetme başarısız.",
       "errorServerVersion": "Editör versiyonu güncellendi. Değişikliklerin uygulanabilmesi için sayfa yenilenecek.",
       "errorUpdateVersion": "Dosya versiyonu değiştirildi. Sayfa yenilenecek.",
       "leavePageText": "Bu belgede kaydedilmemiş değişiklikleriniz var. Otomatik kaydetmeyi beklemek için 'Bu Sayfada Kal' seçeneğini tıklayın. Kaydedilmemiş tüm değişiklikleri atmak için 'Bu Sayfadan Ayrıl'ı tıklayın.",
@@ -156,6 +155,7 @@
       "textHasMacros": "Dosya otomatik makrolar içeriyor.<br>Makroları çalıştırmak istiyor musunuz?",
       "textNo": "Hayır",
       "textNoLicenseTitle": "Lisans limitine ulaşıldı.",
+      "textNoResourcesTitle": "Yetersiz kaynak",
       "textNoMatches": "Eşleşme yok",
       "textOk": "Tamam",
       "textOpenFile": "Dosyayı Açmak için Parola Girin",
@@ -173,12 +173,10 @@
       "txtProtected": "Şifreyi girip dosyayı açtığınızda, dosya şifresi sıfırlanacaktır.",
       "warnLicenseAnonymous": "Erişim anonim kullanıcılar için engellendi.<br>Bu doküman sadece görüntüleme için açılacaktır.",
       "warnLicenseBefore": "Lisans aktif değil. <br>Lütfen yöneticinizle görüşün.",
-      "warnLicenseExceeded": "%1 düzenleyiciye eşzamanlı bağlantı sınırına ulaştınız. Bu belge yalnızca görüntüleme için açılacaktır. Daha fazla bilgi edinmek için yöneticinizle iletişime geçin.",
       "warnLicenseExp": "Lisansınızın süresi doldu. Lütfen güncelleyiniz ve sayfayı yenileyiniz.",
       "warnLicenseLimitedNoAccess": "Lisans süresi doldu. Belge düzenleme işlevine erişiminiz yok. Lütfen yöneticinize başvurun.",
       "warnLicenseLimitedRenewed": "Lisansın yenilenmesi gerekiyor. Belge düzenleme işlevine sınırlı erişiminiz var.<br>Tam erişim için lütfen yöneticinizle iletişime geçin.",
-      "warnLicenseUsersExceeded": "%1 düzenleyici için kullanıcı sınırına ulaştınız. Daha fazla bilgi edinmek için yöneticinizle iletişime geçin.",
-      "warnNoLicense": "%1 düzenleyiciye eşzamanlı bağlantı sınırına ulaştınız. Bu belge yalnızca görüntüleme için açılacaktır. Kişisel yükseltme koşulları için %1 satış ekibiyle iletişime geçin.",
+      "warnNoResources": "%1 sunucusu bu belgeyi düzenleme için açacak yeterli kaynağa sahip değil. Bu belge yalnızca görüntüleme için açılacaktır.",
       "warnNoLicenseUsers": "%1 düzenleyici için kullanıcı sınırına ulaştınız. Kişisel yükseltme koşulları için %1 satış ekibiyle iletişime geçin.",
       "warnProcessRightsChange": "Dosyayı düzenleme izniniz yok."
     }
@@ -232,9 +230,7 @@
     "unknownErrorText": "Bilinmeyen hata.",
     "uploadImageExtMessage": "Bilinmeyen resim formatı.",
     "uploadImageFileCountMessage": "Resim yüklenmedi.",
-    "uploadImageSizeMessage": "Görüntü çok büyük. Maksimum boyut 25 MB'dir.",
-    "criticalErrorExtTextClose": "Press 'OK' to close the editor.",
-    "errorSaveWatermark": "This file contains a watermark image linked to another domain.<br>To make it visible in PDF, update the watermark image so it links from the same domain as your document, or upload it from your computer."
+    "uploadImageSizeMessage": "Görüntü çok büyük. Maksimum boyut 25 MB'dir."
   },
   "LongActions": {
     "applyChangesTextText": "Veri yükleniyor...",
@@ -277,10 +273,7 @@
     "stayButtonText": "Bu Sayfada Kal",
     "textCloseHistory": "Geçmişi kapat",
     "textEnterNewFileName": "Bir dosya ismi girin",
-    "textRenameFile": "Dosyayı yeniden adlandır.",
-    "btnRestartNow": "Restart now",
-    "textOk": "OK",
-    "textSwitchToDesktop": "Switch to Desktop"
+    "textRenameFile": "Dosyayı yeniden adlandır."
   },
   "View": {
     "Add": {
@@ -323,8 +316,7 @@
       "textSlideNumber": "Slayt numarası",
       "textTable": "Tablo",
       "textTableSize": "Tablo Boyutu",
-      "txtNotUrl": "Bu alan, \"http://www.example.com\" biçiminde bir URL olmalıdır.",
-      "textDrawing": "Drawing"
+      "txtNotUrl": "Bu alan, \"http://www.example.com\" biçiminde bir URL olmalıdır."
     },
     "Edit": {
       "notcriticalErrorTitle": "Uyarı",
@@ -559,11 +551,5 @@
       "textVersion": "Sürüm",
       "textVersionHistory": "Sürüm Geçmişi "
     }
-  },
-  "Draw": {
-    "textColor": "Color",
-    "textCustomColor": "Custom color",
-    "textLineSize": "Line size",
-    "textOpacity": "Opacity"
   }
 }

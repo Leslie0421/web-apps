@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 
 /**
@@ -319,7 +322,7 @@ define([
                 [
                     '<% _.each(items, function(item) { %>',
                     '<li id="<%= item.id %>" data-value="<%= item.value %>"><a tabindex="-1" type="menuitem">',
-                    '<%= item.displayValue %><% if (item.value === Asc.c_oAscNumberingFormat.Bullet) { %><span style="font-family:<%=item.font%>;"><%=item.symbol%></span><% } %>',
+                    '<%= item.displayValue %><% if (item.value === Asc.c_oAscNumberingFormat.Bullet) { %><span style="font-family:<%-item.font%>;"><%=item.symbol%></span><% } %>',
                     '</a></li>',
                     '<% }); %>'
                 ];
@@ -372,7 +375,7 @@ define([
                     var formcontrol = $(this.el).find('.form-control');
                     if (record) {
                         if (record.get('value')==Asc.c_oAscNumberingFormat.Bullet)
-                            formcontrol[0].innerHTML = record.get('displayValue') + '<span style="font-family:' + (record.get('font') || 'Arial') + '">' + record.get('symbol') + '</span>';
+                            formcontrol[0].innerHTML = record.get('displayValue') + '<span style="font-family:' + (Common.Utils.String.htmlEncode(record.get('font')) || 'Arial') + '">' + record.get('symbol') + '</span>';
                         else
                             formcontrol[0].innerHTML = record.get('displayValue');
                     } else
@@ -1033,7 +1036,8 @@ define([
                 if (props.get_Format() !== Asc.c_oAscNumberingFormat.Bullet) {
                     var text = props.get_Text();
                     var me = this;
-                    var arr = this.formatString.lvlIndexes[this.level];
+                    var arr = this.formatString.lvlIndexes[this.level],
+                        isLgl = this.props.get_Lvl(this.level).get_IsLgl();
                     text.forEach(function (item, index) {
                         if (item.get_Type() === Asc.c_oAscNumberingLvlTextType.Text) {
                             formatStr += item.get_Value().toString();
@@ -1042,8 +1046,12 @@ define([
                             if (me.levels[num] === undefined)
                                 me.levels[num] = me.props.get_Lvl(num);
                             arr[num] = {start: formatStr.length, index: index};
-                            var lvl = me.levels[num];
-                            formatStr += AscCommon.IntToNumberFormat(lvl.get_Start(), lvl.get_Format(), me.lang);
+                            var lvl = me.levels[num],
+                                fmt = lvl.get_Format();
+                            if (isLgl && fmt !== Asc.c_oAscNumberingFormat.Decimal && fmt !== Asc.c_oAscNumberingFormat.DecimalZero) {
+                                fmt = Asc.c_oAscNumberingFormat.Decimal;
+                            }
+                            formatStr += AscCommon.IntToNumberFormat(lvl.get_Start(), fmt, me.lang);
                             arr[num].end = formatStr.length;
                         }
                     });

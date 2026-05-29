@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  * Date: 17.05.16
@@ -149,6 +152,12 @@ define([
 
                 if (this.configPlugins.config.options)
                     this.api.setPluginsOptions(this.configPlugins.config.options);
+
+                if (this.api.setPluginsDisabled) {
+                    const exclude_guids = !!this.configPlugins.config && this.configPlugins.config.disable instanceof Array ? this.configPlugins.config.disable : [];
+                    if (exclude_guids.length)
+                        this.api.setPluginsDisabled(exclude_guids);
+                }
             } else
                 this.configPlugins.plugins = false;
 
@@ -274,7 +283,7 @@ define([
             //$('<div class="separator long"></div>').appendTo(me.$toolbarPanelPlugins);
             group = $('<div class="group" style="' + (Common.UI.isRTL() ? 'padding-right: 0;' : 'padding-left: 0;') + '"></div>');
             this.viewPlugins.backgroundBtn = this.viewPlugins.createBackgroundPluginsButton();
-            var $backgroundSlot = $('<span class="btn-slot text x-huge"></span>').appendTo(group);
+            var $backgroundSlot = $('<span class="btn-slot text x-huge" id="slot-background-plugin"></span>').appendTo(group);
             this.viewPlugins.backgroundBtn.render($backgroundSlot);
             this.viewPlugins.backgroundBtn.hide();
 
@@ -315,19 +324,18 @@ define([
             this.backgroundPlugins.forEach(function (model) {
                 var modes = model.get('variations'),
                     icons = modes[model.get('currentVariation')].get('icons'),
-                    parsedIcons = me.viewPlugins.parseIcons(icons),
-                    icon_url = model.get('baseUrl') + parsedIcons['normal'],
                     guid = model.get('guid'),
                     isRun = _.indexOf(usedPlugins, guid) !== -1;
-                model.set('parsedIcons', parsedIcons);
-                var menuItem = new Common.UI.MenuItem({
+                model.set('parsedIcons', me.viewPlugins.parseIcons(icons));
+                var menuItem = new Common.UI.MenuItemCustom({
                     value: guid,
                     caption: model.get('name'),
-                    iconImg: icon_url,
+                    iconsSet: me.viewPlugins.iconsStr2IconsObj(icons),
+                    baseUrl: model.get('baseUrl'), // icons have a relative path, so need to use the base url
                     template: _.template([
                         '<div id="<%= id %>" class="menu-item" <% if(!_.isUndefined(options.stopPropagation)) { %> data-stopPropagation="true" <% } %> >',
                             '<img class="menu-item-icon" src="<%= options.iconImg %>">',
-                            '<div class="plugin-caption"><%= caption %></div>',
+                            '<div class="plugin-caption"><%- caption %></div>',
                             '<div class="plugin-tools">',
                                 '<div class="plugin-toggle"></div>',
                                 '<div class="plugin-settings"></div>',
@@ -640,7 +648,7 @@ define([
                 type: 'plugin'
             });
             button.render($button);
-            var $panel = $('<div id="panel-plugins-' + name + '" class="plugin-panel content-box" style="height: 100%;"></div>');
+            var $panel = $('<div id="panel-plugins-' + name + '" class="plugin-panel' + (menu !== 'right' ? ' content-box' : '') + '" style="height: 100%;"></div>');
             this.viewPlugins.fireEvent(menu === 'right' ? 'plugins:addtoright' : 'plugins:addtoleft', [button, $button, $panel]);
             this.viewPlugins.pluginPanels[pluginGuid] = new Common.Views.PluginPanel({
                 el: '#panel-plugins-' + name,
@@ -885,7 +893,11 @@ define([
             if ( pluginsdata instanceof Array ) {
                 var arr = [], arrUI = [],
                     lang = me.appOptions.lang.split(/[\-_]/)[0];
+                const exclude_guids = !!me.configPlugins.config && me.configPlugins.config.disable instanceof Array ? me.configPlugins.config.disable : [];
                 pluginsdata.forEach(function(item){
+                    if ( exclude_guids.length && exclude_guids.includes(item.guid) )
+                        return;
+
                     var updatedItem;
                     if (forceUpdate) {
                         updatedItem = arr.find(function (i){
@@ -1189,7 +1201,7 @@ define([
             me.customPluginsDlg[frameId] = new Common.Views.PluginDlg({
                 cls: (isCustomWindow ? 'plain' : '') + (variation.transparent ? ' ' + 'no-background' : ''),
                 header: !isCustomWindow,
-                title: description,
+                title: Common.Utils.String.htmlEncode(description),
                 width: size[0], // inner width
                 height: size[1], // inner height
                 url: variation.url,
@@ -1224,7 +1236,8 @@ define([
                     help && window.open(help, '_blank');
                 },
                 'docked': function(frameId){
-                    me.api.asc_pluginButtonDockChanged(isPanel ? variation.type : 'panel', variation.guid, frameId, function(){
+                    const docked_place = isPanel ? variation.type : !!variation.dockedPlace ? variation.dockedPlace : 'panel';
+                    me.api.asc_pluginButtonDockChanged(docked_place, variation.guid, frameId, function(){
                         setTimeout(function () {
                             me.customPluginsDlg[frameId].close();
                             me.onPluginPanelShow(frameId, variation, lang);
@@ -1251,7 +1264,7 @@ define([
                 var variationType = Asc.PluginType.getType(variation.type);
                 var isSystem = (true === variation.isSystem) || (Asc.PluginType.System === variationType),
                     isPanel = variationType === Asc.PluginType.Panel || variationType === Asc.PluginType.PanelRight;
-                var visible = (this.appOptions.isEdit || variation.isViewer && (variation.isDisplayedInViewer!==false)) && _.contains(variation.EditorsSupport, this.editor) && !isSystem;
+                var visible = (this.appOptions.isEdit || this.appOptions.canSubmitForms || variation.isViewer && (variation.isDisplayedInViewer!==false)) && _.contains(variation.EditorsSupport, this.editor) && !isSystem;
                 if (visible && isPanel) {
                     this.onPluginPanelShow(frameId, variation, lang);
                 } else if (visible && !variation.isInsideMode) {
@@ -1296,7 +1309,7 @@ define([
 
         onPluginPanelShow: function (frameId, variation, lang) {
             var guid = variation.guid,
-                menu = this.isPDFEditor ? 'left' : (variation.type == 'panelRight' ? 'right' : 'left');
+                menu = (variation.dockedPlace||variation.type) == 'panelRight' ? 'right' : 'left';
             !menu && (menu = 'left');
 
             var description = variation.description;
@@ -1336,7 +1349,7 @@ define([
                     type: 'plugin'
                 });
             button.render($button);
-            var $panel = $('<div id="panel-plugins-' + frameId + '" class="plugin-panel content-box" style="height: 100%;"></div>');
+            var $panel = $('<div id="panel-plugins-' + frameId + '" class="plugin-panel' + (menu !== 'right' ? ' content-box' : '') + '" style="height: 100%;"></div>');
             this.viewPlugins.fireEvent(menu === 'right' ? 'plugins:addtoright' : 'plugins:addtoleft', [button, $button, $panel]);
             this.viewPlugins.customPluginPanels[frameId] = new Common.Views.PluginPanel({
                 el: '#panel-plugins-' + frameId,

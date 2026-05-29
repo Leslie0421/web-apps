@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  DocumentPreview.js
@@ -102,27 +105,10 @@ define([
             this.pages = new PE.Models.Pages({current:1, count:1, start:1});
             this.pages.on('change', _.bind(_updatePagesCaption,this));
             this.currentDrawColor = 'E81416';
-            this.drawTool = {
-                pen: () => {
-                    Common.NotificationCenter.trigger('draw-tool:pen', { index: 0, color: this.currentDrawColor, size: 1, opacity: 100 });
-                    this.editComplete();
-                },
-                highlighter: () => {
-                    Common.NotificationCenter.trigger('draw-tool:pen', { index: 1, color: this.currentDrawColor, size: 6, opacity: 50 });
-                    this.editComplete();
-                },
-                eraser: () => {
-                    Common.NotificationCenter.trigger('draw-tool:eraser');
-                    this.editComplete();
-                },
-                eraseAll: () => {
-                    Common.NotificationCenter.trigger('draw-tool:erase-all');
-                    this.editComplete();
-                },
-                select: () => {
-                    Common.NotificationCenter.trigger('draw-tool:select');
-                    this.editComplete();
-                }
+            this.drawToolIconMapper = {
+                pen: 'menu__icon btn-pen-tool',
+                highlighter: 'menu__icon btn-highlighter-tool',
+                eraser: 'menu__icon btn-clearstyle'
             };
         },
 
@@ -142,7 +128,6 @@ define([
                     iconCls: 'toolbar__icon btn-pen-tool',
                     onlyIcon: true,
                     stopPropagation: true,
-                    takeFocusOnClose: true,
                     hint: this.txtDraw,
                     hintAnchor: 'top',
                     hintContainer: '#pe-preview',
@@ -200,42 +185,8 @@ define([
                     colors: ["FFFFFF","000000","E81416","FFA500","FAEB36","79C314","487DE7","4B369D","70369D"],
                     value: 'E81416'
                 });
-                this.drawColorPicker.on('select', (_picker, color) => {
-                    this.currentDrawColor = color;
-                    const currentTool = this.btnDraw.menu.getChecked();
-
-                    if (!currentTool) {
-                        this.btnDraw.toggle(true);
-                        this.btnDraw.menu.items[0].setChecked(true);
-                        this.drawTool['pen']();
-                        return;
-                    }
-
-                    if (currentTool.value === 'pen' || currentTool.value === 'highlighter') {
-                        this.drawTool[currentTool.value]();
-                    } else {
-                        this.btnDraw.menu.items[this.btnDraw.menu.items.indexOf(currentTool)].setChecked(false);
-                        this.btnDraw.menu.items[0].setChecked(true);
-                        this.drawTool['pen']();
-                    }
-                });
-
-                this.btnDraw.menu.on('item:click', (_, item) => {
-                    if (this.currentDrawTool === item.value) {
-                        item.setChecked(false);
-                        this.drawTool['select']();
-                        this.btnDraw.toggle(false);
-                        this.currentDrawTool = undefined;
-                        return;
-                    }
-
-                    if (item.value !== 'eraseAll') {
-                        this.btnDraw.toggle(true);
-                        this.currentDrawTool = item.value;
-                    }
-
-                    this.drawTool[item.value]();
-                });
+                this.drawColorPicker.on('select', _.bind(this.onDrawColorSelect, this));
+                this.btnDraw.menu.on('item:click', _.bind(this.onDrawMenuItemClick, this));
             }
 
             this.btnPrev = new Common.UI.Button({
@@ -244,8 +195,9 @@ define([
                 hintAnchor: 'top',
                 hintContainer: '#pe-preview'
             });
-            this.btnPrev.on('click', _.bind(function() {
+            this.btnPrev.on('click', _.bind(function(btn) {
                 if (this.api) this.api.DemonstrationPrevSlide();
+                btn.cmpEl && btn.cmpEl.blur();
                 this.editComplete();
             }, this));
 
@@ -255,8 +207,9 @@ define([
                 hintAnchor: 'top',
                 hintContainer: '#pe-preview'
             });
-            this.btnNext.on('click', _.bind(function() {
+            this.btnNext.on('click', _.bind(function(btn) {
                 if (this.api) this.api.DemonstrationNextSlide();
+                btn.cmpEl && btn.cmpEl.blur();
                 this.editComplete();
             }, this));
 
@@ -279,6 +232,7 @@ define([
                     if (this.api)
                         this.api.DemonstrationPlay ();
                 }
+                btn.cmpEl && btn.cmpEl.blur();
                 this.editComplete();
             }, this));
 
@@ -290,11 +244,6 @@ define([
             });
             this.btnClose.on('click', _.bind(function() {
                 if (this.api) this.api.EndDemonstration();
-                if (this.btnDraw) {
-                    this.btnDraw.menu.clearAll();
-                    this.btnDraw.toggle(false);
-                    this.currentDrawTool = undefined;
-                }
             }, this));
 
             this.btnFullScreen = new Common.UI.Button({
@@ -526,6 +475,11 @@ define([
         },
 
         onEndDemonstration: function( ) {
+            if (this.btnDraw) {
+                this.btnDraw.menu.clearAll();
+                this.btnDraw.toggle(false);
+                this.currentDrawTool = undefined;
+            }
             this.hide();
             Common.Utils.cancelFullscreen();
         },
@@ -534,6 +488,79 @@ define([
             (status=="play") ? this.btnPlay.changeIcon({curr: 'btn-play', next: 'btn-preview-pause'}) :
                                this.btnPlay.changeIcon({curr: 'btn-preview-pause', next: 'btn-play'});
             this.btnPlay.updateHint((status=="play") ? this.txtPause : this.txtPlay);
+        },
+
+        onDrawColorSelect: function (_, color) {
+            this.currentDrawColor = color;
+            const currentTool = this.btnDraw.menu.getChecked();
+
+            if (!currentTool) {
+                this.currentDrawTool = 'pen';
+                this.btnDraw.toggle(true);
+                this.btnDraw.menu.items[0].setChecked(true);
+                this.activateDrawTool('pen');
+                return;
+            }
+
+            if (currentTool.value === 'pen' || currentTool.value === 'highlighter') {
+                this.activateDrawTool(currentTool.value);
+            } else {
+                this.btnDraw.menu.items[this.btnDraw.menu.items.indexOf(currentTool)].setChecked(false);
+                this.btnDraw.menu.items[0].setChecked(true);
+                this.activateDrawTool('pen');
+                this.btnDraw.setIconCls(this.drawToolIconMapper['pen']);
+            }
+        },
+
+        onDrawMenuItemClick: function (_, item) {
+            if (this.currentDrawTool === item.value) {
+                item.setChecked(false);
+                this.activateDrawTool('select');
+                this.btnDraw.toggle(false);
+                this.currentDrawTool = undefined;
+                this.btnDraw.setIconCls(this.drawToolIconMapper['pen']);
+                return;
+            }
+
+            if (item.value !== 'eraseAll') {
+                this.btnDraw.toggle(true);
+                this.currentDrawTool = item.value;
+                this.btnDraw.setIconCls(this.drawToolIconMapper[item.value]);
+            }
+
+            this.activateDrawTool(item.value);
+        },
+
+        activateDrawTool: function (toolName) {
+            switch (toolName) {
+                case 'pen':
+                    Common.NotificationCenter.trigger('draw-tool:pen', {
+                        index: 0,
+                        color: this.currentDrawColor,
+                        size: 1,
+                        opacity: 100
+                    });
+                    break;
+                case 'highlighter':
+                    Common.NotificationCenter.trigger('draw-tool:pen', {
+                        index: 1,
+                        color: this.currentDrawColor,
+                        size: 6,
+                        opacity: 50
+                    });
+                    break;
+                case 'eraser':
+                    Common.NotificationCenter.trigger('draw-tool:eraser');
+                    break;
+                case 'eraseAll':
+                    Common.NotificationCenter.trigger('draw-tool:erase-all');
+                    break;
+                case 'select':
+                    Common.NotificationCenter.trigger('draw-tool:select');
+                    break;
+            }
+
+            this.editComplete();
         },
 
         toggleFullScreen: function() {
@@ -553,11 +580,7 @@ define([
         },
 
         editComplete: function() {
-            var me = this;
-            setTimeout(function() {
-                $(me.el).focus();
-                me.api && me.api.asc_enableKeyEvents(true);
-            }, 10);
+            this.api && this.api.asc_enableKeyEvents(true);
         },
 
         txtDraw: 'Draw',
@@ -566,6 +589,7 @@ define([
         txtEraser: 'Eraser',
         txtEraseScreen: 'Erase screen',
         txtInkColor: 'Ink color',
+        txtPointer: 'Laser pointer',
         txtPrev: 'Previous Slide',
         txtNext: 'Next Slide',
         txtClose: 'Close Slideshow',

@@ -1,3 +1,38 @@
+/*
+ * Copyright (C) Ascensio System SIA, 2009-2026
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
+ *
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * No trademark rights are granted under this License.
+ *
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import React, { Fragment } from 'react';
 import { observer, inject } from "mobx-react";
 import { Page, Navbar, Link } from "framework7-react";
@@ -11,13 +46,15 @@ const PageAbout = props => {
     const isCanBranding = store.canBranding;
     const licInfo = isCanBranding ? store.customization : null;
     const customer = licInfo ? licInfo.customer : null;
-    const nameCustomer = customer ? customer.name : null;
-    const mailCustomer = customer ? customer.mail : null;
-    const phoneCustomer = customer ? customer.phone : null;
-    const addressCustomer = customer ? customer.address : null;
-    const urlCustomer = customer ? customer.www : null;
-    const infoCustomer = customer ? customer.info : null;
-    const logoCustomer = customer ? customer.logo : null;
+    const {
+        name: nameCustomer = null,
+        mail: mailCustomer = null,
+        phone: phoneCustomer = null,
+        address: addressCustomer = null,
+        www: urlCustomer = null,
+        info: infoCustomer = null,
+        logo: logoCustomer = null
+    } = customer || {};
 
     const publisherUrl = __PUBLISHER_URL__, 
         publisherPrintUrl = publisherUrl.replace(/https?:\/{2}|\/$/g,"");
@@ -69,24 +106,24 @@ const PageAbout = props => {
                             </p>
                         </div>
                     ) : null}
-                    {nameCustomer || infoCustomer || urlCustomer ? (
+                    {(nameCustomer?.length || infoCustomer?.length || urlCustomer?.length) && (
                         <div className="about__customer">
-                            {nameCustomer && nameCustomer.length ? (
+                            {nameCustomer?.length && (
                                 <p id="settings-about-name" className="about__text">{nameCustomer}</p>
-                            ) : null}
-                            {infoCustomer && infoCustomer.length ? (
+                            )}
+                            {infoCustomer?.length && (
                                 <p className="about__text">{infoCustomer}</p>
-                            ) : null}
-                            {urlCustomer && urlCustomer.length ? (
+                            )}
+                            {urlCustomer?.length && (
                                 <p className="about__text">
                                     <Link id="settings-about-url" external={true} target="_blank" 
                                         href={!/^https?:\/{2}/i.test(urlCustomer) ? "http:\/\/" : '' + urlCustomer}>
                                         {urlCustomer}
                                     </Link>
                                 </p>
-                        ) : null}
+                            )}
                         </div>
-                    ) : null}
+                    )}
                     <div className="about__contacts">
                         <p className="about__text" id="settings-about-address">
                             {__PUBLISHER_ADDRESS__}

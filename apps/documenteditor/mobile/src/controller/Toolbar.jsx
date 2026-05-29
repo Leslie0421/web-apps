@@ -1,3 +1,38 @@
+/*
+ * Copyright (C) Ascensio System SIA, 2009-2026
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
+ *
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * No trademark rights are granted under this License.
+ *
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Device } from '../../../../common/mobile/utils/device';
 import { inject, observer } from 'mobx-react';
@@ -21,6 +56,7 @@ const ToolbarController = inject('storeAppOptions', 'users', 'storeReview', 'sto
     const storeToolbarSettings = props.storeToolbarSettings;
     const isCanUndo = storeToolbarSettings.isCanUndo;
     const isCanRedo = storeToolbarSettings.isCanRedo;
+    const isSignatureForm = storeToolbarSettings.isSignatureForm;
     const disabledControls = storeToolbarSettings.disabledControls;
     const disabledEditControls = storeToolbarSettings.disabledEditControls;
     const disabledSettings = storeToolbarSettings.disabledSettings;
@@ -91,6 +127,20 @@ const ToolbarController = inject('storeAppOptions', 'users', 'storeReview', 'sto
         }
     }, [isViewer]);
 
+    useEffect(() => {
+        const resetOffset = () => {
+            scrollOffsetRef.current = 0;
+        };
+
+        window.addEventListener('touchstart', resetOffset);
+        window.addEventListener('mousedown', resetOffset);
+
+        return () => {
+            window.removeEventListener('touchstart', resetOffset);
+            window.removeEventListener('mousedown', resetOffset);
+        };
+    }, []);
+
     // Scroll handler
 
     const scrollHandler = offset => {
@@ -98,29 +148,36 @@ const ToolbarController = inject('storeAppOptions', 'users', 'storeReview', 'sto
         const navbarHeight = getNavbarTotalHeight();
         const isSearchbarEnabled = document.querySelector('.subnavbar .searchbar')?.classList.contains('searchbar-enabled');
 
-        if(!isSearchbarEnabled && navbarHeight) {
-            if(offset > 0 && Math.abs(offset) > Math.abs(scrollOffsetRef.current)) {
+        if (!isSearchbarEnabled && navbarHeight) {
+            if (offset > 0) {
+                offset > scrollOffsetRef.current ? hideNavbar() : showNavbar();
+            } else if (offset < 0) {
+                Math.abs(offset) > Math.abs(scrollOffsetRef.current) ? showNavbar() : hideNavbar();
+            }
+
+            function hideNavbar () {
                 props.closeOptions('fab');
                 f7.navbar.hide('.main-navbar');
                 api.SetMobileTopOffset(undefined, 0);
-            } else if(offset < 0 && Math.abs(offset) <= Math.abs(scrollOffsetRef.current)) {
+            };
+
+            function showNavbar () {
                 props.openOptions('fab');
                 f7.navbar.show('.main-navbar');
                 api.SetMobileTopOffset(undefined, navbarHeight);
-            }
+            };
 
             scrollOffsetRef.current = offset;
         }
     }
 
     // Back button
-    const [isShowBack, setShowBack] = useState(appOptions.canBackToFolder);
     const loadConfig = (data) => {
         if (data && data.config && data.config?.canBackToFolder !== false && data.config?.customization && data.config?.customization.goback) {
             const canback = data.config.customization.close === undefined ?
                 data.config.customization.goback.url || data.config.customization.goback.requestClose && data.config.canRequestClose :
                 data.config.customization.goback.url && !data.config.customization.goback.requestClose;
-            canback && setShowBack(true);
+            props.storeToolbarSettings.setShowBack(canback);
         }
     };
 
@@ -158,18 +215,52 @@ const ToolbarController = inject('storeAppOptions', 'users', 'storeReview', 'sto
     };
 
     const goBack = (current) => {
+        const api = Common.EditorApi.get();
+
         if (appOptions.customization.goback.requestClose && appOptions.canRequestClose) {
             onRequestClose();
         } else {
-            const href = appOptions.customization.goback.url;
-
-            if (!current && appOptions.customization.goback.blank !== false) {
-                window.open(href, "_blank");
+            if (Device.ios && api.isDocumentModified()) {
+                f7.dialog.create({
+                    title: _t.textUnsavedData,
+                    text: _t.textSaveData,
+                    verticalButtons: true,
+                    buttons: [
+                        {
+                            text: _t.textSave,
+                            onClick: () => {
+                                LocalStorage.save();
+                                Common.EditorApi.get().asc_Save();
+                                setTimeout(() => goBackLocation(current), 200);
+                            }
+                        },
+                        {
+                            text: _t.textDontSave,
+                            onClick: () => {
+                                api.asc_undoAllChanges();
+                                setTimeout(() => goBackLocation(current), 200);
+                            }
+                        },
+                        {
+                            text: _t.textCancel
+                        }
+                    ]
+                }).open();
             } else {
-                parent.location.href = href;
+                goBackLocation(current);
             }
         }
     }
+
+    const goBackLocation = (current) => {
+        const href = appOptions.customization.goback.url;
+
+        if (!current && appOptions.customization.goback.blank !== false) {
+            window.open(href, "_blank");
+        } else {
+            parent.location.href = href;
+        }
+    };
 
     const onUndo = () => {
         const api = Common.EditorApi.get();
@@ -409,9 +500,10 @@ const ToolbarController = inject('storeAppOptions', 'users', 'storeReview', 'sto
             isEdit={appOptions.isEdit}
             docTitle={docTitle}
             docExt={docExt}
-            isShowBack={isShowBack}
+            isShowBack={storeToolbarSettings.isShowBack}
             isCanUndo={isCanUndo}
             isCanRedo={isCanRedo}
+            isSignatureForm={isSignatureForm}
             onUndo={onUndo}
             onRedo={onRedo}
             isObjectLocked={objectLocked}
@@ -442,6 +534,7 @@ const ToolbarController = inject('storeAppOptions', 'users', 'storeReview', 'sto
             canSubmitForms={appOptions.canSubmitForms}
             forceDesktopMode={forceDesktopMode}
             isHiddenFileName={appOptions.config?.customization?.toolbarHideFileName ?? false}
+            isSaveBadgeShown={appOptions.isSaveBadgeShown}
         />
     )
 }));

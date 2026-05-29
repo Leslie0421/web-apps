@@ -1,7 +1,7 @@
 {
     "name": "documenteditor",
-    "version": "9.0.4",
-    "build": 55,
+    "version": "9.4.0",
+    "build": 57,
     "homepage": "http://www.onlyoffice.com",
     "private": true,
     "main": {
@@ -9,13 +9,21 @@
             "prebuild": [
                 "../deploy/web-apps/apps/documenteditor/main"
             ],
-            "postbuild": []
+            "postbuild": [
+                "../deploy/web-apps/apps/documenteditor/main/app_dev.js",
+                "../deploy/web-apps/apps/documenteditor/main/app_pack.js",
+                "../deploy/web-apps/apps/documenteditor/main/index.html.deploy",
+                "../deploy/web-apps/apps/documenteditor/main/index_loader.html",
+                "../deploy/web-apps/apps/documenteditor/main/index_loader.html.deploy",
+                "../deploy/web-apps/apps/documenteditor/main/resources/less",
+                "../deploy/web-apps/apps/documenteditor/main/resources/img/toolbar/**/*"
+            ]
         },
         "js": {
             "requirejs": {
                 "options": {
-                    "name": "../apps/documenteditor/main/app.js",
-                    "out": "../deploy/web-apps/apps/documenteditor/main/app.js",
+                    "dir": "../deploy/web-apps/apps/documenteditor/main",
+                    "appDir": "../apps/documenteditor/main",
                     "baseUrl": "../apps/",
                     "inlineText": true,
                     "findNestedDependencies": true,
@@ -357,6 +365,7 @@
                 "../apps/common/embed/lib/view/LoadMask.js",
                 "../apps/common/embed/lib/view/modals.js",
                 "../apps/common/embed/lib/controller/modals.js",
+                "../apps/common/embed/lib/controller/Shortcuts.js",
                 "../apps/common/embed/lib/view/SearchBar.js",
                 "../apps/documenteditor/embed/js/SearchBar.js",
                 "../apps/documenteditor/embed/js/ApplicationView.js",

@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 22 22"><g><path d="M15.5,11L6,1.5l1.1-1.1L17.5,11l0,0l0,0L7.1,21.5L6,20.5L15.5,11z"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <g class="icon-next">
+    <path stroke="#444" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7.86 20.03 16 11.89 7.86 3.75" class="icon-stroke-gray-primary"/>
+  </g>
+</svg>

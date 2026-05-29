@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 DE.ApplicationController = new(function(){
     var me,
@@ -161,7 +164,7 @@ DE.ApplicationController = new(function(){
                 api.asc_registerCallback('asc_onGetEditorPermissions', onEditorPermissions);
                 api.asc_registerCallback('asc_onRunAutostartMacroses', onRunAutostartMacroses);
                 api.asc_setDocInfo(docInfo);
-                api.asc_getEditorPermissions(config.licenseUrl, config.customerId);
+                api.asc_getEditorPermissions();
                 api.asc_enableKeyEvents(true);
 
                 Common.Analytics.trackEvent('Load', 'Start');
@@ -247,7 +250,17 @@ DE.ApplicationController = new(function(){
             if (type == Asc.c_oAscMouseMoveDataTypes.Hyperlink || type==Asc.c_oAscMouseMoveDataTypes.Form) { // hyperlink
                 me.isHideBodyTip = false;
 
-                var str = (type == Asc.c_oAscMouseMoveDataTypes.Hyperlink) ? (me.txtPressLink.replace('%1', common.utils.isMac ? '⌘' : me.textCtrl)) : data.get_FormHelpText();
+                var str = '';
+                if (type==Asc.c_oAscMouseMoveDataTypes.Hyperlink) {
+                    var hyperProps = data.get_Hyperlink();
+                    if (!hyperProps) return;
+                    if (hyperProps.get_NoCtrl && hyperProps.get_NoCtrl())
+                        str = hyperProps.get_ToolTip() || hyperProps.get_Value();
+                    else
+                        str = me.txtPressLink.replace('%1', common.utils.isMac ? '⌘' : me.textCtrl);
+                } else
+                    str = data.get_FormHelpText();
+
                 if (str.length>500)
                     str = str.substr(0, 500) + '...';
                 str = common.utils.htmlEncode(str);
@@ -484,6 +497,8 @@ DE.ApplicationController = new(function(){
             embed: '#idt-embed'
         });
 
+        common.controller.Shortcuts.setApi(api);
+
         api.asc_registerCallback('asc_onStartAction',           onLongActionBegin);
         api.asc_registerCallback('asc_onEndAction',             onLongActionEnd);
         api.asc_registerCallback('asc_onMouseMoveStart',        onDocMouseMoveStart);
@@ -520,8 +535,24 @@ DE.ApplicationController = new(function(){
 
         DE.ApplicationView.tools.get('#idt-print')
             .on('click', function(){
-                api.asc_Print(new Asc.asc_CDownloadOptions(null, $.browser.chrome || $.browser.safari || $.browser.opera || $.browser.mozilla && $.browser.versionNumber>86));
-                Common.Analytics.trackEvent('Print');
+                var printCallback = function() {
+                    api.asc_Print(new Asc.asc_CDownloadOptions(null, $.browser.chrome || $.browser.safari || $.browser.opera || $.browser.mozilla && $.browser.versionNumber>86));
+                    Common.Analytics.trackEvent('Print');
+                };
+
+                var submitPassword = function(val) {
+                    if(api.asc_CheckPrintPassword(val)) {
+                        printCallback();
+                    } else {
+                        common.controller.modals.createDlgPrintPassword(submitPassword, true);
+                    }
+                };
+
+                if(api && api.asc_CheckPrintPassword && api.asc_CheckPrintPassword() === false) {
+                    common.controller.modals.createDlgPrintPassword(submitPassword);
+                } else {
+                    printCallback();
+                }
             });
 
         DE.ApplicationView.tools.get('#idt-close')
@@ -778,14 +809,17 @@ DE.ApplicationController = new(function(){
             WarningShown = true; 
             common.controller.modals.showWarning({
                     title: me.notcriticalErrorTitle,
-                    message: me.txtOpenWarning,
-                    buttons: [me.txtYes, me.txtNo], 
-                    primary: me.txtYes,
+                    message: me.txtOpenWarning.replace('%1', url || ''),
+                    buttons: [me.txtNo, me.txtYes],
+                    primary: me.txtNo,
                     callback: function (btn) {
                         WarningShown = false; 
                         if (btn === me.txtYes) {
                             window.open(url);
                         }
+                    },
+                    closecallback: function() {
+                        WarningShown = false;
                     }
             }); 
         }    
@@ -798,6 +832,9 @@ DE.ApplicationController = new(function(){
                 message: me.scriptLoadError,
                 buttons: [me.txtClose],
                 callback: function(btn) {
+                    window.location.reload();
+                },
+                closecallback: function() {
                     window.location.reload();
                 }
             });
@@ -894,6 +931,18 @@ DE.ApplicationController = new(function(){
             case Asc.c_oAscError.ID.SessionToken: // don't show error message
                 return;
 
+            case Asc.c_oAscError.ID.CopyDisabled:
+                message= me.errorCopyDisabled;
+                break;
+
+            case Asc.c_oAscError.ID.FileNotAssembled:
+                message = me.errorFileNotAssembled;
+                break;
+
+            case Asc.c_oAscError.ID.ForcedViewMode:
+                message = me.errorForcedViewMode;
+                break;
+
             default:
                 // message = me.errorDefaultMessage.replace('%1', id);
                 // break;
@@ -908,6 +957,11 @@ DE.ApplicationController = new(function(){
                 if (level == Asc.c_oAscError.Level.Critical) {
                     window.location.reload();
                 } 
+            },
+            closecallback: function() {
+                if (level == Asc.c_oAscError.Level.Critical) {
+                    window.location.reload();
+                }
             }
         });
 
@@ -978,7 +1032,7 @@ DE.ApplicationController = new(function(){
             }
 
             if (value.logo.image || value.logo.imageEmbedded) {
-                logo.html('<img src="'+(value.logo.image || value.logo.imageEmbedded)+'" style="max-width:100px; max-height:20px;"/>');
+                logo.html('<img src="'+(value.logo.image || value.logo.imageEmbedded)+'" style="max-width:300px; max-height:20px;"/>');
                 logo.css({'background-image': 'none', width: 'auto', height: 'auto'});
 
                 value.logo.imageEmbedded && console.log("Obsolete: The 'imageEmbedded' parameter of the 'customization.logo' section is deprecated. Please use 'image' parameter instead.");
@@ -990,6 +1044,42 @@ DE.ApplicationController = new(function(){
                 logo.removeAttr('href');logo.removeAttr('target');
             }
         }
+    }
+
+    function onOpenLinkPdfForm(sURI, onAllow, onCancel) {
+        common.controller.modals.showWarning({
+            title: me.notcriticalErrorTitle,
+            message: me.txtSecurityWarningLinkOk.replace('%1', sURI || ''),
+            buttons: [me.textOk, me.textCancel],
+            callback: function(btn) {
+                if (btn == me.textOk) {
+                    onAllow();
+                }
+                else
+                    onCancel();
+            },
+            closecallback: function() {
+                onCancel();
+            }
+        });
+    }
+
+    function onOpenFilePdfForm(onAllow, onCancel) {
+        common.controller.modals.showWarning({
+            title: me.notcriticalErrorTitle,
+            message: me.txtSecurityWarningOpenFile,
+            buttons: [me.textOk, me.textCancel],
+            callback: function(btn) {
+                if (btn == me.textOk) {
+                    onAllow();
+                }
+                else
+                    onCancel();
+            },
+            closecallback: function() {
+                onCancel();
+            }
+        });
     }
         // Helpers
     // -------------------------
@@ -1069,6 +1159,10 @@ DE.ApplicationController = new(function(){
 //            api.asc_registerCallback('OnCurrentVisiblePage',    onCurrentPage);
             api.asc_registerCallback('asc_onCurrentPage',           onCurrentPage);
 
+            if (isPDF) {
+                api.asc_registerCallback('asc_onOpenLinkPdfForm',          onOpenLinkPdfForm);
+                api.asc_registerCallback('asc_onOpenFilePdfForm',          onOpenFilePdfForm);
+            }
             // Initialize api gateway
             Common.Gateway.on('init',               loadConfig);
             Common.Gateway.on('opendocument',       loadDocument);
@@ -1131,8 +1225,14 @@ DE.ApplicationController = new(function(){
         textConvertFormDownload: 'Download file as a fillable PDF form to be able to fill it out.',
         textDownloadPdf: 'Download pdf',
         errorToken: 'The document security token is not correctly formed.<br>Please contact your Document Server administrator.',
-        txtOpenWarning: 'Clicking this link can be harmful to your device and data.<br> Are you sure you want to continue?',
+        txtOpenWarning: 'Clicking this link can be harmful to your device and data.To protect you computer, click only those hyperlinks from trusted sources. This location may be unsafe:<br>%1<br>Are you sure you want to continue?',
         txtYes:'Yes',
-        txtNo: 'No'
+        txtNo: 'No',
+        textOk: 'OK',
+        textCancel: 'Cancel',
+        txtSecurityWarningLink: 'This document is trying to connect to %1.<br>If you trust this site, press \"OK\" while holding down the ctrl key.',
+        txtSecurityWarningOpenFile: 'This document is trying to open file dialog, press \"OK\" to open.',
+        txtSecurityWarningLinkOk: 'This document is trying to connect to %1.<br>If you trust this site, press \"OK\".',
+        errorCopyDisabled: 'For security reasons, the contents of this document cannot be copied to the clipboard.'
     }
 })();

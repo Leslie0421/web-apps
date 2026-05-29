@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  ReviewPopover.js
@@ -93,7 +96,7 @@ define([
                         '<div id="id-review-popover"></div>',
                         '<div id="id-comments-popover"></div>',
                     '</div>',
-                    '<div id="id-comments-arrow" class="comments-arrow"></div>',
+                    //'<div id="id-comments-arrow" class="comments-arrow"></div>',
                     '</div>'
                 ].join('');
 
@@ -678,6 +681,7 @@ define([
                 this.handlerHide();
             }
             this.hideTips();
+            this.hideMentions();
             this._state.commentsVisible = false;
             if (!this._state.reviewVisible)
                 this.hide();
@@ -704,6 +708,7 @@ define([
             }
 
             this.hideTips();
+            this.hideMentions();
 
             Common.UI.Window.prototype.hide.call(this);
 
@@ -770,7 +775,7 @@ define([
                 if (editorBounds) {
                     sdkBoundsHeight = editorBounds.height - this.sdkBounds.padding * 2;
 
-                    this.$window.css({maxHeight: sdkBoundsHeight + 'px'});
+                    this.$window.css({maxHeight: (Math.min(editorBounds.height, Math.max(300, editorBounds.height * 0.75)) - this.sdkBounds.padding * 2) + 'px'});
 
                     this.sdkBounds.width = this.sdkBounds.outerWidth = editorBounds.width;
                     this.sdkBounds.height = this.sdkBounds.outerHeight = editorBounds.height;
@@ -913,6 +918,7 @@ define([
                             sdkBoundsHeight = editorBounds.height - this.sdkBounds.padding * 2;
                             sdkBoundsTopPos = sdkBoundsTop;
                             windowHeight = this.$window.outerHeight();
+                            var maxWindowHeight = Math.min(editorBounds.height, Math.max(300, editorBounds.height * 0.75)) - this.sdkBounds.padding * 2;
 
                             // TOP CORNER
 
@@ -927,10 +933,17 @@ define([
                                 }
                             }
 
-                            outerHeight = Math.max(commentsView.outerHeight(), this.$window.outerHeight());
+                            outerHeight = Math.max(commentsView.outerHeight(), windowHeight);
 
                             var movePos = this.isOverCursor();
                             if (movePos) {
+                                if (Math.ceil(maxWindowHeight) <= Math.ceil(outerHeight)) {
+                                    this.$window.css({
+                                        maxHeight: maxWindowHeight + 'px'
+                                    });
+                                    commentsView.css({height: maxWindowHeight - 3 + 'px'});
+                                    outerHeight = maxWindowHeight;
+                                }
                                 var leftPos = parseInt(this.$window.css('left')) - this.arrow.width,
                                     newTopDown = movePos[1][1] + sdkPanelHeight + this.arrow.width,// try move down
                                     newTopUp = movePos[0][1] + sdkPanelHeight - this.arrow.width, // try move up
@@ -968,40 +981,30 @@ define([
                                 arrowView.toggleClass('top', isMoveDown);
                                 arrowView.toggleClass('bottom', !isMoveDown);
                                 arrowView.removeClass('left right');
-                            } else if (Math.ceil(sdkBoundsHeight) <= Math.ceil(outerHeight)) {
-                                this.$window.css({
-                                    maxHeight: sdkBoundsHeight - sdkPanelHeight + 'px',
-                                    top: sdkBoundsTop + sdkPanelHeight + 'px'
-                                });
-
-                                commentsView.css({height: sdkBoundsHeight - sdkPanelHeight - 3 + 'px'});
-
-                                // arrowPosY = Math.max(this.arrow.margin, this.arrowPosY - sdkPanelHeight - this.arrow.width);
-                                arrowPosY = Math.min(arrowPosY, sdkBoundsHeight - (sdkPanelHeight + this.arrow.margin + this.arrow.height));
-
-                                arrowView.css({top: arrowPosY + 'px', left: ''});
-                                arrowView.removeClass('top bottom right left');
-                                arrowView.addClass(this._state.arrowCls);
-                                this.scroller.scrollTop(scrollPos);
                             } else {
+                                if (Math.ceil(maxWindowHeight) <= Math.ceil(outerHeight)) {
+                                    this.$window.css({
+                                        maxHeight: maxWindowHeight + 'px'
+                                    });
+                                    commentsView.css({height: maxWindowHeight - 3 + 'px'});
+                                    outerHeight = maxWindowHeight;
 
-                                outerHeight = windowHeight;
-
+                                } else
+                                    outerHeight = windowHeight;
                                 if (outerHeight > 0) {
                                     if (contentBounds.top + outerHeight > sdkBoundsHeight + sdkBoundsTop || contentBounds.height === 0) {
                                         topPos = Math.min(sdkBoundsTop + sdkBoundsHeight - outerHeight, this.arrowPosY + sdkBoundsTop - this.arrow.height);
                                         topPos = Math.max(topPos, sdkBoundsTopPos);
-
                                         this.$window.css({top: topPos + 'px'});
                                     }
                                 }
-
                                 arrowPosY = Math.max(this.arrow.margin, this.arrowPosY - (sdkBoundsHeight - outerHeight) - this.arrow.height);
                                 arrowPosY = Math.min(arrowPosY, outerHeight - this.arrow.margin - this.arrow.height);
 
                                 arrowView.css({top: arrowPosY + 'px', left: ''});
                                 arrowView.removeClass('top bottom right left');
                                 arrowView.addClass(this._state.arrowCls);
+                                this.scroller.scrollTop(scrollPos);
                             }
                         }
                     }
@@ -1169,8 +1172,27 @@ define([
                         });
                     }
                 }, this);
+        },
+
+        hideMentions: function () {
             if (this.emailMenu && this.emailMenu.rendered)
                 this.emailMenu.cmpEl.css('display', 'none');
+        },
+
+        moveMentions: function () {
+            var menu = this.emailMenu;
+            if (menu && menu.rendered && menu.isVisible() && this.commentsView) {
+                var menuContainer = this.$window.find(Common.Utils.String.format('#menu-container-{0}', menu.id)),
+                    textbox = this.commentsView.getTextBox(),
+                    textboxDom = textbox ? textbox[0] : null,
+                    showPoint = textboxDom ? [textboxDom.offsetLeft, textboxDom.offsetTop + textboxDom.clientHeight + 3] : [0, 0];
+
+                menuContainer.css({left: showPoint[0], top : showPoint[1]});
+                menu.menuAlignEl = textbox;
+                menu.show();
+                menu.cmpEl.css('display', '');
+                menu.alignPosition('bl-tl', -5);
+            }
         },
 
         isCommentsViewMouseOver: function () {

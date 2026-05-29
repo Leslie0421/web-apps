@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 22 22"><g><polygon points="16.9,10.9 8.1,2 6,4.1 12.8,11.1 6,17.9 8.1,20 16.9,11.2 17,11.1 "/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <g class="icon-next">
+    <path stroke="#444" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7.86 20.03 16 11.89 7.86 3.75" class="icon-stroke-gray-primary"/>
+  </g>
+</svg>

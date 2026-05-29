@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  StatusBar View
@@ -208,9 +211,12 @@ define([
                     //'tab:manual'        : _.bind(this.onAddTabClick, this),
                     'tab:contextmenu'   : _.bind(this.onTabMenu, this),
                     'tab:dblclick'      : _.bind(function () {
-                        if (me.editMode && !(me.mode && me.mode.isDisconnected) && (me.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.Chart) &&
-                                           (me.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.FormatTable)&&
-                                           (me.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.PrintTitles)) {
+                        if (me.editMode && !(me.mode && me.mode.isDisconnected) &&
+                            !(me.mode && me.mode.isBackgroundOpen) && 
+                            (me.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.Chart) &&
+                            (me.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.FormatTable)&&
+                            (me.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.PrintTitles)
+                        ) {
                             me.fireEvent('sheet:changename');
                         }
                     }, this)
@@ -412,6 +418,7 @@ define([
                 this.api = api;
                 this.api.asc_registerCallback('asc_onSheetsChanged', _.bind(this.update, this));
                 this.api.asc_registerCallback('asc_onUpdateSheetViewSettings', _.bind(this.onUpdateSheetViewSettings, this));
+                this.api.asc_registerCallback('asc_onChangeActiveNamedSheetView', _.bind(this.update, this));
                 return this;
             },
 
@@ -422,8 +429,13 @@ define([
                 $('#status-addtabs-box')[(this.mode.isEdit) ? 'show' : 'hide']();
                 this.tabBarDefPosition = parseInt($('#status-tabs-scroll').css('width')) + parseInt(this.cntStatusbar.css('padding-left'));
                 this.tabBarDefPosition += this.mode.isEdit ? parseFloat($('#status-addtabs-box').css('width')) : 0;
-                this.btnAddWorksheet.setDisabled(this.mode.isDisconnected || this.api && (this.api.asc_isWorkbookLocked() || this.api.isCellEdited) || this.rangeSelectionMode!=Asc.c_oAscSelectionDialogType.None);
-                if (this.mode.isEditOle) { // change hints order
+                this.btnAddWorksheet.setDisabled(
+                    this.mode.isDisconnected || this.mode.isBackgroundOpen || 
+                    this.api && (this.api.asc_isWorkbookLocked() || this.api.isCellEdited) ||
+                    this.rangeSelectionMode!=Asc.c_oAscSelectionDialogType.None || !!this.mode.isExternalChart
+                );
+                this.btnSheetList[this.mode.isBackgroundOpen ? 'addClass' : 'removeClass']('disabled');
+                if (this.mode.isEditOle || this.mode.isEditDiagram) { // change hints order
                     this.btnAddWorksheet.$el.find('button').addBack().filter('button').attr('data-hint', '1');
                     this.btnScrollBack.$el.find('button').addBack().filter('button').attr('data-hint', '1');
                     this.btnScrollNext.$el.find('button').addBack().filter('button').attr('data-hint', '1');
@@ -444,40 +456,43 @@ define([
 
             update: function() {
                 var me = this;
-
+                var renamingWorksheet = this.controller && this.controller.renamingWorksheet;
                 this.tabbar.empty(true);
                 this.tabMenu.items[5].menu.removeAll();
                 this.tabMenu.items[5].hide();
                 this.btnAddWorksheet.setDisabled(true);
                 this.sheetListMenu.removeAll();
-
                 if (this.api) {
                     var wc = this.api.asc_getWorksheetsCount(), i = -1;
-                    var hidentems = [], items = [], allItems = [], tab, locked, name;
+                    me.hiddenItems = [];
+                    var items = [], allItems = [], tab, locked, name;
                     var sindex = this.api.asc_getActiveWorksheetIndex();
                     var wbprotected = this.api.asc_isProtectedWorkbook();
+                    var sid = me.api.asc_getActiveWorksheetId();
 
                     while (++i < wc) {
                         locked = me.api.asc_isWorksheetLockedOrDeleted(i);
                         name = me.api.asc_getActiveNamedSheetView ? me.api.asc_getActiveNamedSheetView(i) || '' : '';
+                        var sheetid = me.api.asc_getWorksheetId(i)
                         tab = {
                             sheetindex    : i,
+                            sheetid       : sheetid,
                             index         : items.length,
-                            active        : sindex == i,
+                            active        : renamingWorksheet ? renamingWorksheet === sheetid : sid === sheetid,
                             label         : me.api.asc_getWorksheetName(i),
 //                          reorderable   : !locked,
                             cls           : locked ? 'coauth-locked':'',
-                            isLockTheDrag : locked || me.mode.isDisconnected || wbprotected,
+                            disabled      : me.mode.isBackgroundOpen,
+                            isLockTheDrag : locked || me.mode.isDisconnected || me.mode.isBackgroundOpen || wbprotected,
                             iconCls       : 'btn-sheet-view',
                             iconTitle     : name,
                             iconVisible   : name!==''
                         };
-                        this.api.asc_isWorksheetHidden(i)? hidentems.push(tab) : items.push(tab);
+                        this.api.asc_isWorksheetHidden(i)? me.hiddenItems.push(tab) : items.push(tab);
                         allItems.push(tab);
                     }
-
-                    if (hidentems.length) {
-                        hidentems.forEach(function(item){
+                    if (me.hiddenItems.length) {
+                        me.hiddenItems.forEach(function(item){
                             me.tabMenu.items[5].menu.addItem(new Common.UI.MenuItem({
                                 style: 'white-space: pre-wrap',
                                 caption: item.label,
@@ -489,12 +504,27 @@ define([
 
                     this.tabbar.add(items);
 
+                    if (renamingWorksheet) {
+                        const tab = _.findWhere(this.tabbar.tabs, { sheetid: renamingWorksheet });
+                        if (tab) {
+                            setTimeout(() => {
+                                me.onSheetChanged(0, tab.index, tab);
+                                this.controller.renameWorksheet(renamingWorksheet, true);
+                            }, 50);
+                        } else {
+                            setTimeout(() => {
+                                this.tabbar.setActive(sindex)
+                            }, 50)
+                        }
+                    }
+
                     allItems.forEach(function(item){
                         var hidden = me.api.asc_isWorksheetHidden(item.sheetindex);
                         me.sheetListMenu.addItem(new Common.UI.MenuItem({
                             style: 'white-space: pre',
                             caption: Common.Utils.String.htmlEncode(item.label),
                             value: item.sheetindex,
+                            sheetid: item.sheetid,
                             checkable: true,
                             checked: item.active,
                             hidden: hidden,
@@ -517,11 +547,15 @@ define([
 
                     this.updateRtlSheet(true);
 
-                    this.btnAddWorksheet.setDisabled(me.mode.isDisconnected || me.api.asc_isWorkbookLocked() || wbprotected || me.api.isCellEdited);
+                    this.btnAddWorksheet.setDisabled(
+                        me.mode.isDisconnected || me.mode.isBackgroundOpen || me.api.asc_isWorkbookLocked() || 
+                        wbprotected || me.api.isCellEdited ||  !!me.mode.isExternalChart
+                    );
+                    this.btnSheetList[me.mode.isBackgroundOpen ? 'addClass' : 'removeClass']('disabled');
                     if (this.mode.isEdit) {
                         this.tabbar.addDataHint(_.findIndex(items, function (item) {
                             return item.sheetindex === sindex;
-                        }), this.mode.isEditOle ? '1' : '0');
+                        }), this.mode.isEditOle || this.mode.isEditDiagram ? '1' : '0');
                     }
 
                     this.labelZoom.text(Common.Utils.String.format(this.zoomText, Math.floor((this.api.asc_getZoom() +.005)*100)));
@@ -532,6 +566,10 @@ define([
                     me.fireEvent('sheet:updateColors', [true]);
                     Common.NotificationCenter.trigger('comments:updatefilter', ['doc', 'sheet' + me.api.asc_getActiveWorksheetId()], false);
                 }
+            },
+
+            getHiddenWorksheets: function () {
+                return this.hiddenItems;
             },
 
             onUpdateSheetViewSettings: function() {
@@ -630,7 +668,7 @@ define([
                 this.updateRtlSheet(true);
 
                 if (this.mode.isEdit) {
-                    this.tabbar.addDataHint(index, this.mode.isEditOle ? '1' : '0');
+                    this.tabbar.addDataHint(index, this.mode.isEditOle || this.mode.isEditDiagram ? '1' : '0');
                 }
 
                 this.fireEvent('sheet:changed', [this, tab.sheetindex]);
@@ -641,10 +679,12 @@ define([
 
             onTabMenu: function (o, index, tab, select) {
                 var me = this;
-                if (this.mode.isEdit  && !this.isEditFormula && (this.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.Chart) &&
-                                                               (this.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.FormatTable) &&
-                                                               (this.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.PrintTitles) &&
-                    !this.mode.isDisconnected ) {
+                if (this.mode.isEdit && !this.isEditFormula && 
+                    (this.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.Chart) &&
+                    (this.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.FormatTable) &&
+                    (this.rangeSelectionMode !== Asc.c_oAscSelectionDialogType.PrintTitles) &&
+                    !this.mode.isDisconnected && !this.mode.isBackgroundOpen && !this.mode.isExternalChart
+                ) {
                     if (tab && tab.sheetindex >= 0) {
                         if (!tab.isActive()) this.tabbar.setActive(tab);
 
@@ -671,7 +711,7 @@ define([
                         this.tabMenu.items[6].setDisabled(select.length>1);
                         this.tabMenu.items[7].setDisabled(issheetlocked || isdocprotected);
 
-                        this.tabMenu.items[6].setVisible(!this.mode.isEditOle && this.mode.canProtect);
+                        this.tabMenu.items[6].setVisible(!this.mode.isEditOle && !this.mode.isEditDiagram && this.mode.canProtect);
                         this.tabMenu.items[6].setCaption(this.api.asc_isProtectedSheet() ? this.itemUnProtect : this.itemProtect);
 
                         if (select.length === 1) {
@@ -986,6 +1026,10 @@ define([
             clearStatusMessage: function() {
                 this.labelAction.text('');
                 this.statusMessage = undefined;
+            },
+            
+            hideStatusMessage: function() {
+                this.boxAction.hide();
             },
 
             getStatusLabel: function() {
@@ -1325,7 +1369,7 @@ define([
                     var active = this.listNames.getSelectedRec(),
                         index = active ? active.get('inindex') : 0;
                     if (index === -255)
-                        index = this.listNames.store.length - 1;
+                        index = this.listNames.store.length - 1 + this.options.hiddenWorksheets.length;
 
                     var record = this.cmbSpreadsheet.getSelectedRecord();
                     this.options.handler.call(this,
@@ -1340,7 +1384,7 @@ define([
                     var active = this.listNames.getSelectedRec(),
                         index = active ? active.get('inindex') : 0;
                     if (index === -255)
-                        index = this.listNames.store.length - 1;
+                        index = this.listNames.store.length - 1 + this.options.hiddenWorksheets.length;
 
                     var record = this.cmbSpreadsheet.getSelectedRecord();
                     this.options.handler.call(this, 'ok', index, this.chCreateCopy.getValue()==='checked', record.value);

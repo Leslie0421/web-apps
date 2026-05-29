@@ -42,16 +42,19 @@
                 }
             }
         }
+        .winxp &,
         .ie & {
             box-shadow: @shadow-toolbar-ie;
         }
     }
 
-    .box-tabs {
-        padding-left: @border-radius-toolbar-ie;
-        padding-left: @border-radius-toolbar;
-        padding-right: @border-radius-toolbar-ie;
-        padding-right: @border-radius-toolbar;
+    .box-tabs{
+        .top-title & {
+            padding-left: @border-radius-toolbar-ie;
+            padding-left: @border-radius-toolbar;
+            padding-right: @border-radius-toolbar-ie;
+            padding-right: @border-radius-toolbar;
+        }
     }
 
     .ribtab {
@@ -413,12 +416,13 @@
     .more-container {
         background-color: @background-toolbar-ie;
         background-color: @background-toolbar;
-        min-width:auto;
+        min-width: auto;
         padding: 12px 10px 7px 0;
         border-radius: 0;
         z-index:999;
         .rtl & {
             padding: 12px 0 7px 10px;
+            text-align: right;
         }
         .compactwidth:not(.emptycaption), .nocaption {
             .btn-group, .btn-toolbar {
@@ -455,6 +459,18 @@
             .separator {
                 margin-top: 4px;
                 margin-bottom: 4px;
+            }
+        }
+        &[data-tab=plugins] {
+            padding: 12px 10px 7px 6px;
+            .rtl & {
+                padding: 12px 6px 7px 10px;
+            }
+            div .group:first-child {
+                .padding-left(0);
+            }
+            div .separator:first-child + .group {
+                .padding-left(0);
             }
         }
     }
@@ -503,6 +519,12 @@
         //        position: relative;
         //    }
         //}
+        	
+        &.padding-hor-zerro {
+            &:not(:first-child) {
+                .padding-hor-zerro();
+            }
+        }
     }
 
     .elset {
@@ -657,6 +679,10 @@
     #slot-field-fontname {
         min-width: 60px;
         flex-grow: 1;
+    }
+
+    .transparent {
+        opacity: 0;
     }
 }
 
@@ -1277,7 +1303,8 @@ section .field-styles {
 }
 
 .toolbar,
-#special-paste-container {
+#special-paste-container,
+#chart-element-container {
     .btn-group,
     .btn-toolbar {
         .pixel-ratio__2_5 & {

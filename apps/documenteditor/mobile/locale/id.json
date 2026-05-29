@@ -479,8 +479,7 @@
     "uploadDocSizeMessage": "Batas ukuran maksimum dokumen terlampaui.",
     "uploadImageExtMessage": "Format gambar tidak dikenal.",
     "uploadImageFileCountMessage": "Tidak ada gambar yang diunggah.",
-    "uploadImageSizeMessage": "Melebihi ukuran maksimal file. Ukuran maksimum adalah 25 MB.",
-    "criticalErrorExtTextClose": "Press 'OK' to close the editor."
+    "uploadImageSizeMessage": "Melebihi ukuran maksimal file. Ukuran maksimum adalah 25 MB."
   },
   "LongActions": {
     "applyChangesTextText": "Memuat data...",
@@ -525,7 +524,6 @@
     "criticalErrorTitle": "Kesalahan",
     "errorAccessDeny": "Anda mencoba melakukan sesuatu yang tidak memiliki izin.<br>Silakan hubungi admin Anda.",
     "errorOpensource": "Menggunakan versi Komunitas gratis, Anda bisa membuka dokumen hanya untuk dilihat. Untuk mengakses editor web mobile, diperlukan lisensi komersial.",
-    "errorProcessSaveResult": "Gagal menyimpan.",
     "errorServerVersion": "Versi editor sudah di update. Halaman akan dimuat ulang untuk menerapkan perubahan.",
     "errorUpdateVersion": "Versi file telah diubah. Halaman tidak akan dimuat ulang.",
     "leavePageText": "Anda memiliki perubahan yang belum tersimpan. Klik 'Tetap di Halaman Ini' untuk menunggu simpan otomatis. Klik ‘Tinggalkan Halaman Ini’ untuk membatalkan semua perubahan yang belum disimpan.",
@@ -644,6 +642,7 @@
     "textHasMacros": "File berisi macros otomatis.<br>Apakah Anda ingin menjalankan macros?",
     "textNo": "Tidak",
     "textNoLicenseTitle": "Batas lisensi sudah tercapai",
+    "textNoResourcesTitle": "Sumber daya tidak cukup",
     "textNoMatches": "Tidak Ada yamg Cocok",
     "textOk": "Ok",
     "textPaidFeature": "Fitur berbayar",
@@ -661,12 +660,10 @@
     "warnDownloadAsPdf": "{0} Anda akan dikonversi ke format yang bisa disunting. Hal ini mungkin akan membutuhkan waktu. Dokumen yang dihasilkan akan dioptimalkan untuk memungkinkan Anda menyunting teks, sehingga mungkin tidak terlihat persis seperti aslinya {0}, terutama jika file asli berisi banyak gambar.",
     "warnLicenseAnonymous": "Akses ditolak untuk pengguna anonim.<br>Dokumen ini akan dibuka hanya untuk dilihat.",
     "warnLicenseBefore": "Lisensi tidak aktif.<br>Harap hubungi administrator Anda.",
-    "warnLicenseExceeded": "Anda sudah mencapai batas untuk koneksi bersamaan ke %1 editor. Dokumen ini akan dibuka untuk dilihat saja. Hubungi admin Anda untuk mempelajari lebih lanjut.",
     "warnLicenseExp": "Lisensi Anda sudah kadaluwarsa. Silakan update dan muat ulang halaman.",
     "warnLicenseLimitedNoAccess": "Lisensi kadaluwarsa. Anda tidak memiliki akses untuk editing dokumen secara keseluruhan. Silakan hubungi admin Anda.",
     "warnLicenseLimitedRenewed": "Lisensi perlu diperbaharui. Anda memiliki akses terbatas untuk edit dokumen.<br>Silakan hubungi admin Anda untuk mendapatkan akses penuh",
-    "warnLicenseUsersExceeded": "Anda sudah mencapai batas user untuk %1 editor. Hubungi admin Anda untuk mempelajari lebih lanjut.",
-    "warnNoLicense": "Anda sudah mencapai batas untuk koneksi bersamaan ke %1 editor. Dokumen ini akan dibuka untuk dilihat saja. Hubungi %1 tim sales untuk syarat personal upgrade.",
+    "warnNoResources": "Server %1 tidak memiliki cukup sumber daya untuk membuka dokumen ini untuk diedit. Dokumen ini akan dibuka hanya untuk dilihat.",
     "warnNoLicenseUsers": "Anda sudah mencapai batas user untuk %1 editor. Hubungi %1 tim sales untuk syarat personal upgrade.",
     "warnProcessRightsChange": "Anda tidak memiliki izin edit file ini."
   },
@@ -808,8 +805,7 @@
     "txtDownloadTxt": "Download TXT",
     "txtIncorrectPwd": "Password salah",
     "txtOk": "OK",
-    "txtProtected": "Jika Anda memasukkan password dan membuka file, password file saat ini akan di reset.",
-    "textDrawing": "Drawing"
+    "txtProtected": "Jika Anda memasukkan password dan membuka file, password file saat ini akan di reset."
   },
   "Toolbar": {
     "btnRestartNow": "Restart sekarang",

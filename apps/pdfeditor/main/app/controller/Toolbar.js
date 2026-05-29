@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  Toolbar.js
@@ -80,17 +83,23 @@ define([
                 can_decrease: undefined,
                 fontsize: undefined,
                 textclrhighlight: undefined,
-                initEditing: true
+                initEditing: true,
+                showChartTab: false,
+                inDrawingMode: false,
             };
             this.editMode = true;
-            this.binding = {};
+            this.binding = {
+                checkInsertShapeComment: _.bind(this.checkInsertShapeComment, this)
+            };
 
             this.addListeners({
                 'Toolbar': {
                     'change:compact'    : this.onClickChangeCompact,
                     'home:open'         : this.onHomeOpen,
                     'tab:active'        : this.onActiveTab,
-                    'tab:collapse'      : this.onTabCollapse
+                    'tab:click'         : this.onClickTab,
+                    'tab:collapse'      : this.onTabCollapse,
+                    'shapeannot:size'   : this.onShapeCommentSizeClick
                 },
                 'FileMenu': {
                     'menu:hide': this.onFileMenu.bind(this, 'hide'),
@@ -151,16 +160,19 @@ define([
                 },
                 'DocumentHolder': {
                     'annotbar:create': this.onCreateAnnotBar.bind(this)
-                }
+                },
+                'InsTab': {
+                    'insert:chart': this.onSelectChart.bind(this)
+                },
             });
 
             Common.NotificationCenter.on('toolbar:collapse', _.bind(function () {
                 this.toolbar.collapse();
             }, this));
             Common.NotificationCenter.on('comments:tryshowcomments', _.bind(this.turnOnShowComments, this));
-            Common.NotificationCenter.on('tab:set-active', _.bind(function(action){
+            Common.NotificationCenter.on('tab:set-active', _.bind(function(action, needUnfold){
                 this.toolbar.setTab(action);
-                this.onChangeCompactView(null, false, true);
+                needUnfold && this.onChangeCompactView(null, false, true);
             }, this));
         },
 
@@ -178,34 +190,19 @@ define([
             var _main = this.getApplication().getController('Main');
             this.mode = mode;
             this.toolbar.applyLayout(mode);
-            var themeid = Common.UI.Themes.currentThemeId(),
-                isNew = themeid==='theme-system' || themeid==='theme-white' || themeid==='theme-night',
-                lang = (mode.lang || 'en').toLowerCase().split(/[\-_]/)[0],
-                langmap = { 'es': 'https://www.onlyoffice.com/blog/es/2025/06/disponible-onlyoffice-docs-9-0',
-                    'pt': 'https://www.onlyoffice.com/blog/pt-br/2025/06/disponivel-onlyoffice-docs-9-0',
-                    'zh': 'https://www.onlyoffice.com/blog/zh-hans/2025/06/onlyoffice-docs-9-0-released',
-                    'fr': 'https://www.onlyoffice.com/blog/fr/2025/06/onlyoffice-docs-9-0-disponible',
-                    'de': 'https://www.onlyoffice.com/blog/de/2025/06/onlyoffice-docs-9-0-veroeffentlicht',
-                    'it': 'https://www.onlyoffice.com/blog/it/2025/06/disponibile-onlyoffice-docs-9-0',
-                    'ja': 'https://www.onlyoffice.com/blog/ja/2025/06/onlyoffice-docs-9-0-released'},
-                url = langmap[lang] || 'https://www.onlyoffice.com/blog/2025/06/onlyoffice-docs-9-0-released';
 
-            // !Common.Utils.isIE && !Common.Controllers.Desktop.isWinXp() && Common.UI.FeaturesManager.isFeatureEnabled('featuresTips', true) && Common.UI.TooltipManager.addTips({
-            //     'modernTheme' : {name: 'help-tip-modern-theme', placement: 'bottom-right', text: isNew ? this.helpOldTheme : this.helpModernTheme, header: this.helpModernThemeHeader, target: '#slot-btn-interface-theme',
-            //                      automove: true, maxwidth: 270, closable: false, isNewFeature: true, link: {text: _main.textLearnMore, url: url}}
-            // });
             Common.UI.FeaturesManager.isFeatureEnabled('featuresTips', true) && Common.UI.TooltipManager.addTips({
-                'formEditor' : {name: 'help-tip-form-editor', placement: 'bottom-right', offset: {x: 10, y: 0}, text: this.helpFormEditor, header: this.helpFormEditorHeader, target: 'li.ribtab #forms',
-                                 automove: true, maxwidth: 270, closable: false, isNewFeature: true, link: {text: _main.textLearnMore, url: url}},
-                'copyPages' : {name: 'help-tip-copy-pages', placement: 'right-bottom', offset: {x: -30, y: 110}, text: Common.Utils.String.format(this.helpCopyPages, Common.Utils.String.platformKey('Ctrl+C', '{0}'), Common.Utils.String.platformKey('Ctrl+V', '{0}')),
-                               header: this.helpCopyPagesHeader, target: '#thumbnails-btn-close', closable: false, isNewFeature: true, link: {text: _main.textLearnMore, url: url}}
+                'tipChartTab' : {name: 'pdfe-help-tip-chart-tab', placement: 'bottom', text: this.helpChartTab, header: this.helpChartTabHeader, target: 'li.ribtab #charttab', maxwidth: 300,
+                    automove: true, closable: false, isNewFeature: true},
+                'createLink': {name:'pdfe-help-tip-create-link', placement: 'bottom-left', text: this.helpCreateLink, header: this.helpCreateLinkHeader, target: '#slot-btn-insertlink', maxwidth: 300,
+                                automove: true, closable: false, isNewFeature: true}
             });
             Common.UI.TooltipManager.addTips({
-                'refreshFile' : {text: _main.textUpdateVersion, header: _main.textUpdating, target: '#toolbar', maxwidth: 'none', showButton: false, automove: true, noHighlight: true, multiple: true},
-                'disconnect' : {text: _main.textConnectionLost, header: _main.textDisconnect, target: '#toolbar', maxwidth: 'none', showButton: false, automove: true, noHighlight: true, multiple: true},
-                'updateVersion' : {text: _main.errorUpdateVersionOnDisconnect, header: _main.titleUpdateVersion, target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, multiple: true},
-                'sessionIdle' : {text: _main.errorSessionIdle, target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, multiple: true},
-                'sessionToken' : {text: _main.errorSessionToken, target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, multiple: true}
+                'refreshFile' : {text: _main.textUpdateVersion, header: _main.textUpdating, target: '#toolbar', maxwidth: 'none', showButton: false, automove: true, noHighlight: true, noArrow: true, multiple: true},
+                'disconnect' : {text: _main.textConnectionLost, header: _main.textDisconnect, target: '#toolbar', maxwidth: 'none', showButton: false, automove: true, noHighlight: true, noArrow: true, multiple: true},
+                'updateVersion' : {text: _main.errorUpdateVersionOnDisconnect, header: _main.titleUpdateVersion, target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, noArrow: true, multiple: true},
+                'sessionIdle' : {text: _main.errorSessionIdle, target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, noArrow: true, multiple: true},
+                'sessionToken' : {text: _main.errorSessionToken, target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, noArrow: true, multiple: true}
             });
 
         },
@@ -270,6 +267,10 @@ define([
             toolbar.chShowComments.on('change',                         _.bind(this.onShowCommentsChange, this));
             toolbar.btnTextComment.on('click',                          _.bind(this.onBtnTextCommentClick, this));
             toolbar.btnTextComment.menu.on('item:click',                _.bind(this.onMenuTextCommentClick, this));
+            toolbar.btnShapeComment.on('click',                         _.bind(this.onBtnShapeCommentClick, this));
+            toolbar.btnShapeComment.menu.on('item:click',               _.bind(this.onMenuShapeCommentClick, this));
+            toolbar.btnShapeComment.menu.on('show:after',               _.bind(this.onMenuShapeCommentShowAfter, this));
+            toolbar.btnShapeComment.on('color:select',                  _.bind(this.onSelectShapeCommentColor, this));
             toolbar.btnStamp.on('click',                                _.bind(this.onBtnStampClick, this));
             toolbar.btnStamp.menu.on('item:click',                      _.bind(this.onMenuStampClick, this));
             toolbar.btnStamp.menu.on('show:after',                      _.bind(this.onStampShowAfter, this));
@@ -355,7 +356,6 @@ define([
             toolbar.btnColumns.menu.on('item:click',                    _.bind(this.onColumnsSelect, this));
             toolbar.btnColumns.menu.on('show:before',                   _.bind(this.onBeforeColumns, this));
             toolbar.btnTextDir.menu.on('item:click',                    _.bind(this.onTextDirClick, this));
-            toolbar.btnTextDir.menu.on('show:after',                    _.bind(this.onTextDirShowAfter, this));
             toolbar.btnClearStyle.on('click',                           _.bind(this.onClearStyleClick, this));
             toolbar.btnShapeAlign.menu.on('item:click',                 _.bind(this.onShapeAlign, this));
             toolbar.btnShapeAlign.menu.on('show:before',                _.bind(this.onBeforeShapeAlign, this));
@@ -424,6 +424,7 @@ define([
             this.api.asc_registerCallback('asc_onStampsReady', _.bind(this.onApiStampsReady, this));
             this.getApplication().getController('Common.Controllers.Fonts').setApi(this.api);
             this.api.asc_registerCallback('asc_onCanPastePage',           _.bind(this.onApiCanPastePage, this));
+            this.api.asc_registerCallback('asc_onStartAddShapeChanged', _.bind(this.onStartAddShapeChanged, this)); //for shape comments
 
             if (this.mode.canPDFEdit) {
                 this.api.asc_registerCallback('asc_onMathTypes', _.bind(this.onApiMathTypes, this));
@@ -591,17 +592,20 @@ define([
                 in_smartart = false,
                 in_smartart_internal = false,
                 in_annot = false,
+                in_text_annot = false,
                 annot_lock = false,
                 page_deleted = false,
                 page_rotate_lock = false,
                 page_edit_text = false,
                 in_form = false,
                 in_check_form = false,
-                in_text_form = false;
+                in_text_form = false,
+                in_chart = false;
 
             while (++i < selectedObjects.length) {
                 type = selectedObjects[i].get_ObjectType();
                 pr   = selectedObjects[i].get_ObjectValue();
+                if (!pr) continue;
 
                 if (type === Asc.c_oAscTypeSelectElement.Paragraph) {
                     paragraph_locked = pr.get_Locked();
@@ -620,6 +624,7 @@ define([
                     }
                     if (type == Asc.c_oAscTypeSelectElement.Chart) {
                         no_columns = true;
+                        in_chart = true;
                     }
                     if (type == Asc.c_oAscTypeSelectElement.Shape) {
                         var shapetype = pr.asc_getType();
@@ -638,9 +643,12 @@ define([
                 } else if (type === Asc.c_oAscTypeSelectElement.Math) {
                     in_equation = true;
                 } else if (type === Asc.c_oAscTypeSelectElement.Annot) {
+                    var annotPr = pr.asc_getAnnotProps();
                     in_annot = true;
-                    if (pr.asc_getCanEditText())
+                    if (annotPr && annotPr.asc_getCanEditText && annotPr.asc_getCanEditText()) {
+                        in_text_annot = true;
                         no_text = false;
+                }
                 } else if (type == Asc.c_oAscTypeSelectElement.PdfPage) {
                     page_deleted = pr.asc_getDeleteLock();
                     page_rotate_lock = pr.asc_getRotateLock();
@@ -651,7 +659,20 @@ define([
                     no_text = false;
                     in_text_form = ft===AscPDF.FIELD_TYPES.text || ft===AscPDF.FIELD_TYPES.combobox || ft===AscPDF.FIELD_TYPES.listbox;
                     in_check_form = ft===AscPDF.FIELD_TYPES.checkbox || ft===AscPDF.FIELD_TYPES.radiobutton;
-                }
+            }
+            }
+
+            if (this._state.in_chart !== in_chart) {
+                if ( !in_chart && this.toolbar.isTabActive('charttab') )
+                    this.toolbar.setTab('home');
+                this.toolbar.setVisible('charttab', !!in_chart);
+                if (in_chart && this._state.showChartTab)
+                    this.toolbar.setTab('charttab');
+
+                if (in_chart) Common.UI.TooltipManager.showTip('tipChartTab');
+                else Common.UI.TooltipManager.closeTip('tipChartTab');
+
+                this._state.in_chart = in_chart;
             }
 
             if (this._state.prcontrolsdisable !== paragraph_locked) {
@@ -686,7 +707,7 @@ define([
                 toolbar.lockToolbar(Common.enumLock.inCheckForm, in_check_form, {array: toolbar.paragraphControls});
             }
 
-            let cant_align = no_paragraph && !in_text_form;
+            let cant_align = no_paragraph && !in_text_form && !in_text_annot;
             toolbar.lockToolbar(Common.enumLock.cantAlign, cant_align, {array: [toolbar.btnHorizontalAlign]});
             !cant_align && toolbar.btnHorizontalAlign.menu.items[3].setDisabled(in_text_form);
 
@@ -741,9 +762,9 @@ define([
                 toolbar.lockToolbar(Common.enumLock.pageDeleted, page_deleted);
             }
             toolbar.lockToolbar(Common.enumLock.pageRotateLock, page_rotate_lock, {array: [toolbar.btnRotatePage]});
-            toolbar.lockToolbar(Common.enumLock.cantRotatePage, !this.api.asc_CanRotatePages(), {array: [toolbar.btnRotatePage]});
+            toolbar.lockToolbar(Common.enumLock.cantRotatePage, !this.api.asc_CanRotatePages([this.api.getCurrentPage()]), {array: [toolbar.btnRotatePage]});
             toolbar.lockToolbar(Common.enumLock.pageEditText, page_edit_text, {array: [toolbar.btnEditText]});
-            toolbar.lockToolbar(Common.enumLock.cantDelPage, !this.api.asc_CanRemovePages(), {array: [toolbar.btnDelPage]});
+            toolbar.lockToolbar(Common.enumLock.cantDelPage, !this.api.asc_CanRemovePages([this.api.getCurrentPage()]), {array: [toolbar.btnDelPage]});
         },
 
         onApiZoomChange: function(percent, type) {},
@@ -811,8 +832,8 @@ define([
                     options.asc_setIsSaveAs(false);
                     me.api.asc_DownloadOrigin(options);
                 } else {
-                    Common.UI.info({
-                        maxwidth: 500,
+                Common.UI.info({
+                    maxwidth: 500,
                         msg: this.errorAccessDeny,
                         callback: function(btn) {
                             Common.NotificationCenter.trigger('edit:complete', toolbar);
@@ -920,7 +941,7 @@ define([
             if (me.api) {
                 var res = (type === 'cut') ? me.api.Cut() : ((type === 'copy') ? me.api.Copy() : me.api.Paste());
                 if (!res) {
-                    if (!Common.localStorage.getBool("pdfe-hide-copywarning")) {
+                    if (!Common.localStorage.getBool("pdfe-hide-copywarning") && (type === 'paste' || me.toolbar.mode.canCopy)) {
                         (new Common.Views.CopyWarningDialog({
                             width: '30%',
                             handler: function(dontshow) {
@@ -948,6 +969,7 @@ define([
                 this._state.select_tool = type==='select';
                 this.api.asc_setViewerTargetType(type);
                 this.mode.isEdit && this.api.asc_StopInkDrawer();
+                this.mode.isEdit && this.api.SetRedactTool(false);
                 Common.NotificationCenter.trigger('edit:complete', this.toolbar);
             }
         },
@@ -961,6 +983,10 @@ define([
             }
         },
 
+        onSelectChart: function () {
+            this._state.showChartTab = true;
+        },
+
         clearSelectTools: function() {
             if (this.toolbar && this.toolbar.btnSelectTool && (this.toolbar.btnSelectTool.pressed || this.toolbar.btnHandTool.pressed)) {
                 this._state.select_tool = this.toolbar.btnSelectTool.pressed;
@@ -970,7 +996,7 @@ define([
         },
 
         updateSelectTools: function() {
-            if (this.toolbar && this.toolbar.btnSelectTool) {
+            if (this.toolbar && this.toolbar.btnSelectTool && !this._state.inDrawingMode && !this.toolbar.btnStrikeout.pressed && !this.toolbar.btnHighlight.pressed && !this.toolbar.btnUnderline.pressed) {
                 this.toolbar.btnSelectTool.toggle(!!this._state.select_tool, true);
                 this.toolbar.btnHandTool.toggle(!this._state.select_tool, true);
             }
@@ -1182,12 +1208,14 @@ define([
 
         onDrawStart: function() {
             this.api && this.api.SetMarkerFormat(undefined, false);
+            this._state.inDrawingMode = true;
             this.onClearHighlight();
             this.turnOnShowComments();
             this.clearSelectTools();
         },
 
         onDrawStop: function() {
+            this._state.inDrawingMode = false;
             this.onClearHighlight();
             this.turnOnShowComments();
             this.updateSelectTools();
@@ -1236,6 +1264,97 @@ define([
 
             Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnTextComment);
             Common.component.Analytics.trackEvent('ToolBar', 'Add Text');
+        },
+
+         onBtnShapeCommentClick: function(btn, e) {
+            btn.menu.getItems(true).filter(function(item) {
+                return item.value == btn.options.shapeType
+            })[0].setChecked(true);
+            if(!btn.pressed) {
+                btn.menu.clearAll(true);
+            }
+            this.onInsertShapeComment(btn, e);
+        },
+
+        onMenuShapeCommentClick: function(menu, item, e) {
+            var newType = item.value;
+            if (newType===null || newType===undefined) return;
+            this.toolbar.btnShapeComment.toggle(true);
+            var oldType = this.toolbar.btnShapeComment.options.shapeType;
+            if(newType !== oldType){
+                this.toolbar.btnShapeComment.changeIcon({
+                    next: item.options.iconClsForMainBtn,
+                    curr: this.toolbar.btnShapeComment.menu.getItems(true).filter(function(mnu){return mnu.value == oldType})[0].options.iconClsForMainBtn
+                });
+                this.toolbar.btnShapeComment.updateHint(item.options.tipForMainBtn);
+                // this.toolbar.btnShapeComment.setCaption(item.options.captionForMainBtn);
+                this.toolbar.btnShapeComment.options.shapeType = newType;
+            }
+            this.onInsertShapeComment(this.toolbar.btnShapeComment, item);
+        },
+
+        onMenuShapeCommentShowAfter: function(menu) {
+        },
+
+        onShapeCommentSizeClick: function (direction) {
+            var btn = this.toolbar.btnShapeComment;
+            if (!btn.pressed) {
+                btn.toggle(true, true);
+            }
+            var size = btn.options.currentSize;
+            size.idx =  (direction==='up') ? Math.min(size.idx+1, size.arr.length-1) : Math.max(size.idx-1, 0);
+            btn.sizePicker.setValue(size.arr[size.idx] + ' ' + this.toolbar.txtMM);
+            this.onInsertShapeComment(btn);
+        },
+
+        onSelectShapeCommentColor: function(btn, color) {
+            if (!btn.pressed) {
+                btn.toggle(true, true);
+            }
+            btn.currentColor = color;
+            this.onInsertShapeComment(btn);
+        },
+
+        onInsertShapeComment: function(btn, item) {
+            if (btn.pressed) {
+                var stroke = new Asc.asc_CStroke();
+                stroke.put_type( Asc.c_oAscStrokeType.STROKE_COLOR);
+                stroke.put_color(Common.Utils.ThemeColor.getRgbColor(btn.currentColor));
+                stroke.asc_putPrstDash(Asc.c_oDashType.solid);
+                stroke.put_width(btn.options.currentSize.arr[btn.options.currentSize.idx]);
+                stroke.put_transparent(100 * 2.55);
+                this.api.StartAddAnnot(btn.options.shapeType, stroke, true);
+                $(document.body).on('mouseup', this.binding.checkInsertShapeComment);
+            } else {
+                this.api.StartAddAnnot('', undefined, false);
+                $(document.body).off('mouseup', this.binding.checkInsertShapeComment);
+            }
+            Common.NotificationCenter.trigger('edit:complete', this.toolbar, this.toolbar.btnShapeComment);
+            Common.component.Analytics.trackEvent('ToolBar', 'Add Shape Annotation');
+        },
+
+        onStartAddShapeChanged: function() {
+            if ( this.toolbar.btnShapeComment.pressed ) {
+                this.toolbar.btnShapeComment.toggle(false, true);
+                this.toolbar.btnShapeComment.menu.clearAll(true);
+            }
+            $(document.body).off('mouseup', this.binding.checkInsertShapeComment);
+        },
+
+        checkInsertShapeComment:  function(e) {
+            var cmp = $(e.target),
+                cmp_sdk = cmp.closest('#editor_sdk'),
+                btn_id = cmp.closest('button').attr('id');
+            if (btn_id===undefined)
+                btn_id = cmp.closest('.btn-group').attr('id');
+            if (cmp.attr('id') != 'editor_sdk' && cmp_sdk.length<=0) {
+                if ( this.toolbar.btnShapeComment.pressed && this.toolbar.btnShapeComment.id !== btn_id ) {
+                    this.api.StartAddAnnot('', undefined, false);
+                    $(document.body).off('mouseup', this.binding.checkInsertShapeComment);
+                    this.toolbar.btnShapeComment.toggle(false, true);
+                    Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+                }
+            }
         },
 
         onBtnStampClick: function(btn, e) {
@@ -1451,8 +1570,27 @@ define([
                     Array.prototype.push.apply(me.toolbar.lockControls, drawtab.getView().getButtons());
                     Array.prototype.push.apply(me.toolbar.paragraphControls, drawtab.getView().getButtons());
                 }
-
+                me.getApplication().getController('Common.Controllers.ExternalLinks').setConfig({toolbar: me}).setApi(me.api);
                 !config.canComments && me.toolbar.setVisible('comment', false);
+
+                var tab = {action: 'review', caption: me.toolbar.textTabCollaboration, dataHintTitle: 'U', layoutname: 'toolbar-collaboration'};
+                var $panel = me.getApplication().getController('Common.Controllers.ReviewChanges').createToolbarPanel();
+                if ( $panel ) {
+                    me.toolbar.addTab(tab, $panel, 7);
+                    me.toolbar.setVisible('review', (config.isPDFAnnotate || config.isPDFEdit) && Common.UI.LayoutManager.isElementVisible('toolbar-collaboration') ); // use config.canViewReview in review controller. set visible review tab in view mode only when asc_HaveRevisionsChanges
+                }
+            }
+
+            tab = {caption: me.textTabChart, action: 'charttab', extcls: config.isEdit ? 'canedit' : '', layoutname: 'toolbar-charttab', dataHintTitle: 'B', aux: true};
+            var charttab = me.getApplication().getController('Common.Controllers.ChartTab');
+            charttab.setApi(me.api).setConfig({toolbar: me});
+            var view = charttab.getView('Common.Views.ChartTab');
+            var chartbuttons = view.getButtons();
+            var $panel = charttab.createToolbarPanel();
+            if ($panel) {
+                me.toolbar.addTab(tab, $panel);
+                me._state.inchart && me.toolbar.setVisible('charttab', true);
+                Array.prototype.push.apply(me.toolbar.lockControls, chartbuttons);
             }
 
             var tab = {caption: me.toolbar.textTabView, action: 'view', extcls: config.isEdit ? 'canedit' : '', layoutname: 'toolbar-view', dataHintTitle: 'W'};
@@ -1477,6 +1615,17 @@ define([
                     me.toolbar.setVisible('ins', true);
                 }
 
+                tab = {caption: me.toolbar.textTabRedact, action: 'red', extcls: config.isEdit ? 'canedit' : '', layoutname: 'toolbar-redact', dataHintTitle: 'X'};
+                var redacttab = me.getApplication().getController('RedactTab');
+                redacttab.setApi(me.api).setConfig({toolbar: me, mode: config});
+                redacttab.onAppReady(config);
+                $panel = redacttab.createToolbarPanel()
+                if ($panel) {
+                    me.toolbar.addTab(tab, $panel, 2);
+                    me.toolbar.setVisible('red', true);
+                    redacttab.onDocumentReady();
+                };
+
                 if (config.canFeatureForms) {
                     tab = {caption: me.textTabForms, action: 'forms', layoutname: 'toolbar-forms', dataHintTitle: 'M'};
                     var forms = me.getApplication().getController('FormsTab');
@@ -1487,12 +1636,12 @@ define([
                         me.toolbar.setVisible('forms', true);
 
                         Array.prototype.push.apply(me.toolbar.lockControls, forms.getView('FormsTab').getButtons());
-                    }
+            }
                 }
             }
         },
 
-        applyMode: function() {
+        applyMode: function(activeTab) {
             var me = this,
                 toolbar = this.toolbar,
                 $host = $(toolbar.$layout);
@@ -1521,6 +1670,15 @@ define([
                     instab.onDocumentReady();
                 }, 50);
 
+                var tab = {caption: toolbar.textTabRedact, action: 'red', extcls: this.mode.isEdit ? 'canedit' : '', layoutname: 'toolbar-redact', dataHintTitle: 'X'};
+                var redacttab = this.getApplication().getController('RedactTab');
+                redacttab.setApi(this.api).setConfig({toolbar: this, mode: this.mode});
+                toolbar.addTab(tab, redacttab.createToolbarPanel(), 2);
+                redacttab.onAppReady(this.mode);
+                setTimeout(function(){
+                    redacttab.onDocumentReady();
+                }, 50);
+
                 if (this.mode.canFeatureForms) {
                     tab = {caption: me.textTabForms, action: 'forms', layoutname: 'toolbar-forms', dataHintTitle: 'M'};
                     var forms = this.getApplication().getController('FormsTab');
@@ -1533,14 +1691,23 @@ define([
 
                 this._state.initEditing = false;
             }
-            if (this.mode.isPDFEdit || toolbar.isTabActive('ins') || toolbar.isTabActive('forms'))
+            if (activeTab)
+                toolbar.setTab(activeTab);
+            else if (this.mode.isPDFEdit ||  toolbar.isTabActive('ins') || toolbar.isTabActive('forms') || toolbar.isTabActive('red'))
                 toolbar.setTab('home');
-            toolbar.setVisible('ins', this.mode.isPDFEdit);
-            toolbar.setVisible('forms', this.mode.isPDFEdit && this.mode.canFeatureForms);
-            $host.find('.annotate').toggleClass('hidden', this.mode.isPDFEdit);
-            $host.find('.pdfedit').toggleClass('hidden', !this.mode.isPDFEdit);
 
-            this.mode.isPDFEdit ? Common.UI.TooltipManager.showTip('formEditor') : Common.UI.TooltipManager.closeTip('formEditor');
+            toolbar.setVisible('ins', this.mode.isPDFEdit);
+            toolbar.setVisible('red', this.mode.isPDFEdit);
+            toolbar.setVisible('forms', this.mode.isPDFEdit && this.mode.canFeatureForms);
+
+            !this.mode.isPDFEdit && $host.find('.annotate').addClass('transparent');
+            $host.find('.annotate').toggleClass('hidden', this.mode.isPDFEdit);
+            this.mode.isPDFEdit && $host.find('.pdfedit').addClass('transparent');
+            $host.find('.pdfedit').toggleClass('hidden', !this.mode.isPDFEdit);
+            toolbar.moveAllFromMoreButton('home');
+            toolbar.processPanelVisible(null, true, true);
+            $host.find('.annotate').removeClass('transparent');
+            $host.find('.pdfedit').removeClass('transparent');
         },
         
         onAppReady: function (config) {
@@ -1581,6 +1748,30 @@ define([
                         me.toolbar.btnSubmit.updateHint(me.textRequired);
                     }
                 }
+
+                me.btnsComment = [];
+                if ( config.canComments ) {
+                    var _set = Common.enumLock;
+                    me.btnsComment = Common.Utils.injectButtons(me.toolbar.$el.find('.slot-comment'), 'tlbtn-addcomment-', 'toolbar__icon btn-big-add-comment', me.toolbar.capBtnComment, [_set.lostConnect], undefined, undefined, undefined, '1', 'bottom', 'small');
+
+                    if ( me.btnsComment.length ) {
+                        var _comments = PDFE.getController('Common.Controllers.Comments').getView();
+                        me.btnsComment.forEach(function (btn) {
+                            btn.updateHint( _comments.textHintAddComment );
+                            btn.on('click', function (btn, e) {
+                                Common.NotificationCenter.trigger('app:comment:add', 'toolbar');
+                            });
+                            if (btn.cmpEl.closest('#review-changes-panel').length>0)
+                                btn.setCaption(me.toolbar.capBtnAddComment);
+                        }, me);
+                        if (_comments.buttonAddNew) {
+                            _comments.buttonAddNew.options.lock = [ _set.lostConnect ];
+                            me.btnsComment.add(_comments.buttonAddNew);
+                        }
+                        Array.prototype.push.apply(me.toolbar.lockControls, me.btnsComment);
+                        Array.prototype.push.apply(me.toolbar.toolbarControls, me.btnsComment);
+                    }
+                }
             });
         },
 
@@ -1603,17 +1794,19 @@ define([
                 this.requiredTooltip.close();
                 this.requiredTooltip = undefined;
             }
-            (tab === 'file') && Common.UI.TooltipManager.closeTip('copyPages');
-            (tab === 'forms') && Common.UI.TooltipManager.closeTip('formEditor');
-            if (tab === 'view') {
-                Common.UI.TooltipManager.getNeedShow('modernTheme') && Common.UI.TooltipManager.closeTip('formEditor');
-                Common.UI.TooltipManager.showTip('modernTheme')
-            } else
-                Common.UI.TooltipManager.closeTip('modernTheme');
+
+            if (tab == 'charttab')
+                Common.UI.TooltipManager.closeTip('tipChartTab');
+
+            (tab === 'ins') ? Common.UI.TooltipManager.showTip('createLink') : Common.UI.TooltipManager.closeTip('createLink');
+        },
+
+        onClickTab: function(tab) {
+            this._state.showChartTab = tab ==='charttab';
         },
 
         onTabCollapse: function(tab) {
-            Common.UI.TooltipManager.closeTip('modernTheme');
+            Common.UI.TooltipManager.closeTip('createLink');
         },
 
         applySettings: function() {
@@ -2170,7 +2363,7 @@ define([
                 });
 
                 if (!item) {
-                    value = /^\+?(\d*(\.|,).?\d+)$|^\+?(\d+(\.|,)?\d*)$/.exec(record.value);
+                    value = /^\+?(\d*(\.|,).?\d+)$|^\+?(\d+(\.|,)?\d*)$/.exec(record.value.trim());
 
                     if (!value) {
                         value = this._getApiTextSize();
@@ -2586,10 +2779,6 @@ define([
             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
         },
 
-        onTextDirShowAfter: function(menu, item) {
-            Common.UI.TooltipManager.closeTip('rtlDirection');
-        },
-
         onApiTextDirection: function (isRtl){
             var toolbar = this.toolbar,
                 oldRtl = toolbar.btnTextDir.options.dirRtl,
@@ -2653,7 +2842,7 @@ define([
 
         textWarning: 'Warning',
         notcriticalErrorTitle: 'Warning',
-        txtNeedCommentMode: 'To save changes to the file, switch to Сommenting mode. Or you can download a copy of the modified file.',
+        txtNeedCommentMode: 'To save changes to the file, switch to Commenting mode. Or you can download a copy of the modified file.',
         txtNeedDownload: 'At the moment, PDF viewer can only save new changes in separate file copies. It doesn\'t support co-editing and other users won\'t see your changes unless you share a new file version.',
         txtDownload: 'Download',
         txtSaveCopy: 'Save copy',

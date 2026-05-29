@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 define([
     'core'
@@ -41,17 +44,14 @@ define([
         ],
 
         initialize: function() {
-            var value = Common.localStorage.getItem("sse-print-settings-range");
-            value = (value!==null) ? parseInt(value) : Asc.c_oAscPrintType.ActiveSheets;
-            this._currentPrintType = value;
+            this._currentPrintType = Asc.c_oAscPrintType.ActiveSheets;
 
             this.adjPrintParams = new Asc.asc_CAdjustPrint();
-            this.adjPrintParams.asc_setPrintType(value);
+            this.adjPrintParams.asc_setPrintType(this._currentPrintType);
 
             this._state = {
                 firstPrintPage: 0,
-                isPrintPreviewOpenedOnce: false,
-                isPrinterInfoLoad: false,
+                shouldUpdateCmbPrinter: false, 
                 currentPrinter: null,
                 printersList: []
             };
@@ -214,16 +214,13 @@ define([
             var opt = props.asc_getPageSetup();
             this._originalPageSettings = opt;
 
-            var item = panel.cmbPaperOrientation.store.findWhere({value: opt.asc_getOrientation()});
-            if (item) panel.cmbPaperOrientation.setValue(item.get('value'));
-
             var w = opt.asc_getWidth();
             var h = opt.asc_getHeight();
             if ( panel.setOriginalPageSize )
                 panel.setOriginalPageSize(w, h);
 
             var store = panel.cmbPaperSize.store;
-            item = null;
+            let item = null;
             for (var i=0; i<store.length; i++) {
                 var rec = store.at(i),
                     size = rec.get('size'),
@@ -253,8 +250,10 @@ define([
             this.fitScale = opt.asc_getScale();
             this.setScaling(panel, this.fitWidth, this.fitHeight, this.fitScale);
 
-            item = panel.cmbPaperOrientation.store.findWhere({value: opt.asc_getOrientation()});
-            if (item) panel.cmbPaperOrientation.setValue(item.get('value'));
+            this._state.pgorient = opt.asc_getOrientation();
+            item = panel.cmbPaperOrientation.store.findWhere({ value: 'auto' });
+            !item && (item = panel.cmbPaperOrientation.store.findWhere({ value: this._state.pgorient }));
+            item && panel.cmbPaperOrientation.setValue(item.get('value'));
 
             if (panel.spnFirstPage) {
                 value = opt.asc_getFirstPageNumber();
@@ -327,11 +326,17 @@ define([
             props.asc_setHeadings(panel.chPrintRows.getValue()==='checked');
 
             var opt = this._changedProps[sheet] ? this._changedProps[sheet].asc_getPageSetup() : new Asc.asc_CPageSetup();
-            opt.asc_setOrientation(panel.cmbPaperOrientation.getValue() == '-' ? undefined : panel.cmbPaperOrientation.getValue());
+            opt.asc_setOrientation(this._state.pgorient == '-' ? undefined : this._state.pgorient);
 
-            var size = panel.cmbPaperSize.getSelectedRecord().size;
-            var pagew = size[0];
-            var pageh = size[1];
+            var pagew, pageh;
+            const cmbPaperSizeRecord = panel.cmbPaperSize.getSelectedRecord();
+            if(cmbPaperSizeRecord) {
+                pagew = cmbPaperSizeRecord.size[0];
+                pageh = cmbPaperSizeRecord.size[1];
+            } else {
+                pagew = panel.getOriginalPageSize().w;
+                pageh = panel.getOriginalPageSize().h;
+            }
 
             opt.asc_setWidth(pagew ? pagew : (this._originalPageSettings ? this._originalPageSettings.asc_getWidth() : undefined));
             opt.asc_setHeight(pageh? pageh : (this._originalPageSettings ? this._originalPageSettings.asc_getHeight() : undefined));
@@ -407,7 +412,7 @@ define([
             this.adjPrintParams.asc_setPageOptionsMap(this._changedProps);
 
             this.fillPrintOptions(this.adjPrintParams, false);
-            this.adjPrintParams.asc_setActiveSheetsArray(this.printSettings.getRange() === Asc.c_oAscPrintType.ActiveSheets ? SSE.getController('Statusbar').getSelectTabs() : null);
+            this.adjPrintParams.asc_setActiveSheetsArray(this.printSettings.getRange() === Asc.c_oAscPrintType.Selection || this.printSettings.getRange() === Asc.c_oAscPrintType.ActiveSheets ? SSE.getController('Statusbar').getSelectTabs() : null);
 
             var opts = new Asc.asc_CDownloadOptions(null, Common.Utils.isChrome || Common.Utils.isOpera || Common.Utils.isGecko && Common.Utils.firefoxVersion>86);
             opts.asc_setAdvancedOptions(this.adjPrintParams);
@@ -422,9 +427,8 @@ define([
             this._isPreviewVisible = true;
             !!pageCount && this.updatePreview();
 
-            if(this._state.isPrinterInfoLoad && !this._state.isPrintPreviewOpenedOnce) {
-                this._state.isPrintPreviewOpenedOnce = true;
-                this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList);      
+            if(this._state.shouldUpdateCmbPrinter) {
+                this.updateCmbPrinter();      
             }
         },
 
@@ -483,7 +487,7 @@ define([
                 this.adjPrintParams.asc_setPrintType(printtype);
                 this.adjPrintParams.asc_setPageOptionsMap(this._changedProps);
                 this.adjPrintParams.asc_setIgnorePrintArea(this.printSettingsDlg.getIgnorePrintArea());
-                this.adjPrintParams.asc_setActiveSheetsArray(printtype === Asc.c_oAscPrintType.ActiveSheets ? SSE.getController('Statusbar').getSelectTabs() : null);
+                this.adjPrintParams.asc_setActiveSheetsArray(printtype === Asc.c_oAscPrintType.Selection || printtype === Asc.c_oAscPrintType.ActiveSheets ? SSE.getController('Statusbar').getSelectTabs() : null);
                 var pageFrom = this.printSettingsDlg.getPagesFrom(),
                     pageTo = this.printSettingsDlg.getPagesTo();
                 if (pageFrom > pageTo) {
@@ -493,7 +497,6 @@ define([
                 }
                 this.adjPrintParams.asc_setStartPageIndex(pageFrom > 0 ? pageFrom - 1 : null);
                 this.adjPrintParams.asc_setEndPageIndex(pageTo > 0 ? pageTo - 1 : null);
-                Common.localStorage.setItem("sse-print-settings-range", printtype);
 
                 var sheetIndex = printtype === Asc.c_oAscPrintType.EntireWorkbook ? 0 : this.api.asc_getActiveWorksheetIndex(),
                     props = this._changedProps[sheetIndex] || this.api.asc_getPageOptions(sheetIndex),
@@ -540,7 +543,7 @@ define([
             this.adjPrintParams.asc_setPrintType(printType);
             this.adjPrintParams.asc_setPageOptionsMap(this._changedProps);
             this.adjPrintParams.asc_setIgnorePrintArea(this.printSettings.getIgnorePrintArea());
-            this.adjPrintParams.asc_setActiveSheetsArray(printType === Asc.c_oAscPrintType.ActiveSheets ? SSE.getController('Statusbar').getSelectTabs() : null);
+            this.adjPrintParams.asc_setActiveSheetsArray(printType === Asc.c_oAscPrintType.Selection || printType === Asc.c_oAscPrintType.ActiveSheets ? SSE.getController('Statusbar').getSelectTabs() : null);
             var pageFrom = this.printSettings.getPagesFrom(),
                 pageTo = this.printSettings.getPagesTo();
             if (pageFrom > pageTo) {
@@ -550,23 +553,30 @@ define([
             }
             this.adjPrintParams.asc_setStartPageIndex(pageFrom > 0 ? pageFrom - 1 : null);
             this.adjPrintParams.asc_setEndPageIndex(pageTo > 0 ? pageTo - 1 : null);
-            Common.localStorage.setItem("sse-print-settings-range", printType);
 
             var sheetIndex = printType === Asc.c_oAscPrintType.EntireWorkbook ? 0 : this.api.asc_getActiveWorksheetIndex(),
                 props = this._changedProps[sheetIndex] || this.api.asc_getPageOptions(sheetIndex),
                 pageSetup = props.asc_getPageSetup(),
                 size = [pageSetup.asc_getWidth(), pageSetup.asc_getHeight()],
-                orientation = pageSetup.asc_getOrientation(),
-                printerOption = (this.printSettings.cmbPrinter ? this.printSettings.cmbPrinter.getSelectedRecord() : null);
+                orientationOption = (this.printSettings.cmbPaperOrientation ? this.printSettings.cmbPaperOrientation.getSelectedRecord() : null),
+                orientation = orientationOption && orientationOption.value === 'auto'
+                    ? 'auto'
+                    :  (!pageSetup.asc_getOrientation() ? 'portrait' : 'landscape'),
+                printerOption = (this.printSettings.cmbPrinter ? this.printSettings.cmbPrinter.getSelectedRecord() : null),
+                colorPrintingValue = this.printSettings.cmbColorPrinting
+                    ? this.printSettings.cmbColorPrinting.getValue()
+                    : null;
+                    
             this.adjPrintParams.asc_setNativeOptions({
                 usesystemdialog: useSystemDialog,
                 printer: printerOption ? printerOption.value : null,
+                colorMode: colorPrintingValue === 'color',
                 paperSize: {
                     w: size[0],
                     h: size[1],
                     preset: this.findPagePreset(this.printSettings, size[0], size[1])
                 },
-                paperOrientation: !orientation ? 'portrait' : 'landscape',
+                paperOrientation: orientation,
                 copies: this.printSettings.spnCopies ? this.printSettings.spnCopies.getNumberValue() || 1 : 1,
                 sides: this.printSettings.cmbSides ? this.printSettings.cmbSides.getValue() : 'one'
             });
@@ -586,7 +596,7 @@ define([
 
         registerControlEvents: function(panel) {
             panel.cmbPaperSize.on('selected', _.bind(this.propertyChange, this, panel));
-            panel.cmbPaperOrientation.on('selected', _.bind(this.propertyChange, this, panel));
+            panel.cmbPaperOrientation.on('selected', _.bind(this.propertyChange, this, panel, 'orientation'));
             panel.cmbLayout.on('selected', _.bind(this.propertyChange, this, panel, 'scale'));
             panel.cmbPaperMargins.on('selected', _.bind(this.propertyChange, this, panel, 'margins'));
             panel.chPrintGrid.on('change', _.bind(this.propertyChange, this, panel));
@@ -611,6 +621,9 @@ define([
                     me.updatePreview();
                 }
             };
+            if(property === 'orientation' && record.value != 'auto') {
+                this._state.pgorient = record.value;
+            }
             if (property === 'scale' && record.value === 'customoptions') {
                 var props = (me._changedProps.length > 0 && me._changedProps[panel.cmbSheet.getValue()]) ? me._changedProps[panel.cmbSheet.getValue()] : me.api.asc_getPageOptions(panel.cmbSheet.getValue(), true);
                 var win = new SSE.Views.ScaleDialog({
@@ -731,14 +744,22 @@ define([
             }
         },
 
-        setPrinterInfo: function(currentPrinter, list) {
-            this._state.isPrinterInfoLoad = true;
-            this._state.currentPrinter = currentPrinter;
-            this._state.printersList = list;
-            if(this.printSettings && this.printSettings.isVisible() && !this._state.isPrintPreviewOpenedOnce) {
-                this._state.isPrintPreviewOpenedOnce = true;
-                this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList);
+        setPrintersInfo: function(currentPrinter, list, isWaitingForPrinters) {
+            this._state.currentPrinter = currentPrinter || this._state.currentPrinter;
+            this._state.printersList = _.uniq(_.union(this._state.printersList, list), function(option) {
+                return option.name;
+            });
+            this._state.isWaitingForPrinters = !!isWaitingForPrinters;
+            this._state.shouldUpdateCmbPrinter = true;
+
+            if(this.printSettings && this.printSettings.isVisible() && this._state.shouldUpdateCmbPrinter) {
+                this.updateCmbPrinter();
             }
+        },
+
+        updateCmbPrinter: function() {
+            this.printSettings.updateCmbPrinter(this._state.currentPrinter, this._state.printersList, this._state.isWaitingForPrinters);
+            this._state.shouldUpdateCmbPrinter = false;
         },
 
         fillComponents: function(panel, selectdata) {
@@ -956,7 +977,7 @@ define([
                 adjPrintParams.asc_setPrintType(printType);
                 adjPrintParams.asc_setPageOptionsMap(this._changedProps);
                 adjPrintParams.asc_setIgnorePrintArea(this.printSettings.getIgnorePrintArea());
-                adjPrintParams.asc_setActiveSheetsArray(printType === Asc.c_oAscPrintType.ActiveSheets ? SSE.getController('Statusbar').getSelectTabs() : null);
+                adjPrintParams.asc_setActiveSheetsArray(printType === Asc.c_oAscPrintType.Selection || printType === Asc.c_oAscPrintType.ActiveSheets ? SSE.getController('Statusbar').getSelectTabs() : null);
                 var pageFrom = this.printSettings.getPagesFrom(),
                     pageTo = this.printSettings.getPagesTo();
                 if (pageFrom > pageTo) {

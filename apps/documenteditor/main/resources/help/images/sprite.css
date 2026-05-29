@@ -1008,26 +1008,32 @@
 	height: 19px;
 }
 
-.icon-insertcolumns {
+.icon-icons_icon {
 	background-position: -332px 0px;
 	width: 18px;
 	height: 19px;
 }
 
-.icon-insert_dropcap_icon {
+.icon-insertcolumns {
 	background-position: -332px -19px;
 	width: 18px;
 	height: 19px;
 }
 
-.icon-tocrefreshicon {
+.icon-insert_dropcap_icon {
 	background-position: -332px -38px;
+	width: 18px;
+	height: 19px;
+}
+
+.icon-tocrefreshicon {
+	background-position: -332px -57px;
 	width: 16px;
 	height: 19px;
 }
 
 .icon-removecomment_toptoolbar {
-	background-position: -332px -57px;
+	background-position: -332px -76px;
 	width: 15px;
 	height: 19px;
 }
@@ -1057,37 +1063,37 @@
 }
 
 .icon-new_icon {
-	background-position: -332px -76px;
+	background-position: -332px -95px;
 	width: 18px;
 	height: 18px;
 }
 
 .icon-pencil_tool {
-	background-position: -332px -94px;
+	background-position: -332px -113px;
 	width: 18px;
 	height: 18px;
 }
 
 .icon-phone_number_icon {
-	background-position: -332px -112px;
+	background-position: -332px -131px;
 	width: 18px;
 	height: 18px;
 }
 
 .icon-search_advanced {
-	background-position: -332px -130px;
+	background-position: -332px -149px;
 	width: 18px;
 	height: 18px;
 }
 
 .icon-usericon {
-	background-position: -332px -148px;
+	background-position: -332px -167px;
 	width: 18px;
 	height: 18px;
 }
 
 .icon-mailmergeicon {
-	background-position: -332px -166px;
+	background-position: -332px -185px;
 	width: 15px;
 	height: 18px;
 }
@@ -1111,169 +1117,175 @@
 }
 
 .icon-search_icon_header {
-	background-position: -332px -184px;
+	background-position: -332px -203px;
 	width: 17px;
 	height: 17px;
 }
 
 .icon-easybib {
-	background-position: -332px -201px;
+	background-position: -332px -220px;
 	width: 16px;
 	height: 17px;
 }
 
 .icon-insertslicer {
-	background-position: -332px -218px;
+	background-position: -332px -237px;
 	width: 16px;
 	height: 17px;
 }
 
 .icon-paste_style {
-	background-position: -332px -235px;
+	background-position: -332px -254px;
 	width: 16px;
 	height: 17px;
 }
 
 .icon-slicer_settings {
-	background-position: -332px -252px;
+	background-position: -332px -271px;
 	width: 16px;
 	height: 17px;
 }
 
 .icon-downloadicon {
-	background-position: -332px -269px;
+	background-position: -332px -288px;
 	width: 15px;
 	height: 17px;
 }
 
 .icon-addgradientpoint {
-	background-position: -332px -286px;
-	width: 12px;
-	height: 17px;
-}
-
-.icon-removegradientpoint {
 	background-position: -172px -108px;
 	width: 12px;
 	height: 17px;
 }
 
-.icon-highlightcolor {
+.icon-removegradientpoint {
+	background-position: -298px -204px;
+	width: 12px;
+	height: 17px;
+}
+
+.icon-chartelements {
 	background-position: -171px -314px;
 	width: 25px;
 	height: 16px;
 }
 
-.icon-complex_field_icon {
+.icon-highlightcolor {
 	background-position: -196px -314px;
+	width: 25px;
+	height: 16px;
+}
+
+.icon-complex_field_icon {
+	background-position: -221px -314px;
 	width: 24px;
 	height: 16px;
 }
 
 .icon-text_field_icon {
-	background-position: -220px -314px;
+	background-position: -245px -314px;
 	width: 24px;
 	height: 16px;
 }
 
 .icon-view_form_icon {
-	background-position: -244px -314px;
+	background-position: -269px -314px;
 	width: 24px;
 	height: 16px;
 }
 
 .icon-insertccicon {
-	background-position: -268px -314px;
+	background-position: -293px -314px;
 	width: 23px;
 	height: 16px;
 }
 
 .icon-table {
-	background-position: -291px -314px;
+	background-position: -316px -314px;
 	width: 22px;
 	height: 16px;
 }
 
 .icon-usersnumber {
-	background-position: -313px -314px;
+	background-position: 0px -332px;
 	width: 22px;
 	height: 16px;
 }
 
 .icon-close_icon {
-	background-position: 0px -332px;
+	background-position: -22px -332px;
 	width: 18px;
 	height: 16px;
 }
 
 .icon-saveupdate {
-	background-position: -18px -332px;
+	background-position: -40px -332px;
 	width: 18px;
 	height: 16px;
 }
 
 .icon-savewhilecoediting {
-	background-position: -36px -332px;
+	background-position: -58px -332px;
 	width: 17px;
 	height: 16px;
 }
 
 .icon-converttorange {
-	background-position: -53px -332px;
+	background-position: -75px -332px;
 	width: 16px;
 	height: 16px;
 }
 
 .icon-dropdownarrow {
-	background-position: -69px -332px;
+	background-position: -91px -332px;
 	width: 16px;
 	height: 16px;
 }
 
 .icon-editcommenticon {
-	background-position: -85px -332px;
+	background-position: -107px -332px;
 	width: 16px;
 	height: 16px;
 }
 
 .icon-favorites_icon {
-	background-position: -101px -332px;
+	background-position: -123px -332px;
 	width: 16px;
 	height: 16px;
 }
 
 .icon-filterbutton {
-	background-position: -117px -332px;
+	background-position: -139px -332px;
 	width: 16px;
 	height: 16px;
 }
 
 .icon-trackchangesstatusbar {
-	background-position: -335px -314px;
+	background-position: -155px -332px;
 	width: 15px;
 	height: 16px;
 }
 
 .icon-distributevertically {
-	background-position: -298px -204px;
+	background-position: -318px -294px;
 	width: 14px;
 	height: 16px;
 }
 
 .icon-handtool {
-	background-position: -318px -294px;
+	background-position: -170px -332px;
 	width: 13px;
 	height: 16px;
 }
 
 .icon-pagethumbnails {
-	background-position: -133px -332px;
+	background-position: -338px -314px;
 	width: 12px;
 	height: 16px;
 }
 
 .icon-textart_settings_icon {
-	background-position: -145px -332px;
+	background-position: -183px -332px;
 	width: 12px;
 	height: 16px;
 }
@@ -1291,181 +1303,181 @@
 }
 
 .icon-addfootnote {
-	background-position: -157px -332px;
+	background-position: -195px -332px;
 	width: 21px;
 	height: 15px;
 }
 
 .icon-access_rights {
-	background-position: -178px -332px;
+	background-position: -216px -332px;
 	width: 19px;
 	height: 15px;
 }
 
 .icon-chaticon {
-	background-position: -197px -332px;
+	background-position: -235px -332px;
 	width: 18px;
 	height: 15px;
 }
 
 .icon-gotodocuments {
-	background-position: -215px -332px;
+	background-position: -253px -332px;
 	width: 18px;
 	height: 15px;
 }
 
 .icon-chaticon_new {
-	background-position: -233px -332px;
+	background-position: -271px -332px;
 	width: 17px;
 	height: 15px;
 }
 
 .icon-print {
-	background-position: -250px -332px;
+	background-position: -288px -332px;
 	width: 17px;
 	height: 15px;
 }
 
 .icon-bgcolor {
-	background-position: -267px -332px;
+	background-position: -305px -332px;
 	width: 16px;
 	height: 15px;
 }
 
 .icon-reviewing_mode {
-	background-position: -283px -332px;
+	background-position: -321px -332px;
 	width: 16px;
 	height: 15px;
 }
 
 .icon-wrappingstyle_behind_toptoolbar {
-	background-position: -299px -332px;
-	width: 16px;
-	height: 15px;
-}
-
-.icon-wrappingstyle_infront_toptoolbar {
-	background-position: -315px -332px;
-	width: 16px;
-	height: 15px;
-}
-
-.icon-wrappingstyle_inline_toptoolbar {
-	background-position: -331px -332px;
-	width: 16px;
-	height: 15px;
-}
-
-.icon-wrappingstyle_square_toptoolbar {
 	background-position: -350px 0px;
 	width: 16px;
 	height: 15px;
 }
 
-.icon-wrappingstyle_through_toptoolbar {
+.icon-wrappingstyle_infront_toptoolbar {
 	background-position: -350px -15px;
 	width: 16px;
 	height: 15px;
 }
 
-.icon-wrappingstyle_tight_toptoolbar {
+.icon-wrappingstyle_inline_toptoolbar {
 	background-position: -350px -30px;
 	width: 16px;
 	height: 15px;
 }
 
-.icon-wrappingstyle_topandbottom_toptoolbar {
+.icon-wrappingstyle_square_toptoolbar {
 	background-position: -350px -45px;
 	width: 16px;
 	height: 15px;
 }
 
-.icon-about {
+.icon-wrappingstyle_through_toptoolbar {
 	background-position: -350px -60px;
-	width: 15px;
+	width: 16px;
 	height: 15px;
 }
 
-.icon-abouticon {
+.icon-wrappingstyle_tight_toptoolbar {
 	background-position: -350px -75px;
-	width: 15px;
+	width: 16px;
 	height: 15px;
 }
 
-.icon-advanced_settings_icon {
+.icon-wrappingstyle_topandbottom_toptoolbar {
 	background-position: -350px -90px;
-	width: 15px;
+	width: 16px;
 	height: 15px;
 }
 
-.icon-document_language {
+.icon-about {
 	background-position: -350px -105px;
 	width: 15px;
 	height: 15px;
 }
 
-.icon-insertpivot {
+.icon-abouticon {
 	background-position: -350px -120px;
 	width: 15px;
 	height: 15px;
 }
 
-.icon-tabstopcenter {
+.icon-advanced_settings_icon {
 	background-position: -350px -135px;
 	width: 15px;
 	height: 15px;
 }
 
-.icon-tabstopleft {
+.icon-document_language {
 	background-position: -350px -150px;
 	width: 15px;
 	height: 15px;
 }
 
-.icon-tabstopright {
+.icon-insertpivot {
 	background-position: -350px -165px;
 	width: 15px;
 	height: 15px;
 }
 
-.icon-anchor {
+.icon-tabstopcenter {
 	background-position: -350px -180px;
+	width: 15px;
+	height: 15px;
+}
+
+.icon-tabstopleft {
+	background-position: -350px -195px;
+	width: 15px;
+	height: 15px;
+}
+
+.icon-tabstopright {
+	background-position: -350px -210px;
+	width: 15px;
+	height: 15px;
+}
+
+.icon-anchor {
+	background-position: -350px -225px;
 	width: 14px;
 	height: 15px;
 }
 
 .icon-feedback {
-	background-position: -350px -195px;
+	background-position: -350px -240px;
 	width: 14px;
 	height: 15px;
 }
 
 .icon-flipupsidedown {
-	background-position: -350px -210px;
+	background-position: -350px -255px;
 	width: 14px;
 	height: 15px;
 }
 
 .icon-file {
-	background-position: -350px -225px;
+	background-position: -350px -270px;
 	width: 13px;
 	height: 15px;
 }
 
 .icon-fitpage {
-	background-position: -350px -240px;
+	background-position: -350px -285px;
 	width: 13px;
 	height: 15px;
 }
 
 .icon-back {
-	background-position: -350px -255px;
+	background-position: -350px -300px;
 	width: 12px;
 	height: 15px;
 }
 
 .icon-lock_form_icon {
-	background-position: -350px -270px;
+	background-position: -350px -315px;
 	width: 12px;
 	height: 15px;
 }
@@ -1489,163 +1501,163 @@
 }
 
 .icon-distributehorizontally {
-	background-position: -350px -285px;
+	background-position: -350px -330px;
 	width: 16px;
 	height: 14px;
 }
 
 .icon-columnwidthmarker {
-	background-position: -350px -299px;
+	background-position: -312px -280px;
 	width: 15px;
 	height: 14px;
 }
 
 .icon-fliplefttoright {
-	background-position: -350px -313px;
+	background-position: -74px -348px;
 	width: 15px;
 	height: 14px;
 }
 
 .icon-alignobjectbottom {
-	background-position: -350px -327px;
+	background-position: -89px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-alignobjectleft {
-	background-position: -312px -280px;
+	background-position: -103px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-alignobjectright {
-	background-position: -74px -348px;
+	background-position: -117px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-alignobjecttop {
-	background-position: -88px -348px;
+	background-position: -131px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-bringforward {
-	background-position: -102px -348px;
+	background-position: -145px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-bringtofront {
-	background-position: -116px -348px;
+	background-position: -159px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-chart_settings_icon {
-	background-position: -130px -348px;
+	background-position: -173px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-commentsicon {
-	background-position: -144px -348px;
+	background-position: -187px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-deleteicon {
-	background-position: -158px -348px;
+	background-position: -201px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-group {
-	background-position: -172px -348px;
+	background-position: -215px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-image_settings_icon {
-	background-position: -186px -348px;
+	background-position: -229px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-save {
-	background-position: -200px -348px;
+	background-position: -243px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-searchicon {
-	background-position: -214px -348px;
+	background-position: -257px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-sendbackward {
-	background-position: -228px -348px;
+	background-position: -271px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-sendtoback {
-	background-position: -242px -348px;
+	background-position: -285px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-shape_settings_icon {
-	background-position: -256px -348px;
+	background-position: -299px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-ungroup {
-	background-position: -270px -348px;
+	background-position: -313px -348px;
 	width: 14px;
 	height: 14px;
 }
 
 .icon-alignobjectcenter {
-	background-position: -284px -348px;
+	background-position: -337px -332px;
 	width: 13px;
 	height: 14px;
 }
 
 .icon-highlight_color_mouse_pointer {
-	background-position: -297px -348px;
+	background-position: -327px -348px;
 	width: 13px;
 	height: 14px;
 }
 
 .icon-tocrefreshiconcc {
-	background-position: -310px -348px;
+	background-position: -340px -348px;
 	width: 13px;
 	height: 14px;
 }
 
 .icon-copystyle {
-	background-position: -323px -348px;
+	background-position: -353px -348px;
 	width: 12px;
 	height: 14px;
 }
 
 .icon-gradientslider {
-	background-position: -335px -348px;
+	background-position: -366px 0px;
 	width: 12px;
 	height: 14px;
 }
 
 .icon-combo_delete_values {
-	background-position: -301px -90px;
+	background-position: -366px -14px;
 	width: 11px;
 	height: 14px;
 }
 
 .icon-hard {
-	background-position: -347px -348px;
+	background-position: -366px -28px;
 	width: 9px;
 	height: 14px;
 }
@@ -1657,655 +1669,655 @@
 }
 
 .icon-bullets {
-	background-position: -366px 0px;
+	background-position: 0px -362px;
 	width: 24px;
 	height: 13px;
 }
 
 .icon-review {
-	background-position: -366px -13px;
+	background-position: -24px -362px;
 	width: 23px;
 	height: 13px;
 }
 
 .icon-tocicon {
-	background-position: -366px -26px;
+	background-position: -47px -362px;
 	width: 20px;
 	height: 13px;
 }
 
 .icon-visible_area {
-	background-position: -366px -39px;
+	background-position: -67px -362px;
 	width: 20px;
 	height: 13px;
 }
 
 .icon-cut {
-	background-position: -366px -52px;
+	background-position: -174px -125px;
 	width: 16px;
 	height: 13px;
 }
 
 .icon-removeduplicates {
-	background-position: -366px -65px;
+	background-position: -87px -362px;
 	width: 16px;
 	height: 13px;
 }
 
 .icon-text_autoshape {
-	background-position: -366px -78px;
+	background-position: -103px -362px;
 	width: 16px;
 	height: 13px;
 }
 
 .icon-changerange {
-	background-position: -366px -91px;
+	background-position: -119px -362px;
 	width: 15px;
 	height: 13px;
 }
 
 .icon-clearstyle {
-	background-position: -366px -104px;
+	background-position: -134px -362px;
 	width: 15px;
 	height: 13px;
 }
 
 .icon-clear_fields_icon {
-	background-position: -366px -117px;
+	background-position: -149px -362px;
 	width: 15px;
 	height: 13px;
 }
 
 .icon-feedbackicon {
-	background-position: -366px -130px;
+	background-position: -164px -362px;
 	width: 15px;
 	height: 13px;
 }
 
 .icon-greencircle {
-	background-position: -366px -143px;
+	background-position: -179px -362px;
 	width: 15px;
 	height: 13px;
 }
 
 .icon-replace {
-	background-position: -366px -156px;
+	background-position: -194px -362px;
 	width: 15px;
 	height: 13px;
 }
 
 .icon-alignobjectmiddle {
-	background-position: -366px -169px;
+	background-position: -209px -362px;
 	width: 14px;
 	height: 13px;
 }
 
 .icon-copy {
-	background-position: -366px -182px;
+	background-position: -223px -362px;
 	width: 14px;
 	height: 13px;
 }
 
 .icon-multiselect {
-	background-position: -366px -195px;
+	background-position: -237px -362px;
 	width: 14px;
 	height: 13px;
 }
 
 .icon-paste {
-	background-position: -366px -208px;
+	background-position: -251px -362px;
 	width: 14px;
 	height: 13px;
 }
 
 .icon-selectall {
-	background-position: -366px -221px;
+	background-position: -265px -362px;
 	width: 14px;
 	height: 13px;
 }
 
 .icon-dropcap_none {
-	background-position: -366px -234px;
+	background-position: -279px -362px;
 	width: 13px;
 	height: 13px;
 }
 
 .icon-editing_mode {
-	background-position: -366px -247px;
+	background-position: -292px -362px;
 	width: 13px;
 	height: 13px;
 }
 
 .icon-movetable_handle {
-	background-position: -366px -260px;
+	background-position: -305px -362px;
 	width: 13px;
 	height: 13px;
 }
 
 .icon-zoomin {
-	background-position: -366px -273px;
+	background-position: -318px -362px;
 	width: 13px;
 	height: 13px;
 }
 
 .icon-equationplaceholder {
-	background-position: -366px -286px;
+	background-position: -366px -42px;
 	width: 12px;
 	height: 13px;
 }
 
 .icon-insertpagenumber {
-	background-position: -378px -286px;
+	background-position: -366px -55px;
 	width: 12px;
 	height: 13px;
 }
 
 .icon-rotateclockwise {
-	background-position: -366px -299px;
+	background-position: -366px -68px;
 	width: 12px;
 	height: 13px;
 }
 
 .icon-rotatecounterclockwise {
-	background-position: -378px -299px;
+	background-position: -366px -81px;
 	width: 12px;
 	height: 13px;
 }
 
 .icon-linespacing {
-	background-position: 0px -362px;
+	background-position: -331px -362px;
 	width: 25px;
 	height: 12px;
 }
 
 .icon-spellcheckdeactivated {
-	background-position: -366px -312px;
+	background-position: -356px -362px;
 	width: 15px;
 	height: 12px;
 }
 
 .icon-slicer_clearfilter {
-	background-position: -366px -324px;
+	background-position: -378px 0px;
 	width: 14px;
 	height: 12px;
 }
 
 .icon-circle {
-	background-position: -366px -336px;
+	background-position: -378px -12px;
 	width: 12px;
 	height: 12px;
 }
 
 .icon-follow_move {
-	background-position: -378px -336px;
+	background-position: -378px -24px;
 	width: 12px;
 	height: 12px;
 }
 
 .icon-nofill {
-	background-position: -366px -348px;
+	background-position: -378px -36px;
 	width: 12px;
 	height: 12px;
 }
 
 .icon-sup {
-	background-position: -378px -348px;
+	background-position: -378px -48px;
 	width: 12px;
 	height: 12px;
 }
 
 .icon-deletecommenticon {
-	background-position: -379px -234px;
+	background-position: -378px -60px;
 	width: 11px;
 	height: 12px;
 }
 
 .icon-review_delete {
-	background-position: -379px -247px;
+	background-position: -378px -72px;
 	width: 11px;
 	height: 12px;
 }
 
 .icon-tabletemplate {
-	background-position: -25px -362px;
+	background-position: 0px -375px;
 	width: 26px;
 	height: 11px;
 }
 
 .icon-footnotes {
-	background-position: -51px -362px;
+	background-position: -26px -375px;
 	width: 24px;
 	height: 11px;
 }
 
 .icon-insertfunction {
-	background-position: -75px -362px;
+	background-position: -50px -375px;
 	width: 21px;
 	height: 11px;
 }
 
 .icon-nonprintingcharacters {
-	background-position: -96px -362px;
+	background-position: -71px -375px;
 	width: 20px;
 	height: 11px;
 }
 
 .icon-fitwidth {
-	background-position: -332px -303px;
+	background-position: -91px -375px;
 	width: 16px;
 	height: 11px;
 }
 
 .icon-table_settings_icon {
-	background-position: -174px -125px;
+	background-position: -107px -375px;
 	width: 16px;
 	height: 11px;
 }
 
 .icon-viewsettingsicon {
-	background-position: -116px -362px;
+	background-position: -123px -375px;
 	width: 16px;
 	height: 11px;
 }
 
 .icon-review_accept {
-	background-position: -132px -362px;
+	background-position: -378px -84px;
 	width: 13px;
 	height: 11px;
 }
 
 .icon-sub {
-	background-position: -145px -362px;
+	background-position: -378px -95px;
 	width: 13px;
 	height: 11px;
 }
 
 .icon-aligncenter {
-	background-position: -158px -362px;
+	background-position: -378px -106px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-alignleft {
-	background-position: -170px -362px;
+	background-position: -378px -117px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-alignright {
-	background-position: -182px -362px;
+	background-position: -378px -128px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-clearfilter {
-	background-position: -194px -362px;
+	background-position: -378px -139px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-decreasedec {
-	background-position: -206px -362px;
+	background-position: -378px -150px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-decreaseindent {
-	background-position: -218px -362px;
+	background-position: -378px -161px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-dropcap_margin {
-	background-position: -230px -362px;
+	background-position: -378px -172px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-dropcap_text {
-	background-position: -242px -362px;
+	background-position: -378px -183px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-increasedec {
-	background-position: -254px -362px;
+	background-position: -378px -194px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-increaseindent {
-	background-position: -266px -362px;
+	background-position: -378px -205px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-justify {
-	background-position: -278px -362px;
+	background-position: -378px -216px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-leftcolumn {
-	background-position: -290px -362px;
+	background-position: -378px -227px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-onecolumn {
-	background-position: -302px -362px;
+	background-position: -378px -238px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-resolvedicon {
-	background-position: -314px -362px;
+	background-position: -378px -249px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-resolveicon {
-	background-position: -326px -362px;
+	background-position: -378px -260px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-rightcolumn {
-	background-position: -338px -362px;
+	background-position: -378px -271px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-sortandfilter {
-	background-position: -350px -362px;
+	background-position: -378px -282px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-twocolumns {
-	background-position: -362px -362px;
+	background-position: -378px -293px;
 	width: 12px;
 	height: 11px;
 }
 
 .icon-combo_add_values {
-	background-position: -379px -260px;
+	background-position: -378px -304px;
 	width: 11px;
 	height: 11px;
 }
 
 .icon-sortatoz {
-	background-position: -379px -273px;
+	background-position: -378px -315px;
 	width: 11px;
 	height: 11px;
 }
 
 .icon-sortztoa {
-	background-position: -374px -362px;
+	background-position: -378px -326px;
 	width: 11px;
 	height: 11px;
 }
 
 .icon-threecolumns {
-	background-position: 0px -374px;
+	background-position: -378px -337px;
 	width: 11px;
 	height: 11px;
 }
 
 .icon-underline {
-	background-position: -380px -169px;
+	background-position: -378px -348px;
 	width: 10px;
 	height: 11px;
 }
 
 .icon-zoomout {
-	background-position: -380px -182px;
+	background-position: -378px -359px;
 	width: 10px;
 	height: 11px;
 }
 
 .icon-navigationicon {
-	background-position: -11px -374px;
+	background-position: -139px -375px;
 	width: 13px;
 	height: 10px;
 }
 
 .icon-strike {
-	background-position: -24px -374px;
+	background-position: -366px -94px;
 	width: 12px;
 	height: 10px;
 }
 
 .icon-yellowdiamond {
-	background-position: -36px -374px;
+	background-position: -366px -104px;
 	width: 11px;
 	height: 10px;
 }
 
 .icon-firstline_indent {
-	background-position: -380px -195px;
+	background-position: -366px -114px;
 	width: 10px;
 	height: 10px;
 }
 
 .icon-review_reject {
-	background-position: -380px -208px;
+	background-position: -366px -124px;
 	width: 10px;
 	height: 10px;
 }
 
 .icon-bold {
-	background-position: -382px -52px;
+	background-position: -366px -134px;
 	width: 8px;
 	height: 10px;
 }
 
 .icon-italic {
-	background-position: -382px -65px;
+	background-position: -366px -144px;
 	width: 7px;
 	height: 10px;
 }
 
 .icon-selectcolumnpointer {
-	background-position: -382px -78px;
+	background-position: -366px -154px;
 	width: 7px;
 	height: 10px;
 }
 
 .icon-redo {
-	background-position: -106px -86px;
+	background-position: -332px -305px;
 	width: 17px;
 	height: 9px;
 }
 
 .icon-undo {
-	background-position: -123px -86px;
+	background-position: -106px -86px;
 	width: 17px;
 	height: 9px;
 }
 
 .icon-combo_values_up {
-	background-position: -380px -221px;
+	background-position: -366px -164px;
 	width: 10px;
 	height: 9px;
 }
 
 .icon-cellrow {
-	background-position: -381px -91px;
+	background-position: -366px -173px;
 	width: 9px;
 	height: 9px;
 }
 
 .icon-resize_square {
-	background-position: -381px -104px;
+	background-position: -366px -182px;
 	width: 9px;
 	height: 9px;
 }
 
 .icon-searchdownbutton {
-	background-position: -76px -167px;
+	background-position: -123px -86px;
 	width: 14px;
 	height: 8px;
 }
 
 .icon-searchupbutton {
-	background-position: -90px -167px;
+	background-position: -76px -167px;
 	width: 14px;
 	height: 8px;
 }
 
 .icon-viewing_mode {
-	background-position: -104px -167px;
+	background-position: -90px -167px;
 	width: 14px;
 	height: 8px;
 }
 
 .icon-constantproportions {
-	background-position: -118px -167px;
+	background-position: -104px -167px;
 	width: 13px;
 	height: 8px;
 }
 
 .icon-rowheightmarker {
-	background-position: -131px -167px;
+	background-position: -117px -167px;
 	width: 13px;
 	height: 8px;
 }
 
 .icon-tabstopcenter_marker {
-	background-position: -144px -167px;
+	background-position: -366px -191px;
 	width: 12px;
 	height: 8px;
 }
 
 .icon-hanging {
-	background-position: -380px -324px;
+	background-position: -366px -199px;
 	width: 10px;
 	height: 8px;
 }
 
 .icon-right_indent {
-	background-position: -156px -167px;
+	background-position: -366px -207px;
 	width: 10px;
 	height: 8px;
 }
 
 .icon-soft {
-	background-position: -166px -167px;
+	background-position: -366px -215px;
 	width: 10px;
 	height: 8px;
 }
 
 .icon-selectcellpointer {
-	background-position: -381px -117px;
+	background-position: -366px -223px;
 	width: 8px;
 	height: 8px;
 }
 
 .icon-tabstopleft_marker {
-	background-position: -381px -130px;
+	background-position: -366px -231px;
 	width: 8px;
 	height: 8px;
 }
 
 .icon-tabstopright_marker {
-	background-position: -381px -143px;
+	background-position: -366px -239px;
 	width: 8px;
 	height: 8px;
 }
 
 .icon-nextfootnote {
-	background-position: -381px -156px;
+	background-position: -366px -247px;
 	width: 6px;
 	height: 8px;
 }
 
 .icon-previousfootnote {
-	background-position: -381px -312px;
+	background-position: -372px -247px;
 	width: 6px;
 	height: 8px;
 }
 
 .icon-collapse {
-	background-position: -350px -341px;
+	background-position: -366px -255px;
 	width: 11px;
 	height: 7px;
 }
 
 .icon-expand {
-	background-position: -176px -167px;
+	background-position: -366px -262px;
 	width: 11px;
 	height: 7px;
 }
 
 .icon-selectrowpointer {
-	background-position: -356px -348px;
+	background-position: -366px -269px;
 	width: 10px;
 	height: 7px;
 }
 
 .icon-resizetable_handle {
-	background-position: -304px -37px;
+	background-position: -366px -276px;
 	width: 7px;
 	height: 7px;
 }
 
 .icon-redo1 {
-	background-position: -298px -220px;
+	background-position: -130px -167px;
 	width: 13px;
 	height: 6px;
 }
 
 .icon-undo1 {
-	background-position: -47px -374px;
+	background-position: -143px -167px;
 	width: 13px;
 	height: 6px;
 }
 
 .icon-combo_values_down {
-	background-position: -60px -374px;
+	background-position: -366px -283px;
 	width: 12px;
 	height: 6px;
 }
 
 .icon-leftindent {
-	background-position: -301px -104px;
+	background-position: -366px -289px;
 	width: 10px;
 	height: 6px;
 }
 
 .icon-nextpage {
-	background-position: -361px -341px;
+	background-position: -373px -144px;
 	width: 5px;
 	height: 6px;
 }
 
 .icon-previouspage {
-	background-position: -344px -286px;
+	background-position: -373px -154px;
 	width: 5px;
 	height: 6px;
 }
 
 .icon-tab {
-	background-position: -356px -355px;
+	background-position: -378px -370px;
 	width: 10px;
 	height: 5px;
 }
 
 .icon-nonbreakspace {
-	background-position: -381px -125px;
+	background-position: -373px -276px;
 	width: 5px;
 	height: 5px;
 }
 
 .icon-square {
-	background-position: -381px -138px;
+	background-position: -366px -295px;
 	width: 5px;
 	height: 5px;
 }
 
 .icon-space {
-	background-position: -386px -26px;
+	background-position: -390px -12px;
 	width: 2px;
 	height: 3px;
 }

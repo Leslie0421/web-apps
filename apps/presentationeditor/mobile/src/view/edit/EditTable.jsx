@@ -1,6 +1,41 @@
+/*
+ * Copyright (C) Ascensio System SIA, 2009-2026
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
+ *
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * No trademark rights are granted under this License.
+ *
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import React, {Fragment, useState, useEffect} from 'react';
 import {observer, inject} from "mobx-react";
-import {f7, Page, Navbar, List, ListItem, ListButton, BlockTitle,SkeletonBlock, Range, Toggle, Icon, Link, Tabs, Tab, NavRight} from 'framework7-react';
+import {f7, Page, Navbar, List, ListItem, ListButton, BlockTitle,SkeletonBlock, Range, Toggle, Icon, Link, Tabs, Tab, NavRight, Segmented, Button} from 'framework7-react';
 import { useTranslation } from 'react-i18next';
 import {Device} from '../../../../../common/mobile/utils/device';
 import {CustomColorPicker, ThemeColorPalette} from "../../../../../common/mobile/lib/component/ThemeColorPalette.jsx";
@@ -35,6 +70,9 @@ import IconTableAddRowAbove from '@common-icons/icon-table-add-row-above.svg';
 import IconTableAddRowBelow from '@common-icons/icon-table-add-row-below.svg';
 import IconTableRemoveColumn from '@common-icons/icon-table-remove-column.svg';
 import IconTableRemoveRow from '@common-icons/icon-table-remove-row.svg';
+import IconDistributeColumns from '@common-icons/icon-distribute-columns.svg';
+import IconDistributeRows from '@common-icons/icon-distribute-rows.svg';
+import IconExpandUp from '@common-android-icons/icon-expand-up.svg';
 // Style
 
 const StyleTemplates = inject("storeFocusObjects","storeTableSettings")(observer(({onStyleClick,storeTableSettings,storeFocusObjects,onGetTableStylesPreviews}) => {
@@ -525,6 +563,89 @@ const PageAlign = props => {
     )
 };
 
+const PageSize = props => {
+    const { t } = useTranslation();
+    const _t = t('View.Edit', {returnObjects: true});
+    const storeTableSettings = props.storeTableSettings;
+    const tableObject = props.storeFocusObjects.tableObject;
+    
+    if (!tableObject && Device.phone) {
+        $$('.sheet-modal.modal-in').length > 0 && f7.sheet.close();
+        return null;
+    }
+
+    const metricText = Common.Utils.Metric.getCurrentMetricName();
+    const rowHeight = Common.Utils.Metric.fnRecalcFromMM(storeTableSettings?.getRowHeight(tableObject));
+    const columnWidth = Common.Utils.Metric.fnRecalcFromMM(storeTableSettings?.getColumnWidth(tableObject));
+    const displayRowHeight = Number(rowHeight.toFixed(2));
+    const displayColumnWidth = Number(columnWidth.toFixed(2));
+
+    return (
+        <Page>
+            <Navbar title={_t.textCellSize} backLink={_t.textBack}>
+                {Device.phone &&
+                    <NavRight>
+                        <Link sheetClose='#edit-sheet'>
+                            {Device.ios ? 
+                                <SvgIcon symbolId={IconExpandDownIos.id} className={'icon icon-svg'} /> :
+                                <SvgIcon symbolId={IconExpandDownAndroid.id} className={'icon icon-svg white'} />
+                            }
+                        </Link>
+                    </NavRight>
+                }
+            </Navbar>
+            <List>
+                <ListItem title={_t.txtHeight}>
+                    {!isAndroid && <div slot='after-start'>{displayRowHeight + ' ' + metricText}</div>}
+                    <div slot='after'>
+                        <Segmented>
+                            <Button outline className='decrement item-link' onClick={() => {props.onChangeTableDimension('row', rowHeight, true)}}>
+                                {isAndroid ? 
+                                    <SvgIcon symbolId={IconExpandDownAndroid.id} className={'icon icon-svg'} />
+                                : ' - '}
+                            </Button>
+                            {isAndroid && <label>{displayRowHeight + ' ' + metricText}</label>}
+                            <Button outline className='increment item-link' onClick={() => {props.onChangeTableDimension('row', rowHeight, false)}}>
+                                {isAndroid ? 
+                                    <SvgIcon symbolId={IconExpandUp.id} className={'icon icon-svg'} />
+                                : ' + '}
+                            </Button>
+                        </Segmented>
+                    </div>
+                </ListItem>
+                <ListItem title={_t.txtWidth}>
+                    {!isAndroid && <div slot='after-start'>{displayColumnWidth + ' ' + metricText}</div>}
+                    <div slot='after'>
+                        <Segmented>
+                            <Button outline className='decrement item-link' onClick={() => {props.onChangeTableDimension('column', columnWidth, true)}}>
+                                {isAndroid ? 
+                                    <SvgIcon symbolId={IconExpandDownAndroid.id} className={'icon icon-svg'} />
+                                : ' - '}
+                            </Button>
+                            {isAndroid && <label>{displayColumnWidth + ' ' + metricText}</label>}
+                            <Button outline className='increment item-link' onClick={() => {props.onChangeTableDimension('column', columnWidth, false)}}>
+                                {isAndroid ? 
+                                    <SvgIcon symbolId={IconExpandUp.id} className={'icon icon-svg'} />
+                                : ' + '}
+                            </Button>
+                        </Segmented>
+                    </div>
+                </ListItem>
+                <ListItem className='buttons'>
+                    <div className="row">
+                        <a className={'item-link button'} onClick={() => {props.onDistributeTable(false)}}>
+                            <SvgIcon slot="media" symbolId={IconDistributeRows.id} className={'icon icon-svg'} />
+                        </a>
+                        <a className={'item-link button'} onClick={() => {props.onDistributeTable(true)}}>
+                            <SvgIcon slot="media" symbolId={IconDistributeColumns.id} className={'icon icon-svg'} />
+                        </a>
+                    </div>
+                </ListItem>
+            </List>
+        </Page>
+    )
+};
+
 const EditTable = props => {
     const { t } = useTranslation();
     const _t = t('View.Edit', {returnObjects: true});
@@ -569,6 +690,10 @@ const EditTable = props => {
                 </List>
             </List>
             <List>
+                <ListItem title={_t.textCellSize} link='/edit-table-size/' routeProps={{
+                    onChangeTableDimension: props.onChangeTableDimension,
+                    onDistributeTable: props.onDistributeTable
+                }}></ListItem>
                 <ListItem title={_t.textStyle} link='/edit-table-style/' routeProps={{
                     onStyleClick: props.onStyleClick,
                     onCheckTemplateChange: props.onCheckTemplateChange,
@@ -582,6 +707,7 @@ const EditTable = props => {
                 <ListItem title={_t.textAlign} link="/edit-table-align/" routeProps={{
                     onAlign: props.onAlign
                 }}></ListItem>
+
                 <BlockTitle>{_t.textCellMargins}</BlockTitle>
                 <List>
                     <ListItem>
@@ -609,6 +735,7 @@ const PageTableBorderColor = inject("storeFocusObjects","storeTableSettings", "s
 const PageTableCustomBorderColor = inject("storeFocusObjects","storeTableSettings", "storePalette")(observer(PageCustomBorderColor));
 const PageTableReorder = inject("storeFocusObjects")(observer(PageReorder));
 const PageTableAlign = inject("storeFocusObjects")(observer(PageAlign));
+const PageTableSize = inject("storeFocusObjects", "storeTableSettings")(observer(PageSize));
 
 export {
     EditTableContainer as EditTable,
@@ -618,5 +745,6 @@ export {
     PageTableBorderColor,
     PageTableCustomBorderColor,
     PageTableReorder,
-    PageTableAlign
+    PageTableAlign,
+    PageTableSize
 }

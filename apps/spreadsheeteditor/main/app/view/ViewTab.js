@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  ViewTab.js
@@ -73,6 +76,7 @@ define([
             '<div class="separator long"></div>' +
             '<div class="group">' +
                 '<span class="btn-slot text x-huge" id="slot-btn-interface-theme"></span>' +
+                '<span class="btn-slot text x-huge" id="slot-btn-dark-document"></span>' +
             '</div>' +
             '<div class="separator long separator-theme"></div>' +
             '<div class="group sheet-freeze">' +
@@ -112,9 +116,17 @@ define([
                     '<span class="btn-slot text" id="slot-chk-rightmenu"></span>' +
                 '</div>' +
             '</div>' +
-            '<div class="separator long"></div>' +
-            '<div class="group">' +
+            '<div class="separator long macro"></div>' +
+            '<div class="group macro">' +
                 '<span class="btn-slot text x-huge" id="slot-btn-macros"></span>' +
+            '</div>' +
+            '<div class="group small macro">' +
+                '<div class="elset">' +
+                    '<span class="btn-slot text" id="slot-btn-macro-start" style="text-align: center;"></span>' +
+                '</div>' +
+                '<div class="elset">' +
+                    '<span class="btn-slot text" id="slot-btn-macro-pause" style="text-align: center;"></span>' +
+                '</div>' +
             '</div>' +
         '</section>';
 
@@ -170,9 +182,19 @@ define([
             me.chRightMenu.on('change', _.bind(function (checkbox, state) {
                 me.fireEvent('rightmenu:hide', [me.chRightMenu, state === 'checked']);
             }, me));
+            me.btnDarkDocument.on('click', _.bind(function (e) {
+                me.fireEvent('darkmode:change', [e.pressed]);
+            }, me));
             me.btnMacros && me.btnMacros.on('click', function () {
                 me.fireEvent('macros:click');
             });
+            me.btnRecMacro && me.btnRecMacro.on('click', function () {
+                me.fireEvent('macros:record');
+            });
+            me.btnPauseMacro && me.btnPauseMacro.on('click', function () {
+                me.fireEvent('macros:pause');
+            });
+
             me.btnViewNormal && me.btnViewNormal.on('click', function (btn, e) {
                 btn.pressed && me.fireEvent('viewtab:viewmode', [Asc.c_oAscESheetViewType.normal]);
             });
@@ -300,7 +322,11 @@ define([
                     });
                     this.lockedControls.push(this.btnViewPageBreak);
 
-                    if (!(this.appConfig.customization && this.appConfig.customization.macros===false)) {
+                    if (
+                        this.appConfig.isEdit && 
+                        !(this.appConfig.customization && this.appConfig.customization.macros===false) && 
+                        !(Common.Controllers.Desktop && Common.Controllers.Desktop.isWinXp())
+                    ) {
                         this.btnMacros = new Common.UI.Button({
                             cls: 'btn-toolbar x-huge icon-top',
                             iconCls: 'toolbar__icon btn-macros',
@@ -311,6 +337,28 @@ define([
                             dataHintOffset: 'small'
                         });
                         this.lockedControls.push(this.btnMacros);
+
+                        this.btnRecMacro = new Common.UI.Button({
+                            cls: 'btn-toolbar',
+                            iconCls: 'toolbar__icon btn-macros-record',
+                            lock: [_set.selRangeEdit, _set.editFormula, _set.lostConnect, _set.disableOnStart],
+                            caption: this.textRecMacro,
+                            dataHint: '1',
+                            dataHintDirection: 'left',
+                            dataHintOffset: 'medium'
+                        });
+                        this.lockedControls.push(this.btnRecMacro);
+
+                        this.btnPauseMacro = new Common.UI.Button({
+                            cls: 'btn-toolbar',
+                            iconCls: 'toolbar__icon btn-macros-pause',
+                            lock: [_set.macrosStopped, _set.selRangeEdit, _set.editFormula, _set.lostConnect, _set.disableOnStart],
+                            caption: this.textPauseMacro,
+                            dataHint: '1',
+                            dataHintDirection: 'left',
+                            dataHintOffset: 'medium'
+                        });
+                        this.lockedControls.push(this.btnPauseMacro);
                     }
                 }
 
@@ -349,6 +397,18 @@ define([
                     action: 'interface-theme'
                 });
                 this.lockedControls.push(this.btnInterfaceTheme);
+
+                this.btnDarkDocument = new Common.UI.Button({
+                    cls: 'btn-toolbar x-huge icon-top',
+                    iconCls: 'toolbar__icon btn-dark-mode',
+                    lock: [_set.inLightTheme, _set.lostConnect],
+                    caption: this.textDarkDocument,
+                    enableToggle: true,
+                    dataHint: '1',
+                    dataHintDirection: 'bottom',
+                    dataHintOffset: 'small'
+                });
+                this.lockedControls.push(this.btnDarkDocument);
 
                 this.chFormula = new Common.UI.CheckBox({
                     labelText: this.textFormula,
@@ -420,6 +480,7 @@ define([
                 this.cmbZoom.setValue(100);
                 $host.find('#slot-lbl-zoom').text(this.textZoom);
                 this.btnInterfaceTheme.render($host.find('#slot-btn-interface-theme'));
+                this.btnDarkDocument.render($host.find('#slot-btn-dark-document'));
                 this.chFormula.render($host.find('#slot-chk-formula'));
                 this.chStatusbar.render($host.find('#slot-chk-statusbar'));
                 this.chToolbar.render($host.find('#slot-chk-toolbar'));
@@ -429,8 +490,11 @@ define([
                 this.chLeftMenu.render($host.find('#slot-chk-leftmenu'));
                 this.chRightMenu.render($host.find('#slot-chk-rightmenu'));
                 this.btnMacros && this.btnMacros.render($host.find('#slot-btn-macros'));
+                this.btnRecMacro && this.btnRecMacro.render($host.find('#slot-btn-macro-start'));
+                this.btnPauseMacro && this.btnPauseMacro.render($host.find('#slot-btn-macro-pause'));
                 this.btnViewNormal && this.btnViewNormal.render($host.find('#slot-btn-view-normal'));
                 this.btnViewPageBreak && this.btnViewPageBreak.render($host.find('#slot-btn-view-pagebreak'));
+                Common.Utils.lockControls(Common.enumLock.macrosStopped, true, {array: [this.btnPauseMacro]});
                 return this.$el;
             },
 
@@ -448,9 +512,14 @@ define([
 
                         me.btnCreateView.updateHint(me.tipCreate);
                         me.btnCloseView.updateHint(me.tipClose);
+                        Common.Utils.lockControls(Common.enumLock.sheetView, me.toolbar && me.toolbar.api && me.toolbar.api.asc_getActiveNamedSheetView &&
+                                                !me.toolbar.api.asc_getActiveNamedSheetView(me.toolbar.api.asc_getActiveWorksheetIndex()), {array: [me.btnCloseView]});
                     }
                     me.btnMacros && me.btnMacros.updateHint(me.tipMacros);
                     me.btnInterfaceTheme.updateHint(me.tipInterfaceTheme);
+                    me.btnDarkDocument.updateHint(me.tipDarkDocument);
+                    me.btnRecMacro && me.btnRecMacro.updateHint(me.tipRecMacro);
+                    me.btnPauseMacro && me.btnPauseMacro.updateHint(me.tipPauseMacro);
 
                     if (config.isEdit) {
                         me.btnFreezePanes.setMenu(new Common.UI.Menu({
@@ -486,8 +555,12 @@ define([
                         me.toolbar && me.toolbar.$el.find('.separator.sheet-freeze').hide();
                         me.toolbar && me.toolbar.$el.find('.group.sheet-gridlines').hide();
                     }
-                    if (!config.isEdit || config.customization && config.customization.macros===false) {
-                        me.toolbar.$el.find('#slot-btn-macros').closest('.group').prev().addBack().remove();
+                    if (
+                        !config.isEdit || 
+                        config.customization && config.customization.macros===false ||
+                        (Common.Controllers.Desktop && Common.Controllers.Desktop.isWinXp())
+                    ) {
+                        me.toolbar.$el.find('.macro').remove();
                     }
 
                     if (!Common.UI.Themes.available()) {
@@ -588,7 +661,7 @@ define([
                     setEvents.call(me);
 
                     if (Common.Utils.InternalSettings.get('toolbar-active-tab')==='view')
-                        Common.NotificationCenter.trigger('tab:set-active', 'view');
+                        Common.NotificationCenter.trigger('tab:set-active', 'view', true);
                 });
             },
 

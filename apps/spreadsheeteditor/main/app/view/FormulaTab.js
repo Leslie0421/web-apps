@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  FormulaTab.js
@@ -97,6 +100,8 @@ define([
 
                 this.lockedControls = [];
                 this.formulaControls = [];
+
+                this.shortcutsController = SSE.getController('Common.Controllers.Shortcuts');
 
                 var me = this,
                     $host = me.toolbar.$el,
@@ -235,7 +240,7 @@ define([
                     cls: 'btn-toolbar x-huge icon-top',
                     iconCls: 'toolbar__icon btn-autosum',
                     caption: this.txtAutosum,
-                    hint: [this.txtAutosumTip + Common.Utils.String.platformKey('Alt+='), this.txtFormulaTip + Common.Utils.String.platformKey('Shift+F3')],
+                    hint: [this.txtAutosumTip, this.txtFormulaTip],
                     split: true,
                     action: 'autosum',
                     disabled: true,
@@ -251,7 +256,7 @@ define([
                             {
                                 caption: me.txtAdditional,
                                 value: 'more',
-                                hint: me.txtFormulaTip + Common.Utils.String.platformKey('Shift+F3')
+                                hint: me.txtFormulaTip
                             }
                         ]
                     }),
@@ -261,13 +266,33 @@ define([
                 });
                 this.lockedControls.push(this.btnAutosum);
                 this.formulaControls.push(this.btnAutosum);
+                this.shortcutsController.updateShortcutHints({
+                    CellInsertSumFunction: {
+                        btn: this.btnAutosum,
+                        label: this.txtAutosumTip,
+                        applyCallback: function(item, hintText) {
+                            item.btn.updateHint([hintText, item.btn.options.hint[1]]);
+                        }
+                    },
+                    OpenInsertFunctionDialog: {
+                        btn: this.btnAutosum,
+                        label: this.txtFormulaTip,
+                        applyCallback: function(item, hintText) {
+                            const moreMenuItem = _.find(item.btn.menu.items, function(item) { 
+                                return item.value == 'more' 
+                            });
+                            moreMenuItem && moreMenuItem.updateHint(hintText);
+                            item.btn.updateHint([item.btn.options.hint[0], hintText]);
+                        }
+                    }
+                });
 
                 this.btnFormula = new Common.UI.Button({
                     parentEl: $host.find('#slot-btn-additional-formula'),
                     cls: 'btn-toolbar x-huge icon-top',
                     iconCls: 'toolbar__icon btn-ins-formula',
                     caption: this.txtFormula,
-                    hint: this.txtFormulaTip + Common.Utils.String.platformKey('Shift+F3'),
+                    hint: this.txtFormulaTip,
                     disabled: true,
                     lock: [_set.editText, _set.selChart, _set.selChartText, _set.selShape, _set.selShapeText, _set.selImage, _set.selSlicer, _set.selRangeEdit, _set.lostConnect, _set.coAuth, _set.userProtected],
                     dataHint: '1',
@@ -276,6 +301,12 @@ define([
                 });
                 this.lockedControls.push(this.btnFormula);
                 this.formulaControls.push(this.btnFormula);
+                this.shortcutsController.updateShortcutHints({
+                    OpenInsertFunctionDialog: {
+                        btn: this.btnFormula,
+                        label: this.txtFormulaTip
+                    }
+                });
 
                 this.btnMore = new Common.UI.Button({
                     parentEl: $host.find('#slot-btn-more'),
@@ -426,7 +457,7 @@ define([
                 (new Promise(function (accept, reject) {
                     accept();
                 })).then(function(){
-                    me.btnCalculate.updateHint([me.tipCalculateTheEntireWorkbook + Common.Utils.String.platformKey('F9'), me.tipCalculate]);
+                    me.btnCalculate.updateHint([me.tipCalculateTheEntireWorkbook, me.tipCalculate]);
                     var _menu = new Common.UI.Menu({
                         items: [
                             {caption: me.textCalculateWorkbook, value: Asc.c_oAscCalculateType.All},
@@ -437,6 +468,15 @@ define([
                         ]
                     });
                     me.btnCalculate.setMenu(_menu);
+                    me.shortcutsController.updateShortcutHints({
+                        RecalculateAll: {
+                            btn: me.btnCalculate,
+                            label: me.tipCalculateTheEntireWorkbook,
+                            applyCallback: function(item, hintText) {
+                                item.btn.updateHint([hintText, item.btn.options.hint[1]]);
+                            }
+                        }
+                    });
 
                     me.btnShowFormulas.updateHint(me.tipShowFormulas + Common.Utils.String.format(' ({0}+`)', Common.Utils.String.textCtrl));
                     me.btnTracePrec.updateHint(me.tipTracePrec);
@@ -507,7 +547,7 @@ define([
                                 {
                                     caption: me.txtAdditional,
                                     value: 'more',
-                                    hint: me.txtFormulaTip + Common.Utils.String.platformKey('Shift+F3')
+                                    hint: me.txtFormulaTip
                                 }
                             ]
                         }));
@@ -520,6 +560,18 @@ define([
                             _.delay(function() {
                                 menu._innerMenu && menu._innerMenu.cmpEl.focus();
                             }, 10);
+                        });
+                        me.shortcutsController.updateShortcutHints({
+                            OpenInsertFunctionDialog: {
+                                btn: btn,
+                                label: me.txtFormulaTip,
+                                applyCallback: function(item, hintText) {
+                                    const moreMenuItem = _.find(item.btn.menu.items, function(item) { 
+                                        return item.value == 'more' 
+                                    });
+                                    moreMenuItem && moreMenuItem.updateHint(hintText);
+                                }
+                            }
                         });
 
                         var menu = new Common.UI.Menu({
@@ -591,7 +643,7 @@ define([
                                     {
                                         caption: me.txtAdditional,
                                         value: 'more',
-                                        hint: me.txtFormulaTip + Common.Utils.String.platformKey('Shift+F3')
+                                        hint: me.txtFormulaTip
                                     }
                                 ]
                             })
@@ -611,6 +663,17 @@ define([
                                 if ($parent.hasClass('dropdown-submenu') && $parent.hasClass('over')) { // close submenu
                                     $parent.removeClass('over');
                                     $parent.find('> a').focus();
+                                }
+                            }
+                        });
+                        me.shortcutsController.updateShortcutHints({
+                            OpenInsertFunctionDialog: {
+                                label: me.txtFormulaTip,
+                                applyCallback: function(item, hintText) {
+                                    const moreMenuItem = _.find(mnu.menu.items, function(item) { 
+                                        return item.value == 'more' 
+                                    });
+                                    moreMenuItem && moreMenuItem.updateHint(hintText);
                                 }
                             }
                         });

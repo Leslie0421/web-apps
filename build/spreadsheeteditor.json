@@ -1,7 +1,7 @@
 {
     "name": "spreadsheeteditor",
-    "version": "9.0.4",
-    "build": 53,
+    "version": "9.4.0",
+    "build": 55,
     "homepage": "http://www.onlyoffice.com",
     "private": true,
     "main": {
@@ -9,13 +9,22 @@
             "prebuild": [
                 "../deploy/web-apps/apps/spreadsheeteditor/main"
             ],
-            "postbuild": []
+            "postbuild": [
+                "../deploy/web-apps/apps/spreadsheeteditor/main/app_dev.js",
+                "../deploy/web-apps/apps/spreadsheeteditor/main/app_pack.js",
+                "../deploy/web-apps/apps/spreadsheeteditor/main/index.html.deploy",
+                "../deploy/web-apps/apps/spreadsheeteditor/main/index_internal.html.deploy",
+                "../deploy/web-apps/apps/spreadsheeteditor/main/index_loader.html",
+                "../deploy/web-apps/apps/spreadsheeteditor/main/index_loader.html.deploy",
+                "../deploy/web-apps/apps/spreadsheeteditor/main/resources/less",
+                "../deploy/web-apps/apps/spreadsheeteditor/main/resources/img/toolbar/**/*"
+            ]
         },
         "js": {
             "requirejs": {
                 "options": {
-                    "name": "../apps/spreadsheeteditor/main/app.js",
-                    "out": "../deploy/web-apps/apps/spreadsheeteditor/main/app.js",
+                    "appDir": "../apps/spreadsheeteditor/main",
+                    "dir": "../deploy/web-apps/apps/spreadsheeteditor/main",
                     "baseUrl": "../apps/",
                     "inlineText": true,
                     "findNestedDependencies": true,
@@ -369,6 +378,7 @@
                 "../apps/common/embed/lib/view/LoadMask.js",
                 "../apps/common/embed/lib/view/modals.js",
                 "../apps/common/embed/lib/controller/modals.js",
+                "../apps/common/embed/lib/controller/Shortcuts.js",
                 "../apps/common/embed/lib/view/SearchBar.js",
                 "../apps/spreadsheeteditor/embed/js/SearchBar.js",
                 "../apps/spreadsheeteditor/embed/js/ApplicationView.js",

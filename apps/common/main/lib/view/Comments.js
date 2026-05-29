@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  Comments.js
@@ -176,6 +179,9 @@ define([
                         }
                     }
                 }
+            },
+            clearActive: function() {
+                this.cmpEl && this.cmpEl.find('.item.active').removeClass('active');
             }
         }
     })());
@@ -197,6 +203,9 @@ define([
                 me.update();
             }
 
+            picker.clearActive();
+            item.$el && item.$el.addClass('active');
+
             btn = $(e.target);
             if (btn) {
                 showEditBox = record.get('editText');
@@ -205,6 +214,7 @@ define([
                 replyId =  btn.attr('data-value');
 
                 if (btn.hasClass('btn-edit-common')) {
+                    me.fireEvent('comment:show', [commentId, false]);
                     if (!_.isUndefined(replyId)) {
                         me.fireEvent('comment:closeEditing', [commentId]);
                         me.fireEvent('comment:editReply', [commentId, replyId]);
@@ -234,6 +244,7 @@ define([
                 } else if (btn.hasClass('btn-delete')) {
                     if (!_.isUndefined(replyId)) {
                         me.fireEvent('comment:removeReply', [commentId, replyId]);
+                        me.fireEvent('comment:show', [commentId, false]);
                     } else {
                         me.fireEvent('comment:remove', [commentId]);
                         Common.NotificationCenter.trigger('edit:complete', me);
@@ -242,6 +253,7 @@ define([
                     me.fireEvent('comment:closeEditing');
                     readdresolves();
                 } else if (btn.hasClass('user-reply')) {
+                    me.fireEvent('comment:show', [commentId, false]);
                     me.fireEvent('comment:closeEditing');
                     record.set('showReply', true);
 
@@ -259,10 +271,11 @@ define([
 
                         readdresolves();
                     }
+                    me.fireEvent('comment:show', [commentId, false]);
                 } else if (btn.hasClass('btn-close', false)) {
 
                     me.fireEvent('comment:closeEditing', [commentId]);
-
+                    me.fireEvent('comment:show', [commentId, false]);
                 } else if (btn.hasClass('btn-inner-edit', false)) {
                     if (!_.isUndefined(me.commentsView.reply)) {
                         me.fireEvent('comment:changeReply', [commentId, me.commentsView.reply, picker.getActiveTextBoxVal()]);
@@ -274,13 +287,14 @@ define([
                     me.fireEvent('comment:closeEditing');
 
                     readdresolves();
-
+                    me.fireEvent('comment:show', [commentId, false]);
                 } else if (btn.hasClass('btn-inner-close', false)) {
                     me.fireEvent('comment:closeEditing');
 
                     me.commentsView.reply = undefined;
 
                     readdresolves();
+                    me.fireEvent('comment:show', [commentId, false]);
                 } else if (btn.hasClass('btn-resolve', false)) {
                     var tip = btn.data('bs.tooltip');
                     if (tip) tip.dontShow = true;
@@ -288,6 +302,7 @@ define([
                     me.fireEvent('comment:resolve', [commentId]);
 
                     readdresolves();
+                    me.fireEvent('comment:show', [commentId, false]);
                 } else if (!btn.hasClass('msg-reply') &&
                     !btn.hasClass('btn-resolve')) {
                     var isTextSelected = false;
@@ -351,7 +366,6 @@ define([
                     iconCls: 'toolbar__icon btn-more',
                     hint: this.textSort,
                     menu: new Common.UI.Menu({
-                        style: 'min-width: auto;',
                         items: [
                             {
                                 caption: this.mniDateDesc,
@@ -399,8 +413,41 @@ define([
                             },
                             {
                                 caption: '--',
-                                visible: false
+                                visible: true
                             },
+                            this.menuFilterComments = new Common.UI.MenuItem({
+                                caption: this.mniFilterComments,
+                                checkable: false,
+                                visible: true,
+                                menu: new Common.UI.Menu({
+                                    menuAlign: 'tl-tr',
+                                    style: 'min-width: auto;',
+                                    items: [
+                                        {
+                                            caption: this.textOpen,
+                                            checkable: true,
+                                            visible: true,
+                                            toggleGroup: 'filterstatus',
+                                            value: 'open'
+                                        },
+                                        {
+                                            caption: this.textResolved,
+                                            checkable: true,
+                                            visible: true,
+                                            toggleGroup: 'filterstatus',
+                                            value: 'resolved'
+                                        },
+                                        {
+                                            caption: this.textAll,
+                                            checkable: true,
+                                            visible: true,
+                                            toggleGroup: 'filterstatus',
+                                            value: 'all',
+                                            checked: true
+                                        }
+                                    ]
+                                })
+                            }),
                             this.menuFilterGroups = new Common.UI.MenuItem({
                                 caption: this.mniFilterGroups,
                                 checkable: false,
@@ -442,6 +489,7 @@ define([
                 this.buttonClose.on('click', _.bind(this.onClickClosePanel, this));
                 this.buttonSort.menu.on('item:toggle', _.bind(this.onSortClick, this));
                 this.menuFilterGroups.menu.on('item:toggle', _.bind(this.onFilterGroupsClick, this));
+                this.menuFilterComments.menu.on('item:toggle', _.bind(this.onFilterCommentsClick, this));
                 this.mnuAddCommentToDoc.on('click', _.bind(this.onClickShowBoxDocumentComment, this));
                 this.buttonAddNew.on('click', _.bind(this.onClickAddNewComment, this));
 
@@ -903,8 +951,13 @@ define([
             state && this.fireEvent('comment:sort', [item.value]);
         },
 
+
         onFilterGroupsClick: function(menu, item, state) {
             state && this.fireEvent('comment:filtergroups', [item.value]);
+        },
+
+        onFilterCommentsClick: function(menu, item, state) {
+            state && this.fireEvent('comment:filtercomments', [item.value]);
         },
 
         onClickClosePanel: function() {
@@ -921,6 +974,7 @@ define([
         textClose               : 'Close',
         textResolved            : 'Resolved',
         textResolve             : 'Resolve',
+        textOpen                : 'Open',
         textEnterCommentHint    : 'Enter your comment here',
         textEdit                : 'Edit',
         textAdd                 : "Add",
@@ -937,6 +991,7 @@ define([
         textClosePanel: 'Close comments',
         textViewResolved: 'You have not permission for reopen comment',
         mniFilterGroups: 'Filter by Group',
+        mniFilterComments: 'Show comments',
         textAll: 'All',
         txtEmpty: 'There are no comments in the document.',
         textSortFilter: 'Sort and filter comments',

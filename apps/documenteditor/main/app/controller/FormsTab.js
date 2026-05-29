@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 
 /**
@@ -90,6 +93,7 @@ define([
             Common.NotificationCenter.on('forms:close-help', _.bind(this.closeHelpTip, this));
             Common.NotificationCenter.on('forms:show-help', _.bind(this.showHelpTip, this));
             Common.NotificationCenter.on('forms:request-fill', _.bind(this.requestStartFilling, this));
+            Common.NotificationCenter.on('forms:show-send-for-signing', _.bind(this.showSendForSigning, this));
             Common.NotificationCenter.on('document:ready', _.bind(this.onDocumentReady, this));
             return this;
         },
@@ -106,7 +110,7 @@ define([
                 dirLeft = Common.UI.isRTL() ? 'right' : 'left',
                 me = this;
             this._helpTips = {
-                'create': {name: 'de-form-tip-create', placement: 'bottom-' + dirRight, text: this.view.tipCreateField, link: false, target: '#slot-btn-form-field', showButton: true},
+                //'create': {name: 'de-form-tip-create', placement: 'bottom-' + dirRight, text: this.view.tipCreateField, link: false, target: '#slot-btn-form-field', showButton: true},
                 'key': {name: 'de-form-tip-settings-key', placement: dirLeft + '-bottom', text: this.view.tipFormKey, link: {text: this.view.tipFieldsLink, src: 'UsageInstructions\/CreateFillableForms.htm'}, target:  '#form-combo-key', showButton: true},
                 'group-key': {name: 'de-form-tip-settings-group', placement: dirLeft + '-bottom', text: this.view.tipFormGroupKey, link: false, target:  '#form-combo-group-key', showButton: true},
                 'settings': {name: 'de-form-tip-settings', placement: dirLeft + '-top', text: this.view.tipFieldSettings, link: {text: this.view.tipFieldsLink, src: 'UsageInstructions\/CreateFillableForms.htm'}, target:  '#id-right-menu-form', showButton: true},
@@ -126,12 +130,14 @@ define([
                     'forms:clear': this.onClearClick,
                     // 'forms:no-color': this.onNoControlsColor,
                     // 'forms:select-color': this.onSelectControlsColor,
-                    'forms:mode': this.onModeClick,
+                    'forms:preview': this.onPreviewClick,
+                    'forms:final': this.onFinalClick,
                     'forms:goto': this.onGoTo,
                     'forms:submit': this.onSubmitClick,
                     'forms:save': this.onSaveFormClick,
                     'forms:manager': this.onManagerClick,
-                    'forms:gopage': this.onGotoPage
+                    'forms:gopage': this.onGotoPage,
+                    'forms:currentrole': this.onCurrentRole
                 },
                 'Toolbar': {
                     'tab:active': this.onActiveTab,
@@ -139,9 +145,14 @@ define([
                     'view:compact'  : function (toolbar, state) {
                         state && me.onTabCollapse();
                     },
+                },
+                'FormSettings': {
+                    'forms:currentrole': this.onCurrentRoleChanged
                 }
             });
             this.appConfig.isRestrictedEdit && this.api && this.api.asc_registerCallback('asc_onDocumentModifiedChanged', _.bind(this.onDocumentModifiedChanged, this));
+            this.appConfig.isPDFSignatureSupport && this.appConfig.isRestrictedEdit && this.api && this.api.asc_registerCallback('asc_onUpdateSignatures',    _.bind(this.onApiUpdateSignatures, this));
+            this.appConfig.isEdit && this.appConfig.canFeatureContentControl && this.appConfig.isFormCreator && !this.appConfig.isOForm && this.api && this.api.asc_registerCallback('asc_onOFormChangeFinal', _.bind(this.onOFormChangeFinal, this))
         },
 
         SetDisabled: function(state) {
@@ -154,7 +165,7 @@ define([
 
         getView: function(name) {
             return !name && this.view ?
-                this.view : Backbone.Controller.prototype.getView.call(this, name);
+                this.view : name ? Backbone.Controller.prototype.getView.call(this, name) : undefined;
         },
 
         onCoAuthoringDisconnect: function() {
@@ -303,24 +314,73 @@ define([
         onModeClick: function(state, lastViewRole) {
             if (this.api) {
                 this.disableEditing(state);
-                this.view && this.view.setPreviewMode(state); // send role name - lastViewRole
+                this.view && this.view.setPreviewMode(state);
                 var role = new AscCommon.CRestrictionSettings();
                 role.put_OFormRole(lastViewRole);
                 this.api.asc_setRestriction(state ? Asc.c_oAscRestrictionType.OnlyForms : Asc.c_oAscRestrictionType.None, role);
                 this.api.asc_SetPerformContentControlActionByClick(state);
                 this.api.asc_SetHighlightRequiredFields(state);
-                state && (this._state.lastViewRole = lastViewRole);
+                state && lastViewRole && (this._state.lastViewRole = lastViewRole);
                 this.toolbar.toolbar.clearActiveData();
                 this.toolbar.toolbar.processPanelVisible(null, true);
+                !state && this.view && Common.Utils.lockControls(Common.enumLock.viewFormFinal, false, {array: [this.view.btnViewFormRoles]});
+                !state && this.view && Common.Utils.lockControls(Common.enumLock.viewFormNotFinal, false, {array: [this.view.btnFinal]});
             }
             Common.NotificationCenter.trigger('doc:mode-changed', state ? 'view-form' : undefined);
             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
         },
 
-        changeViewFormMode: function(state) {
-            if (this.view && this.view.btnViewFormRoles && (state !== this.view.btnViewFormRoles.isActive())) {
-                this.view.btnViewFormRoles.toggle(state, true);
-                this.onModeClick(state);
+        changeViewFormMode: function(state, saveFlag) {
+            if (this.view && (this.view.btnViewFormRoles && (state !== this.view.btnViewFormRoles.isActive()) ||
+                              this.view.btnFinal && this.view.btnFinal.isActive() && !state)) {
+                var btnview = this.view.btnViewFormRoles,
+                    btnfinal = this.view.btnFinal;
+                if (btnview && (state !== btnview.isActive())) {
+                    btnview.toggle(state, true);
+                    if (state && btnview.menu) {
+                        var current = btnview.menu.getChecked();
+                        if (current) {
+                            current = current.caption;
+                        } else if (this.view._state.roles && this.view._state.roles.length>0) {
+                            current = this.view._state.roles[0].asc_getSettings().asc_getName();
+                        }
+                    }
+                    this.onPreviewClick(state, current);
+                } else if (btnfinal && btnfinal.isActive() && !state) {
+                    btnfinal.toggle(state, true);
+                    this.onFinalClick(state, saveFlag);
+                }
+            }
+        },
+
+        onPreviewClick: function(state, lastViewRole) {
+            this.onModeClick(state, lastViewRole);
+            state && this.view && Common.Utils.lockControls(Common.enumLock.viewFormNotFinal, true, {array: [this.view.btnFinal]});
+        },
+
+        onFinalClick: function(state, saveFlag) {
+            saveFlag && this.api && this.api.asc_markAsFinal(state);
+            this.onModeClick(state); // role = undefined, forms can be filled out by anyone
+            state && this.view && Common.Utils.lockControls(Common.enumLock.viewFormFinal, true, {array: [this.view.btnViewFormRoles]});
+        },
+
+        onOFormChangeFinal: function(isFinal) {
+            // off preview review changes
+            var review = this.getApplication().getController('Common.Controllers.ReviewChanges');
+            if (review && review.isPreviewChangesMode()) {
+                var value = Common.Utils.InternalSettings.get("de-review-mode-editor") || 'markup';
+                review.turnDisplayMode(value);
+                review.view && review.view.turnDisplayMode(value);
+            }
+
+            if (this.view) {
+                if (this.view.btnViewFormRoles && this.view.btnViewFormRoles.isActive()) // off view form mode
+                    this.changeViewFormMode(false);
+
+                if (this.view.btnFinal) {
+                    this.view.btnFinal.toggle(isFinal, true);
+                    this.onFinalClick(isFinal, false);
+                }
             }
         },
 
@@ -489,6 +549,11 @@ define([
                         }, this);
                     }
                     this.submitedTooltip.show();
+
+                    const rightMenuController = DE.getController('RightMenu');
+                    const rightMenuView = rightMenuController && rightMenuController.getView('RightMenu');
+                    const fillingStatusSettings = rightMenuView && rightMenuView.fillingStatusSettings;
+                    fillingStatusSettings && fillingStatusSettings.updateRoles();
                 } else
                     Common.NotificationCenter.trigger('doc:mode-apply', 'view-form', true, true);
             }
@@ -537,6 +602,12 @@ define([
                         // Common.Utils.lockControls(Common.enumLock.requiredNotFilled, true, {array: [me.view.btnSubmit]});
                         // me.showHelpTip('submit');
                     // }
+                }
+                if (me.view && me.view.cmbRoles && me.view.cmbRoles.cmpEl) {
+                    let width = Math.max(me.view.lblRoles.$label.width(), 130);
+                    me.view.cmbRoles.setWidth(width);
+                    me.view.cmbRoles.cmpEl.find('.form-control').css('width', width + 'px');
+                    me.view.cmbRoles.cmpEl.find('.dropdown-menu').css('min-width', width + 'px');
                 }
                 me.onRefreshRolesList();
                 me.onChangeProtectDocument();
@@ -607,7 +678,10 @@ define([
                 oform && (roles = oform.asc_getAllRoles());
             }
             this._state.lastRoleInList = (roles && roles.length>0) ? roles[roles.length-1].asc_getSettings().asc_getName() : undefined;
-            this.view && this.view.fillRolesMenu(roles, this._state.lastViewRole);
+            if (this.view) {
+                this.view.fillRolesMenu(roles, this._state.lastViewRole);
+                this.view.fillFillForCombo(roles, this._state.lastRoleInList);
+            }
         },
 
         onManagerClick: function() {
@@ -657,6 +731,11 @@ define([
                 });
             }
             Common.Gateway.requestStartFilling(arr);
+        },
+
+        showSendForSigning: function() {
+            const rightmenuController = this.getApplication().getController('RightMenu');
+            rightmenuController.openSendForSigning();
         },
 
         onActiveTab: function(tab) {
@@ -738,6 +817,40 @@ define([
             }
         },
 
+        onCurrentRole: function (combo, record) {
+            if (!this.api) return;
+            if (record.value === 0) {
+                combo.setValue(Common.Utils.InternalSettings.get('de-last-form-role') || this._state.lastRoleInList);
+
+                const formManager = this.api.asc_GetOForm();
+
+                new DE.Views.RoleEditDlg({
+                    oformManager: formManager,
+                    colors: [],
+                    isEdit: false,
+                    handler: function (result, settings) {
+                        if (result === 'ok' && settings) {
+                            const role = new AscCommon.CRoleSettings();
+                            role.asc_putName(settings.name);
+                            role.asc_putColor(settings.color);
+                            this.oformManager.asc_addRole(role);
+                            Common.Utils.InternalSettings.set('de-last-form-role', settings.name);
+                            combo.setValue(Common.Utils.InternalSettings.get('de-last-form-role'));
+                        }
+                    }
+                }).on('close', () => {
+                    this.fireEvent('editcomplete', this);
+                }).show();
+            } else {
+                Common.Utils.InternalSettings.set('de-last-form-role', record.value)
+                this.fireEvent('editcomplete', this);
+            }
+        },
+
+        onCurrentRoleChanged: function() {
+            this.view && this.view.cmbRoles && this.view.cmbRoles.setValue(Common.Utils.InternalSettings.get('de-last-form-role'));
+        },
+
         onRequestRoles: function(tab) {
             if (this._isDocReady)
                 this.requestStartFilling();
@@ -751,6 +864,30 @@ define([
                 this._state.needToStartFilling = false;
                 this.requestStartFilling();
             }
+
+            this.appConfig.isPDFSignatureSupport && this.appConfig.isRestrictedEdit && this.api && this.showSignatureTooltip(this.api.asc_getSignatures());
+        },
+
+        onApiUpdateSignatures: function(valid, requested){
+            if (!this._isDocReady) return;
+
+            this.showSignatureTooltip(valid);
+        },
+
+        showSignatureTooltip: function(valid) {
+            if (!this.view) return;
+
+            var hasForm = false;
+            valid && _.each(valid, function(item, index){
+                item.asc_getIsForm() && (hasForm = true);
+            });
+
+            if (!hasForm)
+                Common.UI.TooltipManager.closeTip('formSigned');
+            else
+                Common.UI.TooltipManager.showTip({ step: 'formSigned', text: this.view.txtSignedForm, target: '#toolbar', showButton: false,
+                                                         maxwidth: 'none', closable: true, automove: true, noHighlight: true, noArrow: true});
+            Common.Utils.lockControls(Common.enumLock.formSigned, hasForm, {array: [this.view.btnSubmit, this.view.btnClear]});
         }
 
     }, DE.Controllers.FormsTab || {}));

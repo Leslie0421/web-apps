@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  Comments.js
@@ -80,6 +83,9 @@ define([
         isDummyComment : false,
 
         initialize: function () {
+            this.currentGroupFilter = null;
+            this.currentTypeFilter = null;
+            this.isPDFEditor = !!window.PDFE;
 
             this.addListeners({
                 'Common.Views.Comments': {
@@ -103,7 +109,8 @@ define([
 
                     'comment:closeEditing':     _.bind(this.closeEditing, this),
                     'comment:sort':             _.bind(this.setComparator, this),
-                    'comment:filtergroups':     _.bind(this.setFilterGroups, this)
+                    'comment:filtergroups':     _.bind(this.setFilterGroups, this),
+                    'comment:filtercomments':     _.bind(this.setFilterComments, this)
                 },
 
                 'Common.Views.ReviewPopover': {
@@ -659,35 +666,49 @@ define([
         // SDK
 
         onApiAddComment: function (id, data) {
+            if (this.isPDFEditor && (this.findComment(id) || this.findCommentInGroup(id))) return; // fix for PDF, do not add comment with existing id
+
             var requestObj = {},
                 comment = this.readSDKComment(id, data, requestObj);
             if (comment) {
-                if (comment.get('groupName')) {
-                    this.addCommentToGroupCollection(comment);
-                    (_.indexOf(this.collection.groups, comment.get('groupName'))>-1) && this.collection.push(comment);
-                } else
-                    this.collection.push(comment);
+                const guid = comment.get('guid');
+                const duplicateComment = (this.findCommentByGuid(guid) || this.findCommentInGroupByGuid(guid));
+                if(duplicateComment) {
+                    duplicateComment.set('uid', id);
+                } else {
+                    if (comment.get('groupName')) {
+                        this.addCommentToGroupCollection(comment);
+                        (_.indexOf(this.collection.groups, comment.get('groupName'))>-1) && this.collection.push(comment);
+                    } else
+                        this.collection.push(comment);
 
-                this.updateComments(true, this.getComparator() === 'position-asc' || this.getComparator() === 'position-desc'); // don't sort by position
+                    this.updateComments(true, this.getComparator() === 'position-asc' || this.getComparator() === 'position-desc'); // don't sort by position
 
-                if (this.showPopover) {
-                    if (null !== data.asc_getQuoteText()) {
-                        this.api.asc_selectComment(id);
-                        this._dontScrollToComment = true;
-                        this.api.asc_showComment(id, true);
+                    if (this.showPopover) {
+                        if (null !== data.asc_getQuoteText()) {
+                            this.api.asc_selectComment(id);
+                            this._dontScrollToComment = true;
+                            this.api.asc_showComment(id, true);
+                        }
+
+                        this.showPopover = undefined;
+                        this.editPopover = false;
                     }
-
-                    this.showPopover = undefined;
-                    this.editPopover = false;
+                    requestObj.arrIds && requestObj.arrIds.length && Common.UI.ExternalUsers.get('info', requestObj.arrIds);
                 }
-                requestObj.arrIds && requestObj.arrIds.length && Common.UI.ExternalUsers.get('info', requestObj.arrIds);
             }
         },
         onApiAddComments: function (data) {
             var requestObj = {};
             for (var i = 0; i < data.length; ++i) {
-                var comment = this.readSDKComment(data[i].asc_getId(), data[i], requestObj);
-                comment.get('groupName') ? this.addCommentToGroupCollection(comment) : this.collection.push(comment);
+                const comment = this.readSDKComment(data[i].asc_getId(), data[i], requestObj);
+                const guid = comment.get('guid');
+                const duplicateComment = (this.findCommentByGuid(guid) || this.findCommentInGroupByGuid(guid));
+                if(duplicateComment) {
+                    duplicateComment.set('uid', comment.get('uid'));
+                } else {
+                    comment.get('groupName') ? this.addCommentToGroupCollection(comment) : this.collection.push(comment);
+                }
             }
             this.updateComments(true, this.getComparator() === 'position-asc' || this.getComparator() === 'position-desc');
             requestObj.arrIds && requestObj.arrIds.length && Common.UI.ExternalUsers.get('info', requestObj.arrIds);
@@ -706,7 +727,7 @@ define([
                 if (model) {
                     this.collection.remove(model);
                     if (!silentUpdate) {
-                        this.updateComments(true);
+                        this.updateComments(true, undefined, undefined, true);
                     }
                 }
 
@@ -781,8 +802,9 @@ define([
                     var usergroups = comment.get('parsedGroups');
                     t.fillUserGroups(usergroups);
                     var group = Common.Utils.InternalSettings.get(t.appPrefix + "comments-filtergroups");
-                    var filter = !!group && (group!==-1) && (!usergroups || usergroups.length<1 || usergroups.indexOf(group)<0);
-                    comment.set('filtered', filter);
+                    var groupFilter = !!group && (group !== -1) && (!usergroups || usergroups.length < 1 || usergroups.indexOf(group) < 0);
+                    var typeFilter = (t.currentTypeFilter === 'open' && comment.get('resolved')) || (t.currentTypeFilter === 'resolved' && !comment.get('resolved'));
+                    comment.set('filtered', groupFilter || typeFilter);
                 }
 
                 replies = _.clone(comment.get('replys'));
@@ -866,7 +888,7 @@ define([
             var same_uids = (0 === _.difference(this.uids, uids).length) && (0 === _.difference(uids, this.uids).length);
             
             if (hint && this.isSelectedComment && same_uids && !this.isModeChanged) {
-                // хотим показать тот же коментарий что был и выбран
+                // want to show the same comment that was selected
                 return;
             }
 
@@ -933,8 +955,10 @@ define([
                     this.uids = _.clone(uids);
 
                     comments.push(comment);
-                    if (!this._dontScrollToComment)
+                    if (!this._dontScrollToComment) {
+                        this.view.commentsView.clearActive();
                         this.view.commentsView.scrollToRecord(comment);
+                    }
                     this._dontScrollToComment = false;
                 }
 
@@ -954,6 +978,8 @@ define([
         },
         onApiHideComment: function (hint) {
             var t = this;
+
+            this.view && this.view.commentsView && this.view.commentsView.clearActive();
 
             if (this.getPopover()) {
                 if (this.isSelectedComment && hint) {
@@ -1033,8 +1059,9 @@ define([
                         this.getPopover().showComments(false, undefined, undefined, text);
                     }
 
-                    this.getPopover().setLeftTop(posX, posY, leftX, undefined, true);
-
+                    this.getPopover().setLeftTop(posX, posY, leftX, undefined);
+                    this.getPopover().moveMentions();
+                    
 //                    if (this.isSelectedComment && (0 === _.difference(this.uids, uids).length)) {
                         //NOTE: click to sdk view ?
 //                        if (this.api) {
@@ -1077,16 +1104,18 @@ define([
 
         // internal
 
-        updateComments: function (needRender, disableSort, loadText) {
+        updateComments: function (needRender, disableSort, loadText, isSaveScrollPos) {
             var me = this;
             me.updateCommentsTime = new Date();
             me.disableSort = !!disableSort;
             if (me.timerUpdateComments===undefined)
                 me.timerUpdateComments = setInterval(function(){
                     if ((new Date()) - me.updateCommentsTime>100) {
+                        const scrollPos =  me.view.commentsView.scroller.getScrollTop();
                         clearInterval(me.timerUpdateComments);
                         me.timerUpdateComments = undefined;
                         me.updateCommentsView(needRender, me.disableSort, loadText);
+                        isSaveScrollPos && me.view.commentsView.scroller.scrollTop(scrollPos);
                     }
                }, 25);
         },
@@ -1130,6 +1159,9 @@ define([
         findComment: function (uid) {
             return this.collection.findWhere({uid: uid});
         },
+        findCommentByGuid: function (guid) {
+            return this.collection.findWhere({guid: guid});
+        },
         findPopupComment: function (id) {
             return this.popoverComments.findWhere({id: id});
         },
@@ -1137,6 +1169,13 @@ define([
             for (var name in this.groupCollection) {
                 var store = this.groupCollection[name],
                     model = store.findWhere({uid: id});
+                if (model) return model;
+            }
+        },
+        findCommentInGroupByGuid: function (guid) {
+            for (var name in this.groupCollection) {
+                var store = this.groupCollection[name],
+                    model = store.findWhere({guid: guid});
                 if (model) return model;
             }
         },
@@ -1335,9 +1374,11 @@ define([
                     var usergroups = comment.get('parsedGroups');
                     this.fillUserGroups(usergroups);
                     var group = Common.Utils.InternalSettings.get(this.appPrefix + "comments-filtergroups");
-                    var filter = !!group && (group!==-1) && (!usergroups || usergroups.length<1 || usergroups.indexOf(group)<0);
-                    comment.set('filtered', filter);
+                    var groupFilter = !!group && (group !== -1) && (!usergroups || usergroups.length < 1 || usergroups.indexOf(group) < 0);
+                    var typeFilter = (this.currentTypeFilter === 'open' && comment.get('resolved')) || (this.currentTypeFilter === 'resolved' && !comment.get('resolved'));
+                    comment.set('filtered', groupFilter || typeFilter);
                 }
+
                 var replies = this.readSDKReplies(data, requestObj);
                 if (replies.length) {
                     comment.set('replys', replies);
@@ -1543,7 +1584,7 @@ define([
                     for (i = 0; i < comments.length; ++i) {
                         comment = this.findComment(comments[i].asc_getId());
                         if (comment) {
-                            comment.set('editTextInPopover', t.mode.canEditComments && AscCommon.UserInfoParser.canEditComment(comment.username));// dont't edit comment when customization->commentAuthorOnly is true or when permissions.editCommentAuthorOnly is true
+                            comment.set('editTextInPopover', t.mode.canEditComments && AscCommon.UserInfoParser.canEditComment(comment.username));// dont't edit comment when permissions.editCommentAuthorOnly is true
                             comment.set('hint', false);
                             this.popoverComments.push(comment);
                         }
@@ -1755,25 +1796,39 @@ define([
             }
         },
 
-        setFilterGroups: function (group) {
-            Common.Utils.InternalSettings.set(this.appPrefix + "comments-filtergroups", group);
+        applyCombinedFilter: function () {
             var i, end = true;
+
             for (i = this.collection.length - 1; i >= 0; --i) {
                 var item = this.collection.at(i);
-                if (!item.get('hide')) {
-                    var usergroups = item.get('parsedGroups');
-                    item.set('filtered', !!group && (group!==-1) && (!usergroups || usergroups.length<1 || usergroups.indexOf(group)<0), {silent: true});
-                }
-                if (end && !item.get('hide') && !item.get('filtered')) {
-                    item.set('last', true, {silent: true});
+                var usergroups = item.get('parsedGroups');
+
+                var groupFiltered = !!this.currentGroupFilter && this.currentGroupFilter !== -1 && (!usergroups || usergroups.length < 1 || usergroups.indexOf(this.currentGroupFilter) < 0);
+                var typeFiltered = (this.currentTypeFilter === 'open' && item.get('resolved')) || (this.currentTypeFilter === 'resolved' && !item.get('resolved'));
+                var shouldFilter = groupFiltered || typeFiltered;
+
+                item.set('filtered', shouldFilter, { silent: true });
+
+                if (end && !shouldFilter && !item.get('hide')) {
+                    item.set('last', true, { silent: true });
                     end = false;
-                } else {
-                    if (item.get('last')) {
-                        item.set('last', false, {silent: true});
-                    }
+                } else if (item.get('last')) {
+                    item.set('last', false, { silent: true });
                 }
             }
+
             this.updateComments(true);
+        },
+
+        setFilterGroups: function (group) {
+            Common.Utils.InternalSettings.set(this.appPrefix + "comments-filtergroups", group);
+            this.currentGroupFilter = group;
+            this.applyCombinedFilter();
+        },
+
+        setFilterComments: function (type) {
+            this.currentTypeFilter = type;
+            this.applyCombinedFilter();
         },
 
         onAppReady: function (config) {

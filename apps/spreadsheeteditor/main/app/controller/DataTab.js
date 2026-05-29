@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 
 /**
@@ -56,16 +59,6 @@ define([
             this._state = {
                 CSVOptions: new Asc.asc_CTextOptions(0, 4, '')
             };
-            this.externalData = {
-                stackRequests: [],
-                stackResponse: [],
-                callback: undefined,
-                isUpdating: false,
-                linkStatus: {}
-            };
-            this.externalSource = {
-                externalRef: undefined
-            };
         },
         onLaunch: function () {
         },
@@ -78,6 +71,8 @@ define([
                 this.api.asc_registerCallback('asc_onChangeProtectWorkbook',_.bind(this.onChangeProtectWorkbook, this));
                 this.api.asc_registerCallback('asc_onGoalSeekUpdate',       _.bind(this.onUpdateGoalSeekStatus, this));
                 this.api.asc_registerCallback('asc_onCoAuthoringDisconnect',_.bind(this.onCoAuthoringDisconnect, this));
+                this.api.asc_registerCallback('asc_onSolverResultDlgOpen',_.bind(this.onSolverResultDlgOpen, this));
+                this.api.asc_registerCallback('asc_onSolverTrialDlgOpen',_.bind(this.onSolverTrialDlgOpen, this));
                 Common.NotificationCenter.on('api:disconnect', _.bind(this.onCoAuthoringDisconnect, this));
                 Common.NotificationCenter.on('protect:wslock',              _.bind(this.onChangeProtectSheet, this));
                 Common.NotificationCenter.on('document:ready',              _.bind(this.onDocumentReady, this));
@@ -102,8 +97,8 @@ define([
                     'data:remduplicates': this.onRemoveDuplicates,
                     'data:datavalidation': this.onDataValidation,
                     'data:fromtext': this.onDataFromText,
-                    'data:externallinks': this.onExternalLinks,
-                    'data:goalseek': this.onGoalSeek
+                    'data:goalseek': this.onGoalSeek,
+                    'data:solver': this.onSolver
                 },
                 'Statusbar': {
                     'sheet:changed': this.onApiSheetChanged
@@ -111,17 +106,6 @@ define([
             });
             Common.NotificationCenter.on('data:remduplicates', _.bind(this.onRemoveDuplicates, this));
             Common.NotificationCenter.on('data:sortcustom', _.bind(this.onCustomSort, this));
-            if ((this.toolbar.mode.canRequestReferenceData || this.toolbar.mode.isOffline) && this.api) {
-                this.api.asc_registerCallback('asc_onNeedUpdateExternalReferenceOnOpen', _.bind(this.onNeedUpdateExternalReferenceOnOpen, this));
-                this.api.asc_registerCallback('asc_onStartUpdateExternalReference', _.bind(this.onStartUpdateExternalReference, this));
-                this.api.asc_registerCallback('asc_onUpdateExternalReference', _.bind(this.onUpdateExternalReference, this));
-                this.api.asc_registerCallback('asc_onErrorUpdateExternalReference', _.bind(this.onErrorUpdateExternalReference, this));
-                this.api.asc_registerCallback('asc_onNeedUpdateExternalReference', _.bind(this.onNeedUpdateExternalReference, this));
-                Common.Gateway.on('setreferencedata', _.bind(this.setReferenceData, this));
-            }
-            if (this.toolbar.mode.canRequestReferenceSource) {
-                Common.Gateway.on('setreferencesource', _.bind(this.setReferenceSource, this));
-            }
         },
 
         SetDisabled: function(state) {
@@ -502,31 +486,6 @@ define([
             }
         },
 
-        onExternalLinks: function() {
-            var me = this;
-            this.externalLinksDlg = (new SSE.Views.ExternalLinksDlg({
-                api: this.api,
-                isUpdating: this.externalData.isUpdating,
-                canRequestReferenceData: this.toolbar.mode.canRequestReferenceData || this.toolbar.mode.isOffline,
-                canRequestOpen: this.toolbar.mode.canRequestOpen || this.toolbar.mode.isOffline,
-                canRequestReferenceSource: this.toolbar.mode.canRequestReferenceSource || this.toolbar.mode.isOffline,
-                isOffline: this.toolbar.mode.isOffline,
-                handler: function(result) {
-                    Common.NotificationCenter.trigger('edit:complete');
-                }
-            }));
-            this.externalLinksDlg.on('close', function(win){
-                me.externalLinksDlg = null;
-            });
-            this.externalLinksDlg.on('change:source', function(win, externalRef){
-                me.externalSource = {
-                    externalRef: externalRef
-                };
-                Common.Gateway.requestReferenceSource();
-            });
-            this.externalLinksDlg.show()
-        },
-
         onGoalSeek: function() {
             var me = this;
             (new SSE.Views.GoalSeekDlg({
@@ -538,6 +497,80 @@ define([
                     Common.NotificationCenter.trigger('edit:complete');
                 }
             })).show();
+        },
+
+        onSolver: function() {
+            var me = this,
+                res;
+            (new SSE.Views.SolverDlg({
+                api: me.api,
+                lang: me.toolbar.mode.lang,
+                props: me.api.asc_GetSolverParams(),
+                handler: function(result, settings) {
+                    res = result;
+                    if (result == 'ok' && settings) {
+                        me.api.asc_StartSolver(settings);
+                    }
+                    Common.NotificationCenter.trigger('edit:complete');
+                }
+            })).on('close', function() {
+                if (res !== 'ok')
+                    me.api.asc_CloseSolver(false);
+            }).show();
+        },
+
+        onSolverResultDlgOpen: function(id) {
+            var me = this,
+                keepSolution = false,
+                openParams = false,
+                win = (new SSE.Views.SolverResultsDlg({
+                    handler: function(dlg, result) {
+                        if (result === 'ok') {
+                            let settings = dlg.getSettings();
+                            keepSolution = settings.keepSolution;
+                            openParams = settings.openParams;
+                        }
+                    }
+                })).on('close', function() {
+                    me.api.asc_CloseSolver(keepSolution);
+                    openParams ? me.onSolver() : Common.NotificationCenter.trigger('edit:complete');
+                });
+            win.show();
+            win.setSettings(id);
+        },
+
+        onSolverTrialDlgOpen: function(id) {
+            var me = this,
+                msg;
+            switch (id) {
+                case AscCommonExcel.c_oAscResultStatus.maxIterationsReached:
+                    msg = this.txtMaxIterations;
+                    break;
+                case AscCommonExcel.c_oAscResultStatus.maxTimeReached:
+                    msg = this.txtMaxTime;
+                    break;
+                case AscCommonExcel.c_oAscResultStatus.maxFeasibleSolutionReached:
+                    msg = this.txtMaxFeasible;
+                    break;
+                case AscCommonExcel.c_oAscResultStatus.maxSubproblemSolutionReached:
+                    msg = this.txtMaxSubproblem;
+                    break;
+            }
+            msg && Common.UI.alert({
+                title: this.txtTrialSolution,
+                msg: msg,
+                buttons: [{
+                    value: 'ok',
+                    caption: this.txtContinue
+                }, {
+                    value: 'cancel',
+                    caption: this.txtStop
+                }],
+                primary: 'ok',
+                callback: function (btn) {
+                    (btn === 'cancel') ? me.api.asc_StopSolver() : me.api.asc_ContinueSolver();
+                }
+            });
         },
 
         onUpdateGoalSeekStatus: function (targetValue, currentValue, iteration, cellName) {
@@ -560,104 +593,6 @@ define([
                 this.GoalSeekStatusDlg.show();
             }
             this.GoalSeekStatusDlg.setSettings({targetValue: targetValue, currentValue: currentValue, iteration: iteration, cellName: cellName});
-        },
-
-        onUpdateExternalReference: function(arr, callback) {
-            if (this.toolbar.mode.isEdit && this.toolbar.editMode) {
-                var me = this;
-                me.externalData = {
-                    stackRequests: [],
-                    stackResponse: [],
-                    callback: undefined,
-                    isUpdating: false,
-                    linkStatus: {}
-                };
-                arr && arr.length>0 && arr.forEach(function(item) {
-                    var data;
-                    switch (item.asc_getType()) {
-                        case Asc.c_oAscExternalReferenceType.link:
-                            data = {link: item.asc_getData()};
-                            break;
-                        case Asc.c_oAscExternalReferenceType.path:
-                            data = {path: item.asc_getData()};
-                            break;
-                        case Asc.c_oAscExternalReferenceType.referenceData:
-                            data = {
-                                referenceData: item.asc_getData(),
-                                path: item.asc_getPath(),
-                                link: item.asc_getLink()
-                            };
-                            break;
-                    }
-                    data && me.externalData.stackRequests.push({data: data, id: item.asc_getId(), isExternal: item.asc_isExternalLink()});
-                });
-                me.externalData.callback = callback;
-                me.requestReferenceData();
-            }
-        },
-
-        requestReferenceData: function() {
-            if (this.externalData.stackRequests.length>0) {
-                var item = this.externalData.stackRequests.shift();
-                this.externalData.linkStatus.id = item.id;
-                this.externalData.linkStatus.isExternal = item.isExternal;
-                Common.Gateway.requestReferenceData(item.data);
-            }
-        },
-
-        setReferenceData: function(data) {
-            if (this.toolbar.mode.isEdit && this.toolbar.editMode) {
-                if (data) {
-                    this.externalData.stackResponse.push(data);
-                    this.externalData.linkStatus.result = this.externalData.linkStatus.isExternal ? '' : data.error || '';
-                    if (this.externalLinksDlg) {
-                        this.externalLinksDlg.setLinkStatus(this.externalData.linkStatus.id, this.externalData.linkStatus.result);
-                    }
-                }
-                if (this.externalData.stackRequests.length>0)
-                    this.requestReferenceData();
-                else if (this.externalData.callback)
-                    this.externalData.callback(this.externalData.stackResponse);
-            }
-        },
-
-        onStartUpdateExternalReference: function(status) {
-            this.externalData.isUpdating = status;
-            if (this.externalLinksDlg) {
-                this.externalLinksDlg.setIsUpdating(status);
-            }
-        },
-
-        onNeedUpdateExternalReferenceOnOpen: function() {
-            var value = this.api.asc_getUpdateLinks();
-            Common.UI.warning({
-                msg: value ? this.warnUpdateExternalAutoupdate : this.warnUpdateExternalData,
-                buttons: [{value: 'ok', caption: value ? this.textContinue : this.textUpdate, primary: true}, {value: 'cancel', caption: value ? this.textTurnOff : this.textDontUpdate}],
-                maxwidth: 500,
-                callback: _.bind(function(btn) {
-                    if (btn==='ok') {
-                        var links = this.api.asc_getExternalReferences();
-                        links && (links.length>0) && this.api.asc_updateExternalReferences(links);
-                    }
-                    value && this.api.asc_setUpdateLinks(btn==='ok', true);
-                }, this)
-            });
-        },
-
-        onErrorUpdateExternalReference: function(id) {
-            if (this.externalLinksDlg) {
-                this.externalLinksDlg.setLinkStatus(id, this.txtErrorExternalLink);
-            }
-        },
-
-        onNeedUpdateExternalReference: function() {
-            Common.NotificationCenter.trigger('showmessage', {msg: this.textAddExternalData});
-        },
-
-        setReferenceSource: function(data) { // gateway
-            if (this.toolbar.mode.isEdit && this.toolbar.editMode) {
-                this.api.asc_changeExternalReference(this.externalSource.externalRef, data);
-            }
         },
 
         onWorksheetLocked: function(index,locked) {
@@ -704,13 +639,7 @@ define([
         txtUrlTitle: 'Paste a data URL',
         txtErrorExternalLink: 'Error: updating is failed',
         strSheet: 'Sheet',
-        warnUpdateExternalData: 'This workbook contains links to one or more external sources that could be unsafe.<br>If you trust the links, update them to get the latest data.',
-        textUpdate: 'Update',
-        textDontUpdate: 'Don\'t Update',
-        textAddExternalData: 'The link to an external source has been added. You can update such links in the Data tab.',
-        warnUpdateExternalAutoupdate: 'This workbook contains links that are updated automatically from external sources that could be unsafe.<br>If you trust the links, press \'Continue\' to update.',
-        textTurnOff: 'Turn off auto update',
-        textContinue: 'Continue'
+        textAddExternalData: 'The link to an external source has been added. You can update such links in the Data tab.'
 
     }, SSE.Controllers.DataTab || {}));
 });

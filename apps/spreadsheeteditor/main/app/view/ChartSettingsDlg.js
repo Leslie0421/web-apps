@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  ChartSettingsDlg.js
@@ -38,15 +41,15 @@
 
 define([
     'text!spreadsheeteditor/main/app/template/ChartSettingsDlg.template',
-    'text!spreadsheeteditor/main/app/template/ChartVertAxis.template',
-    'text!spreadsheeteditor/main/app/template/ChartHorAxis.template',
+    'text!common/main/lib/template/ChartVertAxis.template',
+    'text!common/main/lib/template/ChartHorAxis.template',
     'common/main/lib/view/AdvancedSettingsWindow',
 ], function (contentTemplate, vertTemplate, horTemplate) {
     'use strict';
 
     SSE.Views.ChartSettingsDlg = Common.Views.AdvancedSettingsWindow.extend(_.extend({
         options: {
-            contentWidth: 327,
+            contentWidth: 340,
             contentHeight: 460,
             toggleGroup: 'chart-settings-dlg-group',
             storageName: 'sse-chart-settings-adv-category'
@@ -144,7 +147,7 @@ define([
 
             this.cmbChartTitle = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-chart-title'),
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 cls: 'input-group-nr',
                 data: [
@@ -157,7 +160,7 @@ define([
 
             this.cmbLegendPos = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-legend-pos'),
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 cls: 'input-group-nr',
                 data: [
@@ -174,7 +177,7 @@ define([
 
             this.cmbDataLabels = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-data-labels'),
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 cls: 'input-group-nr',
                 data: [
@@ -214,7 +217,7 @@ define([
 
             this.cmbLines = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-lines'),
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 cls: 'input-group-nr',
                 data: [
@@ -426,7 +429,7 @@ define([
             this.cmbSparkMinType = new Common.UI.ComboBox({
                 el          : $('#spark-dlg-combo-mintype'),
                 cls         : 'input-group-nr',
-                menuStyle   : 'min-width: 100px;',
+                menuStyle   : 'min-width: 100%;',
                 editable    : false,
                 data        : [
                     {displayValue: this.textAutoEach, value: Asc.c_oAscSparklineAxisMinMax.Individual},
@@ -625,7 +628,7 @@ define([
 
             me.cmbVertTitle[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-vert-title-' + i),
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 cls: 'input-group-nr',
                 data: me._arrVertTitle,
@@ -638,7 +641,7 @@ define([
 
             me.cmbVertGrid[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-vert-grid-' + i),
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 cls: 'input-group-nr',
                 data: [
@@ -657,7 +660,7 @@ define([
             me.cmbMinType[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-mintype-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 100px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textAuto, value: Asc.c_oAscValAxisRule.auto},
@@ -696,7 +699,7 @@ define([
             me.cmbMaxType[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-maxtype-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 100px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textAuto, value: Asc.c_oAscValAxisRule.auto},
@@ -735,7 +738,7 @@ define([
             me.cmbVCrossType[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-v-crosstype-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 100px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textAuto, value: Asc.c_oAscCrossesRule.auto},
@@ -820,7 +823,7 @@ define([
             me.cmbVMajorType[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-v-major-type-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textNone, value: Asc.c_oAscTickMark.TICK_MARK_NONE},
@@ -839,7 +842,7 @@ define([
             me.cmbVMinorType[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-v-minor-type-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textNone, value: Asc.c_oAscTickMark.TICK_MARK_NONE},
@@ -928,7 +931,7 @@ define([
 
             me.cmbHorTitle[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-hor-title-' + i),
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 cls: 'input-group-nr',
                 data: me._arrHorTitle,
@@ -941,7 +944,7 @@ define([
 
             me.cmbHorGrid[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-hor-grid-' + i),
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 cls: 'input-group-nr',
                 data: [
@@ -960,7 +963,7 @@ define([
             me.cmbHCrossType[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-h-crosstype-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 100px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textAuto, value: Asc.c_oAscCrossesRule.auto},
@@ -1005,7 +1008,7 @@ define([
             me.cmbAxisPos[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-axis-pos-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textOnTickMarks, value: Asc.c_oAscLabelsPosition.byDivisions},
@@ -1032,7 +1035,7 @@ define([
             me.cmbHMajorType[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-h-major-type-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textNone, value: Asc.c_oAscTickMark.TICK_MARK_NONE},
@@ -1051,7 +1054,7 @@ define([
             me.cmbHMinorType[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-h-minor-type-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textNone, value: Asc.c_oAscTickMark.TICK_MARK_NONE},
@@ -1069,7 +1072,7 @@ define([
 
             me.spnMarksInterval[i] = new Common.UI.MetricSpinner({
                 el: $('#chart-dlg-input-marks-interval-' + i),
-                width: 140,
+                width: 'auto',
                 maxValue: 1000000,
                 minValue: 1,
                 step: 1,
@@ -1085,7 +1088,7 @@ define([
             me.cmbHLabelPos[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-h-label-pos-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 140px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textNone, value: Asc.c_oAscTickLabelsPos.TICK_LABEL_POSITION_NONE},
@@ -1103,7 +1106,7 @@ define([
 
             me.spnLabelDist[i] = new Common.UI.MetricSpinner({
                 el: $('#chart-dlg-input-label-dist-' + i),
-                width: 140,
+                width: 'auto',
                 maxValue: 1000,
                 minValue: 0,
                 step: 1,
@@ -1138,7 +1141,7 @@ define([
             me.cmbLabelInterval[i] = new Common.UI.ComboBox({
                 el: $('#chart-dlg-combo-label-int-' + i),
                 cls: 'input-group-nr',
-                menuStyle: 'min-width: 100px;',
+                menuStyle: 'min-width: 100%;',
                 editable: false,
                 data: [
                     {displayValue: me.textAuto, value: Asc.c_oAscBetweenLabelsRule.auto},
@@ -1723,6 +1726,8 @@ define([
                     Common.UI.warning({msg: this.errorMaxRows});
                 } else if (isvalid == Asc.c_oAscError.ID.MaxDataPointsError)
                     Common.UI.warning({msg: this.errorMaxPoints});
+                else if (isvalid == Asc.c_oAscError.ID.DataRangeError)
+                    Common.UI.warning({msg: this.textInvalidRange});
                 return false;
             } else
                 return true;
@@ -1836,7 +1841,7 @@ define([
                 lang = Common.Utils.InternalSettings.get("sse-config-lang");
             (!value) && (value = (lang ? parseInt(Common.util.LanguageInfo.getLocalLanguageCode(lang)) : 0x0409));
 
-            var win = (new SSE.Views.FormatSettingsDialog({
+            var win = (new Common.Views.FormatSettingsDialog({
                 api: me.api,
                 handler: function(result, settings) {
                     if (result=='ok' && settings) {
@@ -1868,7 +1873,7 @@ define([
         },
 
         close: function () {
-            this.api.asc_onCloseChartFrame();
+            this.api.asc_onCloseFrameEditor();
             Common.Views.AdvancedSettingsWindow.prototype.close.apply(this, arguments);
         },
 

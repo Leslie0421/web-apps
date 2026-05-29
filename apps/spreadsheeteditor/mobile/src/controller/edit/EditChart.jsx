@@ -1,3 +1,38 @@
+/*
+ * Copyright (C) Ascensio System SIA, 2009-2026
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
+ *
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * No trademark rights are granted under this License.
+ *
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
 import React, {Component} from 'react';
 import { f7 } from 'framework7-react';
 import {Device} from '../../../../../common/mobile/utils/device';
@@ -70,13 +105,9 @@ class EditChartController extends Component {
 
     onType(type) {
         const api = Common.EditorApi.get();
-        let image = new Asc.asc_CImgProperty(),
-            chart = this.props.storeFocusObjects.chartObject.get_ChartProperties();
+        let chart = this.props.storeFocusObjects.chartObject.get_ChartProperties();
 
         chart.changeType(type);
-        image.put_ChartProperties(chart);
-
-        api.asc_setGraphicObjectProps(image);
 
         // Force update styles
         this.props.storeChartSettings.updateChartStyles(api.asc_getChartPreviews(chart.getType()));
@@ -175,7 +206,7 @@ class EditChartController extends Component {
 
     setLayoutProperty(propertyMethod, value) {
         const api = Common.EditorApi.get();
-        let chartObject = api.asc_getChartObject();
+        let chartObject = api.asc_getChartSettings();
 
         if (chartObject && value) {
 
@@ -185,13 +216,13 @@ class EditChartController extends Component {
                 chartObject["putShowVal"](true);
             }
 
-            api.asc_editChartDrawingObject(chartObject);
+            api.asc_applyChartSettings(chartObject);
         }
     }
 
     getVerticalAxisProp() {
         const api = Common.EditorApi.get();
-        let chartObject = api.asc_getChartObject(),
+        let chartObject = api.asc_getChartSettings(),
             verAxisProps = chartObject.getVertAxisProps();
 
         return (verAxisProps.getAxisType() == Asc.c_oAscAxisType.val) ? verAxisProps : chartObject.getHorAxisProps();
@@ -199,12 +230,12 @@ class EditChartController extends Component {
 
     setVerticalAxisProp(axisProps) {
         const api = Common.EditorApi.get();
-        let chartObject = api.asc_getChartObject(),
+        let chartObject = api.asc_getChartSettings(),
             verAxisProps = chartObject.getVertAxisProps();
 
         if (chartObject) {
             chartObject[(verAxisProps.getAxisType() == Asc.c_oAscAxisType.val) ? 'putVertAxisProps' : 'putHorAxisProps'](axisProps);
-            api.asc_editChartDrawingObject(chartObject);
+            api.asc_applyChartSettings(chartObject);
         }
     }
 
@@ -295,7 +326,7 @@ class EditChartController extends Component {
 
     getHorizontalAxisProp() {
         const api = Common.EditorApi.get();
-        let chartObject = api.asc_getChartObject(),
+        let chartObject = api.asc_getChartSettings(),
             verHorProps = chartObject.getHorAxisProps();
 
         return (verHorProps.getAxisType() == Asc.c_oAscAxisType.val) ? chartObject.getVertAxisProps() : verHorProps;
@@ -303,12 +334,12 @@ class EditChartController extends Component {
 
     setHorizontalAxisProp(axisProps) {
         const api = Common.EditorApi.get();
-        let chartObject = api.asc_getChartObject(),
+        let chartObject = api.asc_getChartSettings(),
             verAxisProps = chartObject.getHorAxisProps();
 
         if (chartObject) {
             chartObject[(verAxisProps.getAxisType() == Asc.c_oAscAxisType.val) ? 'putVertAxisProps' : 'putHorAxisProps'](axisProps);
-            api.asc_editChartDrawingObject(chartObject);
+            api.asc_applyChartSettings(chartObject);
         }
     }
 

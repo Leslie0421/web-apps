@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  RightMenu.js
@@ -51,10 +54,9 @@ define([
     'common/main/lib/component/CheckBox',
     'spreadsheeteditor/main/app/view/ParagraphSettings',
     'spreadsheeteditor/main/app/view/ImageSettings',
-    'spreadsheeteditor/main/app/view/ChartSettings',
+    // 'spreadsheeteditor/main/app/view/ChartSettings',
     'spreadsheeteditor/main/app/view/ShapeSettings',
     'spreadsheeteditor/main/app/view/TextArtSettings',
-    'spreadsheeteditor/main/app/view/TableSettings',
     'spreadsheeteditor/main/app/view/PivotSettings',
     'spreadsheeteditor/main/app/view/SignatureSettings',
     'spreadsheeteditor/main/app/view/CellSettings',
@@ -95,15 +97,15 @@ define([
                 toggleGroup: 'tabpanelbtnsGroup',
                 allowMouseEventsOnDisabled: true
             });
-            this.btnChart = new Common.UI.Button({
-                hint: this.txtChartSettings,
-                asctype: Common.Utils.documentSettingsType.Chart,
-                enableToggle: true,
-                disabled: true,
-                iconCls: 'btn-menu-chart',
-                toggleGroup: 'tabpanelbtnsGroup',
-                allowMouseEventsOnDisabled: true
-            });
+            // this.btnChart = new Common.UI.Button({
+            //     hint: this.txtChartSettings,
+            //     asctype: Common.Utils.documentSettingsType.Chart,
+            //     enableToggle: true,
+            //     disabled: true,
+            //     iconCls: 'btn-menu-chart',
+            //     toggleGroup: 'tabpanelbtnsGroup',
+            //     allowMouseEventsOnDisabled: true
+            // });
             this.btnShape = new Common.UI.Button({
                 hint: this.txtShapeSettings,
                 asctype: Common.Utils.documentSettingsType.Shape,
@@ -120,16 +122,6 @@ define([
                 enableToggle: true,
                 disabled: true,
                 iconCls: 'btn-menu-textart',
-                toggleGroup: 'tabpanelbtnsGroup',
-                allowMouseEventsOnDisabled: true
-            });
-
-            this.btnTable = new Common.UI.Button({
-                hint: this.txtTableSettings,
-                asctype: Common.Utils.documentSettingsType.Table,
-                enableToggle: true,
-                disabled: true,
-                iconCls: 'btn-menu-table',
                 toggleGroup: 'tabpanelbtnsGroup',
                 allowMouseEventsOnDisabled: true
             });
@@ -167,9 +159,8 @@ define([
             this._settings[Common.Utils.documentSettingsType.Paragraph]   = {panel: "id-paragraph-settings",  btn: this.btnText};
             this._settings[Common.Utils.documentSettingsType.Image]       = {panel: "id-image-settings",      btn: this.btnImage};
             this._settings[Common.Utils.documentSettingsType.Shape]       = {panel: "id-shape-settings",      btn: this.btnShape};
-            this._settings[Common.Utils.documentSettingsType.Chart]       = {panel: "id-chart-settings",      btn: this.btnChart};
+            // this._settings[Common.Utils.documentSettingsType.Chart]       = {panel: "id-chart-settings",      btn: this.btnChart};
             this._settings[Common.Utils.documentSettingsType.TextArt]     = {panel: "id-textart-settings",    btn: this.btnTextArt};
-            this._settings[Common.Utils.documentSettingsType.Table]       = {panel: "id-table-settings",      btn: this.btnTable};
             this._settings[Common.Utils.documentSettingsType.Pivot]       = {panel: "id-pivot-settings",      btn: this.btnPivot};
             this._settings[Common.Utils.documentSettingsType.Cell]        = {panel: "id-cell-settings",       btn: this.btnCell};
             this._settings[Common.Utils.documentSettingsType.Slicer]      = {panel: "id-slicer-settings",     btn: this.btnSlicer};
@@ -207,30 +198,27 @@ define([
 
             this.btnText.setElement($('#id-right-menu-text'), false);           this.btnText.render();
             this.btnImage.setElement($('#id-right-menu-image'), false);         this.btnImage.render();
-            this.btnChart.setElement($('#id-right-menu-chart'), false);         this.btnChart.render();
+            // this.btnChart.setElement($('#id-right-menu-chart'), false);         this.btnChart.render();
             this.btnShape.setElement($('#id-right-menu-shape'), false);         this.btnShape.render();
             this.btnTextArt.setElement($('#id-right-menu-textart'), false);     this.btnTextArt.render();
-            this.btnTable.setElement($('#id-right-menu-table'), false);         this.btnTable.render();
             this.btnPivot.setElement($('#id-right-menu-pivot'), false);         this.btnPivot.render();
             this.btnCell.setElement($('#id-right-menu-cell'), false);           this.btnCell.render();
             this.btnSlicer.setElement($('#id-right-menu-slicer'), false);       this.btnSlicer.render();
 
             this.btnText.on('click',            _.bind(this.onBtnMenuClick, this));
             this.btnImage.on('click',           _.bind(this.onBtnMenuClick, this));
-            this.btnChart.on('click',           _.bind(this.onBtnMenuClick, this));
+            // this.btnChart.on('click',           _.bind(this.onBtnMenuClick, this));
             this.btnShape.on('click',           _.bind(this.onBtnMenuClick, this));
             this.btnTextArt.on('click',         _.bind(this.onBtnMenuClick, this));
-            this.btnTable.on('click',           _.bind(this.onBtnMenuClick, this));
             this.btnPivot.on('click',           _.bind(this.onBtnMenuClick, this));
             this.btnCell.on('click',           _.bind(this.onBtnMenuClick, this));
             this.btnSlicer.on('click',         _.bind(this.onBtnMenuClick, this));
 
             this.paragraphSettings = new SSE.Views.ParagraphSettings();
             this.imageSettings = new SSE.Views.ImageSettings();
-            this.chartSettings = new SSE.Views.ChartSettings();
+            // this.chartSettings = new SSE.Views.ChartSettings();
             this.shapeSettings = new SSE.Views.ShapeSettings();
             this.textartSettings = new SSE.Views.TextArtSettings();
-            this.tableSettings = new SSE.Views.TableSettings();
             this.pivotSettings = new SSE.Views.PivotSettings();
             this.cellSettings = new SSE.Views.CellSettings();
             this.slicerSettings = new SSE.Views.SlicerSettings();
@@ -277,10 +265,9 @@ define([
             var _updateScroller = function () {me.updateScroller();};
             this.paragraphSettings.setApi(api);
             this.imageSettings.setApi(api);
-            this.chartSettings.setApi(api).on('updatescroller', _updateScroller);
+            // this.chartSettings.setApi(api).on('updatescroller', _updateScroller);
             this.shapeSettings.setApi(api).on('eyedropper', _.bind(_isEyedropperStart, this)).on('updatescroller', _updateScroller);
             this.textartSettings.setApi(api).on('eyedropper', _.bind(_isEyedropperStart, this)).on('updatescroller', _updateScroller);
-            this.tableSettings.setApi(api);
             this.pivotSettings.setApi(api);
             this.cellSettings.setApi(api).on('eyedropper', _.bind(_isEyedropperStart, this));
             this.slicerSettings.setApi(api);
@@ -292,7 +279,6 @@ define([
             this.mode = mode;
             this.imageSettings && this.imageSettings.setMode(mode);
             this.shapeSettings && this.shapeSettings.setMode(mode);
-            this.tableSettings && this.tableSettings.setMode(mode);
             return this;
         },
 
@@ -312,8 +298,19 @@ define([
                     Common.localStorage.setItem("sse-hide-right-settings", 0);
                     Common.Utils.InternalSettings.set("sse-hide-right-settings", false);
                 }
-                target_pane_parent.find('.settings-panel.active').removeClass('active');
+                target_pane_parent.find('.content-box > .active').removeClass('active');
                 target_pane && target_pane.addClass("active");
+
+                const viewport = SSE.getController('Viewport').getView('Viewport');
+                viewport.hlayout.hideItemResizer('right', !isPlugin);
+
+                const widthFromStorage = Common.localStorage.getItem('sse-rightmenu-width');
+                if(isPlugin && widthFromStorage) {
+                    this.$el.width(parseInt(widthFromStorage));
+                } else {
+                    this.setInnerWidth(MENU_BASE_WIDTH);
+                }
+                Common.NotificationCenter.trigger('layout:changed', 'rightmenu');
 
                 if (this.scroller) {
                     this.scroller.scrollTop(0);
@@ -326,7 +323,6 @@ define([
                 Common.Utils.InternalSettings.set("sse-hide-right-settings", true);
             }
 
-            !isPlugin && $('.right-panel .plugin-panel').toggleClass('active', false);
             btn && !isPlugin && this.fireEvent('rightmenuclick', [this, btn.options.asctype, this.minimizedMode, e]);
         },
 
@@ -339,7 +335,7 @@ define([
             } else {
                 var target_pane = $("#" + this._settings[type].panel );
                 if ( !target_pane.hasClass('active') ) {
-                    target_pane.parent().find('.settings-panel.active').removeClass('active');
+                    target_pane.parent().find('> .active').removeClass('active');
                     target_pane.addClass("active");
                     if (this.scroller) {
                         this.scroller.update();
@@ -358,7 +354,7 @@ define([
 
         clearSelection: function() {
             var target_pane = $(".right-panel");
-            target_pane.find('.settings-panel.active').removeClass('active');
+            target_pane.find('.content-box > .active').removeClass('active');
             this._settings.forEach(function(item){
                 if (item.btn.isActive())
                     item.btn.toggle(false, true);
@@ -377,16 +373,28 @@ define([
         },
 
         setButtons: function () {
-            var allButtons = [this.btnCell, this.btnTable, this.btnShape, this.btnImage, this.btnChart, this.btnText, this.btnTextArt, this.btnSlicer, this.btnSignature, this.btnPivot];
+            var allButtons = [this.btnCell, this.btnShape, this.btnImage, this.btnText, this.btnTextArt, this.btnSlicer, this.btnSignature, this.btnPivot];
             Common.UI.SideMenu.prototype.setButtons.apply(this, [allButtons]);
+        },
+
+        insertPanel: function ($panel) {
+            this.$el.find('.side-panel .content-box').append($panel);
+        },
+
+        setInnerWidth: function(value) {
+            const pane = $(this.el).find('.right-panel');
+            const paddings = parseInt(pane.css('padding-left')) + parseInt(pane.css('padding-right'));
+            MENU_SCALE_PART = value + paddings;
+            this.$el.css('width', (!Common.Utils.InternalSettings.get("sse-hide-right-settings") ? MENU_SCALE_PART : SCALE_MIN) + 'px');
         },
 
         updateWidth: function() {
             var pane = $(this.el).find('.right-panel'),
                 paddings = parseInt(pane.css('padding-left')) + parseInt(pane.css('padding-right'));
-            pane.css('width', MENU_BASE_WIDTH + paddings + 'px');
-            MENU_SCALE_PART = SCALE_MIN + MENU_BASE_WIDTH + paddings;
-            this.$el.css('width', (!Common.Utils.InternalSettings.get("sse-hide-right-settings") ? MENU_SCALE_PART : SCALE_MIN) + 'px');
+            MENU_SCALE_PART = MENU_BASE_WIDTH + paddings;
+            if ( !this.isPluginButtonPressed() ) {
+                this.$el.css('width', (!Common.Utils.InternalSettings.get("sse-hide-right-settings") ? MENU_SCALE_PART : SCALE_MIN) + 'px');
+            }
         },
 
         txtParagraphSettings:       'Paragraph Settings',
@@ -395,7 +403,6 @@ define([
         txtTextArtSettings:         'Text Art Settings',
         txtChartSettings:           'Chart Settings',
         txtSparklineSettings:       'Sparkline Settings',
-        txtTableSettings:           'Table Settings',
         txtPivotSettings:           'Pivot Table Settings',
         txtSignatureSettings:       'Signature Settings',
         txtCellSettings:            'Cell Settings',

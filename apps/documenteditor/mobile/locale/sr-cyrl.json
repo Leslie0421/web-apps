@@ -65,8 +65,7 @@
     "textTableSize": "Табела величина",
     "textWithBlueLinks": "Са плавим линковима",
     "textWithPageNumbers": "Са бројевима страница",
-    "txtNotUrl": "Ово поље би требало да буде URL у \"http://www.example.com\" формату",
-    "textDrawing": "Drawing"
+    "txtNotUrl": "Ово поље би требало да буде URL у \"http://www.example.com\" формату"
   },
   "Common": {
     "Collaboration": {
@@ -229,6 +228,11 @@
     "textRows": "Редови",
     "txtWarnUrl": "Кликнути на овај линк може бити штетно за ваш уређај и податке.<br>Да ли сте сигурни да желите да наставите?"
   },
+  "Draw": {
+    "textColor": "Боја",
+    "textCustomColor": "Прилагођена боја",
+    "textOpacity": "Непрозирност"
+  },
   "Edit": {
     "notcriticalErrorTitle": "Упозорење",
     "textActualSize": "Стварна величина",
@@ -252,6 +256,7 @@
     "textBackground": "Позадина",
     "textBandedColumn": "Обојена колона",
     "textBandedRow": "Обојени ред",
+    "textBaseline": "Полазна линија",
     "textBefore": "Пре",
     "textBehind": "Иза текста",
     "textBorder": "Граница",
@@ -260,6 +265,8 @@
     "textBulletsAndNumbers": "Тачкице и Бројеви",
     "textCancel": "Откажи",
     "textCellMargins": "Маргине ћелије",
+    "textCellOptions": "Опције ћелије",
+    "textCellSize": "Величина редова и колона",
     "textCentered": "Центрирано",
     "textChangeShape": "Промени облик",
     "textChart": "Графикон",
@@ -324,6 +331,7 @@
     "textLink": "Линк",
     "textLinkSettings": "Подешавања линка",
     "textLinkToPrevious": "Линк до претходног",
+    "textLtrTextDirection": "С лева на десно",
     "textMarch": "Март",
     "textMay": "Мај",
     "textMo": "По",
@@ -368,6 +376,7 @@
     "textRightAlign": "Десно поравнање",
     "textRotateTextDown": "Ротирај текст доле",
     "textRotateTextUp": "Ротирај текст горе",
+    "textRtlTextDirection": "С десна на лево",
     "textSa": "Су",
     "textSameCreatedNewStyle": "Исто као креирани нови стил",
     "textSave": "Сачувај",
@@ -396,6 +405,7 @@
     "textTableOfCont": "Садржај",
     "textTableOptions": "Табела опција",
     "textText": "Текст",
+    "textTextDirection": "Правац текста",
     "textTextOrientation": "Текст оријентација",
     "textTextWrapping": "Обмотавање текста",
     "textTh": "Че",
@@ -409,7 +419,10 @@
     "textWe": "Ср",
     "textWrap": "Обмотај",
     "textWrappingStyle": "Стил обмотавања",
-    "textYourOption": "Твоја опција"
+    "textWrapText": "Упакуј текст",
+    "textYourOption": "Твоја опција",
+    "txtHeight": "Висина",
+    "txtWidth": "Ширина"
   },
   "Error": {
     "convertationTimeoutText": "Временско ограничење преобраћања прекорачено.",
@@ -472,9 +485,7 @@
     "uploadDocSizeMessage": "Максимум лимит величине документа прекорачен.",
     "uploadImageExtMessage": "Непознати формат слике.",
     "uploadImageFileCountMessage": "Нема отпремљених слика.",
-    "uploadImageSizeMessage": "Слика је превелика. Максимум величина је 25 МБ.",
-    "criticalErrorExtTextClose": "Press 'OK' to close the editor.",
-    "errorEditProtectedRange": "You are not allowed to edit this selection because it is protected."
+    "uploadImageSizeMessage": "Слика је превелика. Максимум величина је 25 МБ."
   },
   "LongActions": {
     "applyChangesTextText": "Учитавање података...",
@@ -519,7 +530,6 @@
     "criticalErrorTitle": "Грешка",
     "errorAccessDeny": "Покушавате да изведете акцију на коју немате права.<br>Молимо, контактирајте вашег администратора.",
     "errorOpensource": "Користећи бесплатну верзију Заједнице, можете отворити документ само за преглед. Да бисте приступили мобилним веб уређивачима, потребна је комерцијална лиценца.",
-    "errorProcessSaveResult": "Чување неуспешно.",
     "errorServerVersion": "Верзија уређивача је ажурирана. Страница ће бити поново учитана да се примене промене.",
     "errorUpdateVersion": "Верзија фајла је промењена. Страница ће бити поново учитана.",
     "leavePageText": "Имате несачуване промене. Кликните 'Остани на овој страници' да сачекате на ауточување. Кликните 'Напусти ову страницу' да одбаците све несачуване промене.",
@@ -638,6 +648,7 @@
     "textHasMacros": "Фајл садржи аутоматске макрое.<br>Желите ли да покренете макрое?",
     "textNo": "Не",
     "textNoLicenseTitle": "Лимит лиценце достигнут",
+    "textNoResourcesTitle": "Недовољно ресурса",
     "textNoMatches": "Без поклапања",
     "textOk": "OK",
     "textPaidFeature": "Плаћена функција",
@@ -655,12 +666,10 @@
     "warnDownloadAsPdf": "Ваш {0} ће бити конвертован у формат за уређивање. Ово може потрајати. Резултирајући документ ће бити оптимизован тако да вам омогући да уредите текст, па можда неће изгледати исто као оригинал {0}, поготово ако је оригинални фајл садржао пуно графика.",
     "warnLicenseAnonymous": "Приступ одбијен за анонимне кориснике.<br>Овај документ ће бити отворен само за приказ.",
     "warnLicenseBefore": "Лиценца није активна.<br>Молимо контактирајте вашег администратора.",
-    "warnLicenseExceeded": "Достигли сте лимит за истовремене конекције за %1 уреднике. Овај документ ће бити отворен само за приказ. Контактирајте свог администратора да сазнате више.",
     "warnLicenseExp": "Ваша лиценца је истекла. Молимо ажурирајте своју лиценцу и освежите страницу.",
     "warnLicenseLimitedNoAccess": "Лиценца истекла. Немате приступ функционалности уређивања документа. Молимо контактирајте свог администратора.",
     "warnLicenseLimitedRenewed": "Лиценца треба да буде обновљена. Имате ограничен приступ функционалности уређивања документа.<br>Молимо контактирајте вашег администратора да добијете потпуни приступ",
-    "warnLicenseUsersExceeded": "Достигли сте кориснички лимит за %1 уреднике. Контактирајте свог администратора да сазнате више.",
-    "warnNoLicense": "Достигли сте лимит за истовремене конекције за %1 уреднике. Овај документ ће бити отворен само за приказ. Контактирајте %1 тим за продају за личне услове надоградње.",
+    "warnNoResources": "Сервер %1 нема довољно ресурса да отвори овај документ за уређивање. Овај документ биће отворен само за прегледање.",
     "warnNoLicenseUsers": "Достигли сте кориснички лимит за %1 уреднике. Контактирајте %1 тим за продају за личне услове надоградње.",
     "warnProcessRightsChange": "Немате дозволу да уређујете овај фајл."
   },
@@ -726,6 +735,7 @@
     "textHelp": "Помоћ",
     "textHiddenTableBorders": "Скривене табеларне границе",
     "textHighlightResults": "Истакни резултате",
+    "textHyphenation": "Подела речи",
     "textInch": "Инч",
     "textLandscape": "Пејзаж",
     "textLastModified": "Последње модификовано",
@@ -802,8 +812,7 @@
     "txtDownloadTxt": "Преузмите TXT",
     "txtIncorrectPwd": "Лозинка је нетачна",
     "txtOk": "OK",
-    "txtProtected": "Када укуцате лозинку и отворите фајл, тренутна лозинка ће бити ресетована",
-    "textDrawing": "Drawing"
+    "txtProtected": "Када укуцате лозинку и отворите фајл, тренутна лозинка ће бити ресетована"
   },
   "Toolbar": {
     "btnSend": "Пошаљи",
@@ -817,14 +826,6 @@
     "textRenameFile": "Преименуј фајл",
     "textSwitchedMobileView": "Пребачено на мобилни приказ",
     "textSwitchedStandardView": "Пребачено на стандардни приказ",
-    "warnEmptyRequiredField": "Попуни сва потребна поља за слање обрасца.",
-    "btnRestartNow": "Restart now",
-    "textSwitchToDesktop": "Switch to Desktop"
-  },
-  "Draw": {
-    "textColor": "Color",
-    "textCustomColor": "Custom color",
-    "textLineSize": "Line size",
-    "textOpacity": "Opacity"
+    "warnEmptyRequiredField": "Попуни сва потребна поља за слање обрасца."
   }
 }

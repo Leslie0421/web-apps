@@ -1,1 +1,6 @@
-<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M18 4H6V20.0282L18 20V4ZM4 4.5C4 3.11929 5.11929 2 6.5 2H18C18.5302 2 18.9864 2.20344 19.3918 2.61033C19.7661 2.98592 20 3.46792 20 4V20C20 20.5321 19.7973 21.0297 19.3918 21.4366C18.9864 21.8122 18.5302 22 18 22H6C5.46979 22 5.01364 21.8122 4.60819 21.4366C4.20273 21.0297 4 20.5266 4 19.9945V4.5ZM11.5698 16H10.1836V12.2578H10.1574L9 13.0686V11.8385L10.1836 11H11.5698V16ZM14.1593 16H12.7076L14.6333 12.1365V12.1088H12.3709V11H16V12.1053L14.1593 16Z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <g class="icon-pagenumber">
+    <path stroke="#444" stroke-linecap="round" stroke-width="1.5" d="M9.979 2.5h8.52a1 1 0 0 1 1 1V12l.001 1.5m-9.521-11L4.5 7.933M9.979 2.5l.017 4.484a1 1 0 0 1-1.012 1.004L4.5 7.933m0 0 .043 12.57a1 1 0 0 0 1 .997H11" class="icon-stroke-gray-primary"/>
+    <path stroke="#446ECA" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="1.414" stroke-width="1.5" d="m13 18 1.552-1.5-.052 5m2.5-5h2.637a.363.363 0 0 1 .273.604c-.259.3-1.015 1.2-1.41 1.896-.52.915-1 2.5-1 2.5" class="icon-stroke-blue-primary"/>
+  </g>
+</svg>

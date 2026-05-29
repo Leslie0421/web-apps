@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *    LeftMenu.js
@@ -101,21 +104,34 @@ define([
                     'file:close': this.clickToolbarTab.bind(this, 'other'),
                     'save:disabled': this.changeToolbarSaveState.bind(this)
                 },
-                // 'Common.Views.ReviewChanges': {
-                //     'collaboration:chat': _.bind(this.onShowHideChat, this)
-                // },
+                'Common.Views.ReviewChanges': {
+                    'collaboration:chat': _.bind(this.onShowHideChat, this)
+                },
                 'ViewTab': {
                     'viewtab:navigation': _.bind(this.onShowHideNavigation, this),
                     'leftmenu:hide': _.bind(this.onLeftMenuHide, this)
                 },
                 'SearchBar': {
-                    'search:show': _.bind(this.onShowHideSearch, this)
+                    'search:show': _.bind(this.onShowHideSearch, this),
+                    'search:showredact': _.bind(this.onShowHideRedactSearch, this)
+                },
+                'RedactTab': {
+                    'search:showredact': _.bind(this.onShowHideRedactSearch, this),
+                    'menu:hide': _.bind(this.clickToolbarTab, this, 'red')
+                },
+                'Common.Views.SearchPanel': {
+                    'search:showredact': _.bind(this.onShowHideRedactSearch, this)
                 }
             });
 
             Common.NotificationCenter.on('leftmenu:change', _.bind(this.onMenuChange, this));
             Common.NotificationCenter.on('app:comment:add', _.bind(this.onAppAddComment, this));
+            Common.NotificationCenter.on('collaboration:history', _.bind(function () {
+                if ( !this.leftMenu.panelHistory.isVisible() )
+                    this.clickMenuFileItem(null, 'history');
+            }, this));
             Common.NotificationCenter.on('file:print', _.bind(this.clickToolbarPrint, this));
+            Common.NotificationCenter.on('search:resetmode', _.bind(this.onSetDefaultSearchMode, this));
         },
 
         onLaunch: function() {
@@ -165,6 +181,8 @@ define([
             }
             /** coauthoring end **/
             this.leftMenu.getMenu('file').setApi(api);
+            if (this.mode.canUseHistory)
+                this.getApplication().getController('Common.Controllers.History').setApi(this.api).setMode(this.mode);
             this.getApplication().getController('PageThumbnails').setApi(this.api).setMode(this.mode);
             this.getApplication().getController('Search').setApi(this.api).setMode(this.mode);
             this.leftMenu.setOptionsPanel('advancedsearch', this.getApplication().getController('Search').getView('Common.Views.SearchPanel'));
@@ -193,6 +211,9 @@ define([
                 this.leftMenu.btnComments.hide();
             }
             /** coauthoring end **/
+
+            if (this.mode.canUseHistory)
+                this.leftMenu.setOptionsPanel('history', this.getApplication().getController('Common.Controllers.History').getView('Common.Views.History'));
 
             if (this.mode.canUseViwerNavigation) {
                 this.leftMenu.setOptionsPanel('navigation', this.getApplication().getController('Navigation').getView('Navigation'));
@@ -262,6 +283,31 @@ define([
             case 'close-editor': Common.NotificationCenter.trigger('close'); break;
             case 'switch:mobile': Common.Gateway.switchEditorType('mobile', true); break;
             case 'suggest': Common.NotificationCenter.trigger('suggest'); break;
+                case 'history':
+                    if (!this.leftMenu.panelHistory.isVisible()) {
+                        if (this.api.isDocumentModified()) {
+                            var me = this;
+                            this.api.asc_stopSaving();
+                            Common.UI.warning({
+                                closable: false,
+                                width: 500,
+                                title: this.notcriticalErrorTitle,
+                                msg: this.leavePageText,
+                                buttons: ['ok', 'cancel'],
+                                primary: 'ok',
+                                callback: function(btn) {
+                                    if (btn == 'ok') {
+                                        me.api.asc_undoAllChanges();
+                                        me.api.asc_continueSaving();
+                                        me.showHistory();
+                                    } else
+                                        me.api.asc_continueSaving();
+                                }
+                            });
+                        } else
+                            this.showHistory();
+                    }
+                    break;
             default: close_menu = false;
             }
 
@@ -546,10 +592,7 @@ define([
         },
 
         clickToolbarPrint: function () {
-            if (this.mode.canPreviewPrint)
-                this.leftMenu.showMenu('file:printpreview');
-            else if (this.mode.canPrint)
-                this.clickMenuFileItem(null, 'print');
+            this.leftMenu.showMenu('file:printpreview');
         },
 
         changeToolbarSaveState: function (state) {
@@ -628,15 +671,15 @@ define([
             if (this.leftMenu._state.disabled !== disable) {
                 this.leftMenu._state.disabled = disable;
                 if (this.mode) {
-                    if (disable) {
-                        this.previsEdit = this.mode.isEdit;
-                        this.prevcanEdit = this.mode.canEdit;
-                        this.mode.isEdit = this.mode.canEdit = !disable;
-                    } else {
-                        this.mode.isEdit = this.previsEdit;
-                        this.mode.canEdit = this.prevcanEdit;
-                    }
+                if (disable) {
+                    this.previsEdit = this.mode.isEdit;
+                    this.prevcanEdit = this.mode.canEdit;
+                    this.mode.isEdit = this.mode.canEdit = !disable;
+                } else {
+                    this.mode.isEdit = this.previsEdit;
+                    this.mode.canEdit = this.prevcanEdit;
                 }
+            }
             }
 
             if (disable) this.leftMenu.close();
@@ -647,6 +690,8 @@ define([
                 this.leftMenu.btnChat.setDisabled(disable);
             if (!options || options.navigation && options.navigation.disable)
                 this.leftMenu.btnNavigation.setDisabled(disable);
+            if (!options || options.thumbnails && options.thumbnails.disable)
+                this.leftMenu.btnThumbnails.setDisabled(disable);
 
             this.leftMenu.setDisabledPluginButtons(disable);
         },
@@ -747,6 +792,9 @@ define([
 
             switch (s) {
                 case 'search':
+                    if ( this.leftMenu.menuFile.isVisible() ) {
+                        return false;
+                    }
                     this.leftMenu.btnAbout.toggle(false);
                     Common.UI.Menu.Manager.hideAll();
                     var selectedText = this.api.asc_GetSelectedText();
@@ -862,6 +910,17 @@ define([
             }
         },
 
+        showHistory: function() {
+            if (!this.mode.wopi) {
+                var maincontroller = PDFE.getController('Main');
+                if (!maincontroller.loadMask)
+                    maincontroller.loadMask = new Common.UI.LoadMask({owner: $('#viewport')});
+                maincontroller.loadMask.setTitle(this.textLoadHistory);
+                maincontroller.loadMask.show();
+            }
+            Common.Gateway.requestHistory();
+        },
+
         onShowHideChat: function(state) {
             if (this.mode.canCoAuthoring && this.mode.canChat && !this.mode.isLightVersion) {
                 if (state) {
@@ -898,10 +957,26 @@ define([
             }
         },
 
+        onShowHideRedactSearch: function (state) {
+            if (state) {
+                Common.UI.Menu.Manager.hideAll();
+                this.tryToShowLeftMenu();
+                this.leftMenu.showMenu('advancedsearch', undefined, true);
+                this.leftMenu.panelSearch.setSearchMode('redact');
+            } else {
+                this.leftMenu.btnSearchBar.toggle(false, true);
+                this.leftMenu.onBtnMenuClick(this.leftMenu.btnSearchBar);
+            }
+        },
+
         onMenuSearchBar: function(obj, show) {
             if (show) {
-                this.leftMenu.panelSearch.setSearchMode('no-replace');
+                this.onSetDefaultSearchMode();
             }
+        },
+
+        onSetDefaultSearchMode: function () {
+            this.leftMenu.panelSearch.setSearchMode('no-replace');
         },
 
         isSearchPanelVisible: function () {
@@ -940,7 +1015,8 @@ define([
         txtUntitled: 'Untitled',
         txtCompatible: 'The document will be saved to the new format. It will allow to use all the editor features, but might affect the document layout.<br>Use the \'Compatibility\' option of the advanced settings if you want to make the files compatible with older MS Word versions.',
         warnDownloadAsPdf: 'Your {0} will be converted to an editable format. This may take a while. The resulting document will be optimized to allow you to edit the text, so it might not look exactly like the original {0}, especially if the original file contained lots of graphics.',
-        textSelectPath: 'Enter a new name for saving the file copy'
+        textSelectPath: 'Enter a new name for saving the file copy',
+        textLoadHistory         : 'Loading version history...'
 
     }, PDFE.Controllers.LeftMenu || {}));
 });

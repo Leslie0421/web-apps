@@ -479,8 +479,7 @@
     "uploadDocSizeMessage": "Maksimum belge boyutu sınırı aşıldı.",
     "uploadImageExtMessage": "Bilinmeyen resim formatı.",
     "uploadImageFileCountMessage": "Resim yüklenmedi.",
-    "uploadImageSizeMessage": "Görüntü çok büyük. Maksimum boyut 25 MB'dir.",
-    "criticalErrorExtTextClose": "Press 'OK' to close the editor."
+    "uploadImageSizeMessage": "Görüntü çok büyük. Maksimum boyut 25 MB'dir."
   },
   "LongActions": {
     "applyChangesTextText": "Veri yükleniyor...",
@@ -525,7 +524,6 @@
     "criticalErrorTitle": "Hata",
     "errorAccessDeny": "Haklarınız olmayan bir işlemi gerçekleştirmeye çalışıyorsunuz.<br>Lütfen yöneticinizle iletişime geçin.",
     "errorOpensource": "Ücretsiz Topluluk sürümünü kullanarak belgeleri yalnızca görüntüleme için açabilirsiniz. Mobil web editörlerine erişmek için ticari bir lisans gereklidir.",
-    "errorProcessSaveResult": "Kaydetme başarısız.",
     "errorServerVersion": "Editör versiyonu güncellendi. Değişikliklerin uygulanabilmesi için sayfa yenilenecek.",
     "errorUpdateVersion": "Dosya versiyonu değiştirildi. Sayfa yenilenecek.",
     "leavePageText": "Kaydedilmemiş değişiklikleriniz mevcut. Otomatik kaydetmeyi beklemek için 'Bu Sayfada Kal' seçeneğini tıklayın. Kaydedilmemiş tüm değişiklikleri atmak için 'Bu Sayfadan Ayrıl'ı tıklayın.",
@@ -644,6 +642,7 @@
     "textHasMacros": "Dosya otomatik makrolar içeriyor.<br>Makroları çalıştırmak istiyor musunuz?",
     "textNo": "Hayır",
     "textNoLicenseTitle": "Lisans limitine ulaşıldı.",
+    "textNoResourcesTitle": "Yetersiz kaynak",
     "textNoMatches": "Eşleşme yok",
     "textOk": "Tamam",
     "textPaidFeature": "Ücretli Özellik",
@@ -661,12 +660,10 @@
     "warnDownloadAsPdf": "{0} düzenlenebilir bir biçime dönüştürülecek.  Bu biraz zaman alabilir.  Ortaya çıkan belge, metni düzenlemenize izin verecek şekilde optimize edilecektir, bu nedenle, özellikle orijinal dosya çok sayıda grafik içeriyorsa, dosya tam olarak orijinal {0} gibi görünmeyebilir.",
     "warnLicenseAnonymous": "Erişim anonim kullanıcılar için engellendi.<br>Bu doküman sadece görüntüleme için açılacaktır.",
     "warnLicenseBefore": "Lisans aktif değil. <br>Lütfen yöneticinizle görüşün.",
-    "warnLicenseExceeded": "%1 düzenleyiciye eşzamanlı bağlantı sınırına ulaştınız. Bu belge yalnızca görüntüleme için açılacaktır. Daha fazla bilgi edinmek için yöneticinizle iletişime geçin.",
     "warnLicenseExp": "Lisansınızın süresi doldu. Lütfen lisansınızı güncelleyin ve sayfayı yenileyin.",
     "warnLicenseLimitedNoAccess": "Lisans süresi doldu. Doküman edit etme özelliğini kullanmaya izniniz bulunmamaktadır. Lütfen, yöneticinizle iletişime geçin.",
     "warnLicenseLimitedRenewed": "Lisansın yenilenmesi gerekiyor. Belge düzenleme işlevine sınırlı erişiminiz var.<br>Tam erişim için lütfen yöneticinizle iletişime geçin.",
-    "warnLicenseUsersExceeded": "%1 düzenleyici için kullanıcı sınırına ulaştınız. Daha fazla bilgi edinmek için yöneticinizle iletişime geçin.",
-    "warnNoLicense": "%1 düzenleyiciye eşzamanlı bağlantı sınırına ulaştınız. Bu belge yalnızca görüntüleme için açılacaktır. Kişisel yükseltme koşulları için %1 satış ekibiyle iletişime geçin.",
+    "warnNoResources": "%1 sunucusu bu belgeyi düzenleme için açacak yeterli kaynağa sahip değil. Bu belge yalnızca görüntüleme için açılacaktır.",
     "warnNoLicenseUsers": "%1 düzenleyici için kullanıcı sınırına ulaştınız. Kişisel yükseltme koşulları için %1 satış ekibiyle iletişime geçin.",
     "warnProcessRightsChange": "Bu dosyayı düzenleme izniniz yok."
   },
@@ -808,8 +805,7 @@
     "txtDownloadTxt": "TXT olarak indir",
     "txtIncorrectPwd": "Şifre yanlış",
     "txtOk": "Tamam",
-    "txtProtected": "Şifreyi girip dosyayı açtığınızda, mevcut şifre sıfırlanacaktır.",
-    "textDrawing": "Drawing"
+    "txtProtected": "Şifreyi girip dosyayı açtığınızda, mevcut şifre sıfırlanacaktır."
   },
   "Toolbar": {
     "btnRestartNow": "Şimdi Yeniden Başlat",

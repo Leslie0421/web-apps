@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 
 /**
@@ -56,6 +59,8 @@ define([
         },
         onLaunch: function () {
             this._state = {};
+            Common.NotificationCenter.on('app:ready', this.onAppReady.bind(this));
+            Common.NotificationCenter.on('contenttheme:dark', this.onContentThemeChangedToDark.bind(this));
             Common.NotificationCenter.on('uitheme:changed', this.onThemeChanged.bind(this));
             Common.NotificationCenter.on('tabstyle:changed', this.onTabStyleChange.bind(this));
         },
@@ -64,11 +69,15 @@ define([
             if (api) {
                 this.api = api;
                 this.api.asc_registerCallback('asc_onZoomChanged',              this.onApiZoomChange.bind(this));
-                this.api.asc_registerCallback('asc_onSelectionChanged',     _.bind(this.onSelectionChanged, this));
+                this.api.asc_registerCallback('asc_onChangeActiveNamedSheetView',     _.bind(this.onChangeActiveNamedSheetView, this));
                 this.api.asc_registerCallback('asc_onWorksheetLocked',      _.bind(this.onWorksheetLocked, this));
                 this.api.asc_registerCallback('asc_onSheetsChanged',            this.onApiSheetChanged.bind(this));
                 this.api.asc_registerCallback('asc_onUpdateSheetViewSettings',  this.onApiSheetChanged.bind(this));
                 this.api.asc_registerCallback('asc_updateSheetViewType',    this.onApiUpdateSheetViewType.bind(this));
+                this.api.asc_registerCallback('asc_onMacroRecordingStart', _.bind(this.updateMacroState, this, true, false));
+                this.api.asc_registerCallback('asc_onMacroRecordingStop', _.bind(this.updateMacroState, this, false));
+                this.api.asc_registerCallback('asc_onMacroRecordingPause', _.bind(this.updateMacroState, this, true, true));
+                this.api.asc_registerCallback('asc_onMacroRecordingResume', _.bind(this.updateMacroState, this, true, false));
                 this.api.asc_registerCallback('asc_onCoAuthoringDisconnect',_.bind(this.onCoAuthoringDisconnect, this));
                 Common.NotificationCenter.on('api:disconnect', _.bind(this.onCoAuthoringDisconnect, this));
             }
@@ -100,7 +109,10 @@ define([
                     'viewtab:createview': this.onCreateView,
                     'viewtab:manager': this.onOpenManager,
                     'viewtab:viewmode': this.onPreviewMode,
-                    'macros:click':  this.onClickMacros
+                    'darkmode:change': _.bind(this.onChangeDarkMode, this),
+                    'macros:click':  this.onClickMacros,
+                    'macros:record':  _.bind(this.onClickMacrosRec, this),
+                    'macros:pause':  _.bind(this.onClickMacrosPause, this)
                 },
                 'Statusbar': {
                     'sheet:changed': this.onApiSheetChanged.bind(this),
@@ -127,6 +139,16 @@ define([
             Common.NotificationCenter.on('layout:changed', _.bind(this.onLayoutChanged, this));
         },
 
+        onAppReady: function () {
+            if (this.view && Common.UI.Themes.available()) {
+                var me = this;
+                setTimeout(function () {
+                    me.onContentThemeChangedToDark(Common.UI.Themes.isContentThemeDark());
+                    Common.Utils.lockControls(Common.enumLock.inLightTheme, !Common.UI.Themes.isDarkTheme(), {array: [me.view.btnDarkDocument]});
+                }, 0);
+            }
+        },
+
         SetDisabled: function(state) {
             this.view && this.view.SetDisabled(state);
         },
@@ -144,7 +166,7 @@ define([
             this.SetDisabled(true);
         },
 
-        onSelectionChanged: function(info) {
+        onChangeActiveNamedSheetView: function() {
             if (!this.toolbar.editMode || !this.view) return;
 
             Common.Utils.lockControls(Common.enumLock.sheetView, this.api.asc_getActiveNamedSheetView && !this.api.asc_getActiveNamedSheetView(this.api.asc_getActiveWorksheetIndex()),
@@ -297,6 +319,7 @@ define([
                     this.view.btnInterfaceTheme.menu.clearAll(true);
                     menu_item.setChecked(true, true);
                 }
+                Common.Utils.lockControls(Common.enumLock.inLightTheme, !Common.UI.Themes.isDarkTheme(), {array: [this.view.btnDarkDocument]});
             }
         },
 
@@ -312,12 +335,60 @@ define([
             this.api && this.api.asc_SetSheetViewType(value);
         },
 
+        onChangeDarkMode: function (isdarkmode) {
+            Common.UI.TooltipManager.closeTip('darkDocument');
+            if (!this._darkModeTimer) {
+                var me = this;
+                me._darkModeTimer = setTimeout(function() {
+                    me._darkModeTimer = undefined;
+                }, 500);
+                Common.UI.Themes.setContentTheme(isdarkmode ? 'dark' : 'light');
+            } else 
+                this.onContentThemeChangedToDark(Common.UI.Themes.isContentThemeDark());
+        },
+
+        onContentThemeChangedToDark: function (isdark) {
+            this.view && this.view.btnDarkDocument.toggle(isdark, true);
+        },
+
         onClickMacros: function() {
-            Common.UI.TooltipManager.closeTip('asyncFunction');
             var macrosWindow = new Common.Views.MacrosDialog({
                 api: this.api,
             });
             macrosWindow.show();
+        },
+
+        onClickMacrosRec: function() {
+            var recorder = this.api.getMacroRecorder();
+            recorder.isInProgress() ? recorder.stop() : recorder.start();
+            Common.NotificationCenter.trigger('edit:complete', this.view);
+        },
+
+        onClickMacrosPause: function() {
+            var recorder = this.api.getMacroRecorder();
+            if (recorder.isInProgress()) {
+                recorder.isPaused() ? recorder.resume() : recorder.pause();
+            }
+            Common.NotificationCenter.trigger('edit:complete', this.view);
+        },
+
+        updateMacroState: function(inProgress, paused) {
+            if (this.view) {
+                this.view.btnRecMacro.changeIcon({
+                    next: inProgress ? 'btn-macros-stop' : 'btn-macros-record',
+                    curr: inProgress ? 'btn-macros-record' : 'btn-macros-stop'
+                });
+                this.view.btnRecMacro.setCaption(inProgress ? this.view.textStopMacro : this.view.textRecMacro);
+                this.view.btnRecMacro.updateHint(inProgress ? this.view.tipStopMacro : this.view.tipRecMacro);
+                Common.Utils.lockControls(Common.enumLock.macrosStopped, !inProgress, {array: [this.view.btnPauseMacro]});
+                if (!inProgress) {
+                    this.view.btnPauseMacro.setCaption(this.view.textPauseMacro);
+                    this.view.btnPauseMacro.updateHint(this.view.tipPauseMacro);
+                } else {
+                    this.view.btnPauseMacro.setCaption(paused ? this.view.textResumeMacro : this.view.textPauseMacro);
+                    this.view.btnPauseMacro.updateHint(paused ? this.view.tipResumeMacro : this.view.tipPauseMacro);
+                }
+            }
         },
 
         onApiUpdateSheetViewType: function(index) {

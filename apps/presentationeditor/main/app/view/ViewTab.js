@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  ViewTab.js
@@ -46,7 +49,7 @@ define([
     PE.Views.ViewTab = Common.UI.BaseView.extend(_.extend((function(){
         var template =
             '<section class="panel" data-tab="view" role="tabpanel" aria-labelledby="view">' +
-                '<div class="group small">' +
+                '<div class="group">' +
                     '<span class="btn-slot text x-huge" id="slot-btn-normal"></span>' +
                     '<span class="btn-slot text x-huge" id="slot-btn-slide-master"></span>' +
                 '</div>' +
@@ -106,9 +109,17 @@ define([
                         '<span class="btn-slot text" id="slot-chk-rightmenu"></span>' +
                     '</div>' +
                 '</div>' +
-                '<div class="separator long"></div>' +
-                '<div class="group">' +
+                '<div class="separator long macro"></div>' +
+                '<div class="group macro">' +
                     '<span class="btn-slot text x-huge" id="slot-btn-macros"></span>' +
+                '</div>' +
+                '<div class="group small macro">' +
+                    '<div class="elset">' +
+                        '<span class="btn-slot text" id="slot-btn-macro-start" style="text-align: center;"></span>' +
+                    '</div>' +
+                    '<div class="elset">' +
+                        '<span class="btn-slot text" id="slot-btn-macro-pause" style="text-align: center;"></span>' +
+                    '</div>' +
                 '</div>' +
             '</section>';
         return {
@@ -194,6 +205,13 @@ define([
                 me.btnMacros && me.btnMacros.on('click', function () {
                     me.fireEvent('macros:click');
                 });
+                me.btnRecMacro && me.btnRecMacro.on('click', function () {
+                    me.fireEvent('macros:record');
+                });
+                me.btnPauseMacro && me.btnPauseMacro.on('click', function () {
+                    me.fireEvent('macros:pause');
+                });
+
                 me.btnSelectTool && me.btnSelectTool.on('toggle', _.bind(function(btn, state) {
                     state && me.fireEvent('pointer:select');
                 }, me));
@@ -396,7 +414,11 @@ define([
                 });
                 this.lockedControls.push(this.chLeftMenu);
 
-                if (this.appConfig.isEdit && !(this.appConfig.customization && this.appConfig.customization.macros===false)) {
+                if (
+                    this.appConfig.isEdit && 
+                    !(this.appConfig.customization && this.appConfig.customization.macros===false) && 
+                    !(Common.Controllers.Desktop && Common.Controllers.Desktop.isWinXp())
+                ) {
                     this.btnMacros = new Common.UI.Button({
                         cls: 'btn-toolbar x-huge icon-top',
                         iconCls: 'toolbar__icon btn-macros',
@@ -407,6 +429,28 @@ define([
                         dataHintOffset: 'small'
                     });
                     this.lockedControls.push(this.btnMacros);
+
+                    this.btnRecMacro = new Common.UI.Button({
+                        cls: 'btn-toolbar',
+                        iconCls: 'toolbar__icon btn-macros-record',
+                        lock: [_set.lostConnect, _set.disableOnStart],
+                        caption: this.textRecMacro,
+                        dataHint: '1',
+                        dataHintDirection: 'left',
+                        dataHintOffset: 'medium'
+                    });
+                    this.lockedControls.push(this.btnRecMacro);
+
+                    this.btnPauseMacro = new Common.UI.Button({
+                        cls: 'btn-toolbar',
+                        iconCls: 'toolbar__icon btn-macros-pause',
+                        lock: [_set.macrosStopped, _set.lostConnect, _set.disableOnStart],
+                        caption: this.textPauseMacro,
+                        dataHint: '1',
+                        dataHintDirection: 'left',
+                        dataHintOffset: 'medium'
+                    });
+                    this.lockedControls.push(this.btnPauseMacro);
                 }
                 if (!this.appConfig.isEdit && !this.appConfig.isRestrictedEdit) {
                     this.btnSelectTool = new Common.UI.Button({
@@ -468,8 +512,11 @@ define([
                 this.chLeftMenu.render($host.find('#slot-chk-leftmenu'));
                 this.chRightMenu.render($host.find('#slot-chk-rightmenu'));
                 this.btnMacros && this.btnMacros.render($host.find('#slot-btn-macros'));
+                this.btnRecMacro && this.btnRecMacro.render($host.find('#slot-btn-macro-start'));
+                this.btnPauseMacro && this.btnPauseMacro.render($host.find('#slot-btn-macro-pause'));
                 this.btnSelectTool && this.btnSelectTool.render($host.find('#slot-btn-select-tool'));
                 this.btnHandTool && this.btnHandTool.render($host.find('#slot-btn-hand-tool'));
+                Common.Utils.lockControls(Common.enumLock.macrosStopped, true, {array: [this.btnPauseMacro]});
                 return this.$el;
             },
 
@@ -486,6 +533,8 @@ define([
                     me.btnGuides.updateHint(me.tipGuides);
                     me.btnGridlines.updateHint(me.tipGridlines);
                     me.btnMacros && me.btnMacros.updateHint(me.tipMacros);
+                    me.btnRecMacro && me.btnRecMacro.updateHint(me.tipRecMacro);
+                    me.btnPauseMacro && me.btnPauseMacro.updateHint(me.tipPauseMacro);
                     me.btnSelectTool && me.btnSelectTool.updateHint(me.tipSelectTool);
                     me.btnHandTool && me.btnHandTool.updateHint(me.tipHandTool);
                     me.btnGuides.setMenu( new Common.UI.Menu({
@@ -547,8 +596,12 @@ define([
                         me.btnGuides.$el.closest('.group').remove();
                         me.$el.find('#slot-btn-slide-master').closest('.group').next().addBack().remove();
                     }
-                    if (!config.isEdit || config.customization && config.customization.macros===false) {
-                        me.$el.find('#slot-btn-macros').closest('.group').prev().addBack().remove();
+                    if (
+                        !config.isEdit || 
+                        config.customization && config.customization.macros===false ||
+                        (Common.Controllers.Desktop && Common.Controllers.Desktop.isWinXp())
+                    ) {
+                        me.$el.find('.macro').remove();
                     }
                     if (config.isEdit || config.isRestrictedEdit) {
                         me.$el.find('#slot-btn-hand-tool').closest('.group').next().addBack().remove();
@@ -608,9 +661,6 @@ define([
                                 var value = item.value;
                                 Common.UI.Themes.setTheme(value);
                             }, me));
-                            me.btnInterfaceTheme.menu.on('show:after', function () {
-                                Common.UI.TooltipManager.closeTip('modernTheme');
-                            });
                         }
                     }
 
@@ -625,7 +675,7 @@ define([
                     me.setEvents();
 
                     if (Common.Utils.InternalSettings.get('toolbar-active-tab')==='view')
-                        Common.NotificationCenter.trigger('tab:set-active', 'view');
+                        Common.NotificationCenter.trigger('tab:set-active', 'view', true);
                 });
             },
 

@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2023
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 
 /**
@@ -66,7 +69,8 @@ define([
             Common.NotificationCenter.on('document:ready', _.bind(this.onDocumentReady, this));
 
             this.binding = {
-                checkInsertAutoshape: _.bind(this.checkInsertAutoshape, this)
+                checkInsertAutoshape: _.bind(this.checkInsertAutoshape, this),
+                checkInsertHyperlinkAnnot: _.bind(this.checkInsertHyperlinkAnnot, this)
             };
             PDFE.getCollection('ShapeGroups').bind({
                 reset: this.onResetAutoshapes.bind(this)
@@ -80,11 +84,13 @@ define([
                 Common.NotificationCenter.on('api:disconnect', _.bind(this.onCoAuthoringDisconnect, this));
                 this.api.asc_registerCallback('asc_onEndAddShape', _.bind(this.onApiEndAddShape, this)); //for shapes
                 this.api.asc_registerCallback('asc_onTextLanguage',         _.bind(this.onTextLanguage, this));
-                // this.api.asc_registerCallback('asc_onBeginSmartArtPreview', _.bind(this.onApiBeginSmartArtPreview, this));
-                // this.api.asc_registerCallback('asc_onAddSmartArtPreview', _.bind(this.onApiAddSmartArtPreview, this));
-                // this.api.asc_registerCallback('asc_onEndSmartArtPreview', _.bind(this.onApiEndSmartArtPreview, this));
+                this.api.asc_registerCallback('asc_onBeginSmartArtPreview', _.bind(this.onApiBeginSmartArtPreview, this));
+                this.api.asc_registerCallback('asc_onAddSmartArtPreview', _.bind(this.onApiAddSmartArtPreview, this));
+                this.api.asc_registerCallback('asc_onEndSmartArtPreview', _.bind(this.onApiEndSmartArtPreview, this));
                 this.api.asc_registerCallback('asc_onFocusObject',          _.bind(this.onApiFocusObject, this));
                 this.api.asc_registerCallback('asc_onCanAddHyperlink',      _.bind(this.onApiCanAddHyperlink, this));
+                this.api.asc_registerCallback('asc_onLinkToolState',        _.bind(this.onLinkToolState, this));
+                this.api.asc_registerCallback('asc_onDialogAddAnnotLink',   _.bind(this.onDialogAddAnnotLink, this));
                 Common.NotificationCenter.on('storage:image-load',          _.bind(this.openImageFromStorage, this));
                 Common.NotificationCenter.on('storage:image-insert',        _.bind(this.insertImageFromStorage, this));
                 Common.Gateway.on('insertimage',                     _.bind(this.insertImage, this));
@@ -114,9 +120,15 @@ define([
                     'insert:table'      : this.onInsertTableClick,
                     'insert:equation'   : this.onInsertEquationClick,
                     'insert:symbol'     : this.onInsertSymbolClick,
-                    // 'insert:smartart'   : this.onInsertSmartArt,
-                    // 'smartart:mouseenter': this.mouseenterSmartArt,
-                    // 'smartart:mouseleave': this.mouseleaveSmartArt,
+                    'insert:smartart'   : this.onInsertSmartArt,
+                    'smartart:mouseenter': this.mouseenterSmartArt,
+                    'smartart:mouseleave': this.mouseleaveSmartArt,
+                },
+                'Toolbar': {
+                    'tab:active': _.bind(this.onActiveTab, this)
+                },
+                'Common.Views.ChartTab': {
+                    'add:chart': _.bind(this.onSelectChart, this)
                 }
             });
         },
@@ -155,10 +167,6 @@ define([
             if (this.mode && this.mode.isPDFEdit) {
                 var shapes = this.api.asc_getPropertyEditorShapes();
                 shapes && this.fillAutoShapes(shapes[0], shapes[1]);
-
-                // this.getApplication().getController('Common.Controllers.ExternalDiagramEditor').setApi(this.api).loadConfig({config:this.mode, customization: this.mode.customization});
-                // this.getApplication().getController('Common.Controllers.ExternalOleEditor').setApi(this.api).loadConfig({config:this.mode, customization: this.mode.customization});
-
                 Common.Utils.lockControls(Common.enumLock.disableOnStart, false, {array: this.view.lockedControls});
             }
         },
@@ -312,12 +320,27 @@ define([
             });
         },
 
-        onHyperlinkClick: function(btn) {
+        onLinkToolState: function (state) {
+            this.view && this.view.btnInsertHyperlink.toggle(state, true);
+        },
+
+        onHyperlinkClick: function() {
             var me = this,
                 win, props, text;
 
-            if (me.api){
+            if (this._state.no_paragraph) {//add hyperlink annotation
+                if (this.view.btnInsertHyperlink.pressed) {
+                    this.api.SetLinkTool(true);
+                    $(document.body).on('mouseup', this.binding.checkInsertHyperlinkAnnot);
+                } else {
+                    this.api.SetLinkTool(false);
+                    $(document.body).off('mouseup', this.binding.checkInsertHyperlinkAnnot);
+                }
+                return;
+            }
 
+            if (me.api){// add hyperlink to text in shape
+                this.view.btnInsertHyperlink.toggle(false, true);
                 var handlerDlg = function(dlg, result) {
                     if (result == 'ok') {
                         props = dlg.getSettings();
@@ -363,6 +386,79 @@ define([
             }
 
             Common.component.Analytics.trackEvent('ToolBar', 'Add Hyperlink');
+        },
+
+        onDialogAddAnnotLink: function(arrIds) {
+            $(document.body).off('mouseup', this.binding.checkInsertHyperlinkAnnot);
+
+            if (!this.api) return;
+            
+            const statusbarController = this.getApplication().getController('Statusbar');
+            const stateBeforeOpenDlg = {
+                zoom: statusbarController.getZoom(),
+                scroll: this.api.getCurScroll()
+            };
+
+            var me = this,
+                res;
+            var handlerDlg = function(dlg, result) {
+                res = result;
+                if (result === 'ok') {
+                    me.api.add_Hyperlink(dlg.getSettings(), arrIds);
+                } else if (result === 'view') {
+                    me.api.SetLinkAnnotGoToAction(arrIds);
+                }
+                Common.NotificationCenter.trigger('edit:complete', me.view);
+            };
+            var _arr = [];
+            for (var i=0; i<me.api.getCountPages(); i++) {
+                _arr.push({
+                    displayValue: i+1,
+                    value: i
+                });
+            }
+            var win = new PDFE.Views.HyperlinkSettingsDialog({
+                api: me.api,
+                appOptions: me.mode,
+                isAnnotation: true,
+                handler: handlerDlg,
+                slides: _arr
+            }).on('close', function() {
+                //Restore zoom and scroll state 
+                const currentScroll = me.api.getCurScroll();
+                if(statusbarController.getZoom() != stateBeforeOpenDlg.zoom) {
+                    me.api.zoom(stateBeforeOpenDlg.zoom);
+                }
+                if (Math.abs(currentScroll.x - stateBeforeOpenDlg.scroll.x) > 1 || 
+                    Math.abs(currentScroll.y - stateBeforeOpenDlg.scroll.y) > 1) 
+                {
+                    me.api.scrollToXY(stateBeforeOpenDlg.scroll.x, stateBeforeOpenDlg.scroll.y);
+                }
+                
+                const closedWithCreation = (res === 'ok' || res === 'view'); 
+                if(closedWithCreation) {
+                    me.api.asc_selectComment(arrIds);
+                }
+                me.api.EndLinkAnnotCreation(closedWithCreation);
+            });
+            win.show();
+            win.setSettings();
+        },
+
+        checkInsertHyperlinkAnnot:  function(e) {
+            var cmp = $(e.target),
+                cmp_sdk = cmp.closest('#editor_sdk'),
+                btn_id = cmp.closest('button').attr('id');
+            if (btn_id===undefined)
+                btn_id = cmp.closest('.btn-group').attr('id');
+            if (cmp.attr('id') !== 'editor_sdk' && cmp_sdk.length<=0) {
+                if ( this.view.btnInsertHyperlink.pressed && this.view.btnInsertHyperlink.id !== btn_id ) {
+                    this.api.SetLinkTool(false);
+                    $(document.body).off('mouseup', this.binding.checkInsertHyperlinkAnnot);
+                    this.view.btnInsertHyperlink.toggle(false, true);
+                    Common.NotificationCenter.trigger('edit:complete', this.view);
+                }
+            }
         },
 
         onInsertTableClick: function(type, columns, rows) {
@@ -597,7 +693,7 @@ define([
         onAddPage: function(before) {
             this.api && this.api.asc_AddPage(this.api.getCurrentPage() + (before ? 0 : 1) );
         },
-/*
+
         mouseenterSmartArt: function (groupName, menu) {
             if (this.smartArtGenerating === undefined) {
                 this.generateSmartArt(groupName, menu);
@@ -649,6 +745,7 @@ define([
             this.smartArtGenerating = undefined;
             if (this.currentSmartArtCategoryMenu) {
                 this.currentSmartArtCategoryMenu.menu.alignPosition();
+                this.currentSmartArtCategoryMenu.cmpEl && this.currentSmartArtCategoryMenu.cmpEl.attr('data-preview-loaded', true);
             }
             if (this.delayedSmartArt !== undefined) {
                 var delayedSmartArt = this.delayedSmartArt;
@@ -679,29 +776,18 @@ define([
 
             if (chart) {
                 var isCombo = (type==Asc.c_oAscChartTypeSettings.comboBarLine || type==Asc.c_oAscChartTypeSettings.comboBarLineSecondary ||
-                    type==Asc.c_oAscChartTypeSettings.comboAreaBar || type==Asc.c_oAscChartTypeSettings.comboCustom);
+                type==Asc.c_oAscChartTypeSettings.comboAreaBar || type==Asc.c_oAscChartTypeSettings.comboCustom);
                 if (isCombo && chart.get_ChartProperties() && chart.get_ChartProperties().getSeries().length<2) {
                     Common.NotificationCenter.trigger('showerror', Asc.c_oAscError.ID.ComboSeriesError, Asc.c_oAscError.Level.NoCritical);
                 } else
                     chart.changeType(type);
-                Common.NotificationCenter.trigger('edit:complete', this.view);
+                Common.NotificationCenter.trigger('edit:complete', this.toolbar);
             } else {
-                if (!this.diagramEditor)
-                    this.diagramEditor = this.getApplication().getController('Common.Controllers.ExternalDiagramEditor').getView('Common.Views.ExternalDiagramEditor');
-
-                if (this.diagramEditor && me.api) {
-                    this.diagramEditor.setEditMode(false);
-                    this.diagramEditor.show();
-
-                    chart = me.api.asc_getChartObject(type);
-                    if (chart) {
-                        this.diagramEditor.setChartData(new Asc.asc_CChartBinary(chart));
-                    }
-                    me.view.fireEvent('insertchart', me.view);
-                }
+                me.api.asc_addChartDrawingObject(type, undefined, true);
+                me.toolbar.fireEvent('insertchart', me.toolbar);
             }
         },
-*/
+
         onTextLanguage: function(langId) {
             this._state.lang = langId;
         },
@@ -928,7 +1014,8 @@ define([
                 paragraph_locked = false,
                 no_paragraph = true,
                 in_chart = false,
-                page_deleted = false;
+                page_deleted = false,
+                has_object = false;
 
             while (++i < selectedObjects.length) {
                 type = selectedObjects[i].get_ObjectType();
@@ -948,25 +1035,31 @@ define([
                 } else if (type == Asc.c_oAscTypeSelectElement.PdfPage) {
                     page_deleted = pr.asc_getDeleteLock();
                 }
+                has_object = has_object || type !== Asc.c_oAscTypeSelectElement.PdfPage; // not only page
             }
 
-            // if (in_chart !== this._state.in_chart) {
-            //     this.view.btnInsertChart.updateHint(in_chart ? this.view.tipChangeChart : this.view.tipInsertChart);
-            //     this._state.in_chart = in_chart;
-            // }
+            if (in_chart !== this._state.in_chart) {
+                this.view.btnInsertChart.updateHint(in_chart ? this.view.tipChangeChart : this.view.tipInsertChart);
+                this._state.in_chart = in_chart;
+            }
 
             if (this._state.prcontrolsdisable !== paragraph_locked) {
-                if (this._state.activated) this._state.prcontrolsdisable = paragraph_locked;
+                this._state.prcontrolsdisable = paragraph_locked;
                 Common.Utils.lockControls(Common.enumLock.paragraphLock, paragraph_locked===true, {array: this.view.lockedControls});
             }
 
             if (this._state.no_paragraph !== no_paragraph) {
-                if (this._state.activated) this._state.no_paragraph = no_paragraph;
+                this._state.no_paragraph = no_paragraph;
                 Common.Utils.lockControls(Common.enumLock.noParagraphSelected, no_paragraph, {array: this.view.lockedControls});
             }
 
+            if (this._state.object_without_paragraph !== no_paragraph && has_object) {
+                this._state.object_without_paragraph = no_paragraph && has_object;
+                Common.Utils.lockControls(Common.enumLock.noParagraphSelected, no_paragraph && has_object, {array: this.view.lockedControls});
+            }
+
             if (page_deleted !== undefined && this._state.pagecontrolsdisable !== page_deleted) {
-                if (this._state.activated) this._state.pagecontrolsdisable = page_deleted;
+                this._state.pagecontrolsdisable = page_deleted;
                 Common.Utils.lockControls(Common.enumLock.pageDeleted, page_deleted, {array: this.view.lockedControls});
             }
         },
@@ -974,7 +1067,15 @@ define([
         onApiCanAddHyperlink: function(value) {
             if (this._state.can_hyper !== value) {
                 Common.Utils.lockControls(Common.enumLock.hyperlinkLock, !value, {array: [this.view.btnInsertHyperlink]});
-                if (this._state.activated) this._state.can_hyper = value;
+                this._state.can_hyper = value;
+            }
+        },
+
+        onActiveTab: function(tab) {
+            if (tab === 'ins') {
+                this._state.onactivetab = true;
+            } else {
+                this._state.onactivetab = false;
             }
         }
 

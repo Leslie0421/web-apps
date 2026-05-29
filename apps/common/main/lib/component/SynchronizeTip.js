@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 if (Common === undefined)
     var Common = {};
@@ -64,7 +67,7 @@ define([
                             '<% } %>',
                         '</div>',
                         '<% if ( scope.showLink ) { %>',
-                        '<div class="show-link"><label><%= scope.textLink %></label></div>',
+                        '<div class="show-link"><label><span><%= scope.textLink %></span></label></div>',
                         '<% } %>',
                         '<% if ( scope.showButton ) { %>',
                         '<div class="btn-div"><%= scope.textButton %></div>',
@@ -74,7 +77,17 @@ define([
             ].join('')),
 
             initialize : function(options) {
-                this.textSynchronize += Common.Utils.String.platformKey('Ctrl+S');
+                const me = this;
+                const app = (window.DE || window.PE || window.SSE || window.PDFE || window.VE);
+                app.getController('Common.Controllers.Shortcuts').updateShortcutHints({
+                    Save: {
+                        label: '',
+                        applyCallback: function(item, hintText) {
+                            me.textSynchronize += hintText;
+                        },
+                        ignoreUpdates: true
+                    },
+                });
                 
                 Common.UI.BaseView.prototype.initialize.call(this, options);
                 this.target = this.options.target;
@@ -102,7 +115,7 @@ define([
                     this.cmpEl.find('.btn-div').on('click', _.bind(function() { this.trigger('buttonclick');}, this));
 
                     this.closable && this.cmpEl.addClass('closable');
-                    this.binding.windowresize = _.bind(this.applyPlacement, this);
+                    this.binding.windowresize = _.bind(this.onWindowResize, this);
                 }
 
                 this.applyPlacement();
@@ -131,8 +144,18 @@ define([
                 this.automove && $(window).off('resize', this.binding.windowresize);
             },
 
-            applyPlacement: function () {
+            onWindowResize: function() {
+                this.applyPlacement();
+            },
+
+            applyPlacement: function (repeatOnce) {
                 var target = this.target && this.target.length>0 ? this.target : $(document.body);
+
+                if (!target.is(':visible') && !repeatOnce) {
+                    var me = this;
+                    setTimeout(function(){ me.applyPlacement(true); }, 100);
+                    return;
+                }
                 var showxy = Common.Utils.getOffset(target),
                     offset = this.offset || {x: 0, y: 0};
                 if (this.placement=='target' && !this.position) {
@@ -193,6 +216,9 @@ define([
                         var width = this.cmpEl.width();
                         if (left+width>Common.Utils.innerWidth())
                             left = Common.Utils.innerWidth() - width - 10;
+                        if (left < 10)
+                            left = 10;
+  
                         left = (left + 'px');
                     } else
                         left = 'auto';
@@ -237,6 +263,7 @@ define([
             //     maxwidth: 250 // number or string '123px/none/...', 250 by default,
             //     extCls: '' //
             //     noHighlight: false // false by default,
+            //     noArrow: false // false by default,
             //     multiple: false // false by default, show tip multiple times,
             //     isNewFeature: false // false by default, show "New" tip in the header
             // }
@@ -264,14 +291,22 @@ define([
             return _helpTips[step] && !(_helpTips[step].name && Common.localStorage.getItem(_helpTips[step].name));
         };
 
+        var _applyPlacement = function(step) {
+            if (_helpTips[step] && _helpTips[step].tip && _helpTips[step].tip.isVisible())
+                _helpTips[step].tip.applyPlacement();
+        };
+
         var _closeTip = function(step, force, preventNext) {
-            var props = _helpTips[step];
-            if (props) {
-                preventNext && (props.next = undefined);
-                props.tip && props.tip.close();
-                props.tip = undefined;
-                force && props.name && Common.localStorage.setItem(props.name, 1);
-            }
+            var steps = typeof step === 'string' ? [step] : step;
+            steps && steps.forEach(function(step) {
+                var props = _helpTips[step];
+                if (props) {
+                    preventNext && (props.next = undefined);
+                    props.tip && props.tip.close();
+                    props.tip = undefined;
+                    force && props.name && Common.localStorage.setItem(props.name, 1);
+                }
+            });
         };
 
         var _findTarget = function(target) {
@@ -323,7 +358,7 @@ define([
                 }
 
                 props.tip = new Common.UI.SynchronizeTip({
-                    extCls: 'colored' + (props.extCls ? ' ' + props.extCls : '') + (props.noHighlight ? ' no-arrow' : ''),
+                    extCls: 'colored' + (props.extCls ? ' ' + props.extCls : '') + (props.noArrow ? ' no-arrow' : ''),
                     style: 'min-width:200px;max-width:' + (props.maxwidth ? props.maxwidth + (typeof props.maxwidth === 'number' ? 'px;' : ';') : '250px;'),
                     placement: placement,
                     position: props.position,
@@ -335,6 +370,7 @@ define([
                     textLink: props.link ? props.link.text : '',
                     closable: props.closable !== false, // true by default
                     showButton: props.showButton !== false, // true by default
+                    textButton: props.textButton, // button text, Got it by default
                     automove: !!props.automove
                 });
                 props.tip.on({
@@ -378,7 +414,8 @@ define([
             closeTip: _closeTip,
             removeTip: _removeTip,
             addTips: _addTips,
-            getNeedShow: _getNeedShow
+            getNeedShow: _getNeedShow,
+            applyPlacement: _applyPlacement
         }
     })();
 });

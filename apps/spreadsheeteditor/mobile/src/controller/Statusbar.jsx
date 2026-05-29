@@ -1,3 +1,37 @@
+/*
+ * Copyright (C) Ascensio System SIA, 2009-2026
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
+ *
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * No trademark rights are granted under this License.
+ *
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
 
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 import {StatusbarView} from '../view/Statusbar';
@@ -6,8 +40,8 @@ import { f7 } from 'framework7-react';
 import { useTranslation } from 'react-i18next';
 import { Device } from '../../../../common/mobile/utils/device';
 
-const StatusbarController = inject('storeWorksheets', 'storeFocusObjects', 'users')(observer(props => {
-    const {storeWorksheets, storeFocusObjects, users} = props;
+const StatusbarController = inject('storeWorksheets', 'storeFocusObjects', 'users', 'storeSpreadsheetSettings')(observer(props => {
+    const {storeWorksheets, storeFocusObjects, users, storeSpreadsheetSettings} = props;
  
     useEffect(() => {
         Common.Notifications.on('engineCreated', api => {
@@ -28,10 +62,16 @@ const StatusbarController = inject('storeWorksheets', 'storeFocusObjects', 'user
             api.asc_registerCallback('asc_onHidePopMenu', onApiHideTabContextMenu);
             api.asc_registerCallback('asc_onUpdateTabColor', onApiUpdateTabColor);
             api.asc_registerCallback('asc_onCoAuthoringDisconnect', onApiDisconnect);
+            api.asc_registerCallback('asc_onUpdateSheetViewSettings', onApiUpdateSheet);
         });
         Common.Notifications.on('document:ready', onApiSheetsChanged);
         Common.Notifications.on('api:disconnect', onApiDisconnect);
     });
+
+    const onApiUpdateSheet = () => {    
+        const api = Common.EditorApi.get();
+        storeSpreadsheetSettings.changeSheetRtl(api.asc_getSheetViewSettings().asc_getRightToLeft());
+    }
 
     const onApiEditCell = state => {
         let isDisable = state !== Asc.c_oAscCellEditorState.editEnd;
@@ -63,6 +103,7 @@ const StatusbarController = inject('storeWorksheets', 'storeFocusObjects', 'user
         }
 
         storeWorksheets.resetSheets(items);
+        onApiUpdateSheet();
     };
 
     const onApiActiveSheetChanged = (index) => {
@@ -70,6 +111,7 @@ const StatusbarController = inject('storeWorksheets', 'storeFocusObjects', 'user
             storeWorksheets.setActiveWorksheet(index);
             Common.Notifications.trigger('sheet:active', index);
         }
+        onApiUpdateSheet();
     };
 
     const onApiHideTabContextMenu = () => {
@@ -109,8 +151,8 @@ const StatusbarController = inject('storeWorksheets', 'storeFocusObjects', 'user
     return null;
 }));
 
-const Statusbar = inject('storeWorksheets', 'storeAppOptions', 'users')(observer(props => {
-    const {storeWorksheets, storeAppOptions, users} = props;
+const Statusbar = inject('storeWorksheets', 'storeAppOptions', 'users', 'storeSpreadsheetInfo')(observer(props => {
+    const {storeWorksheets, storeAppOptions, users, storeSpreadsheetInfo} = props;
     const {t} = useTranslation();
     const _t = t('Statusbar', {returnObjects: true});
     const isEdit = storeAppOptions.isEdit;
@@ -161,7 +203,26 @@ const Statusbar = inject('storeWorksheets', 'storeAppOptions', 'users')(observer
     const onAddTabClicked = () => {
         const api = Common.EditorApi.get();
         api.asc_closeCellEditor();
-        api.asc_addWorksheet(createSheetName());
+
+        if ((storeSpreadsheetInfo.dataDoc?.fileType ?? '').toLowerCase() === 'csv') {
+            f7.dialog.create({
+                title: _t.notcriticalErrorTitle,
+                text: _t.warnAddSheetCsv,
+                buttons: [
+                    {
+                        text: _t.textCancel
+                    },
+                    {
+                        text: _t.textContinue,
+                        onClick: () => {
+                            api.asc_addWorksheet(createSheetName());
+                        }
+                    }
+                ]
+            }).open();
+        } else {
+            api.asc_addWorksheet(createSheetName());
+        }
     };
 
     const onTabClick = (i, target) => {
@@ -303,7 +364,6 @@ const Statusbar = inject('storeWorksheets', 'storeAppOptions', 'users')(observer
                 f7.dialog.alert(_t.textErrorLastSheet, _t.notcriticalErrorTitle) :
                 api['asc_hideWorksheet']([index]);
         } else {
-            f7.popover.close('#idx-hidden-sheets-popover');
             api['asc_showWorksheet'](index);
         }
     };
@@ -336,13 +396,14 @@ const Statusbar = inject('storeWorksheets', 'storeAppOptions', 'users')(observer
                 }
                 break;
             case 'unhide':
-                f7.popover.open('#idx-hidden-sheets-popover', '.active');
+                Device.phone ? f7.sheet.open('.hidden-sheet') : f7.popover.open('.hidden-sheet', targetRef.current); 
                 break;
             case 'showMore':
                 f7.actions.open('#idx-tab-menu-actions');
                 break;
             default:
                 let _re = /reveal\:(\d+)/.exec(event);
+                f7.sheet.close('.hidden-sheet');
                 if (_re && !!_re[1]) {
                     hideWorksheet(false, parseInt(_re[1]));
                 }

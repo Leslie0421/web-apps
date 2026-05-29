@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  ChartSettings.js
@@ -138,7 +141,7 @@ define([
             }
 
             var isChart = !!(props && props.asc_getChartProperties && props.asc_getChartProperties()),
-                chartSettings = isChart ? this.api.asc_getChartObject(true) : null, // don't lock chart object
+                chartSettings = isChart ? this.api.asc_getChartSettings(true) : null, // don't lock chart object
                 props3d = chartSettings ? chartSettings.getView3d() : null;
 
             if ( this.isChart!==isChart || this._state.is3D!==!!props3d ) {
@@ -870,7 +873,7 @@ define([
             this.lockedControls.push(this.chRightAngle);
             this.chRightAngle.on('change', _.bind(function(field, newValue, oldValue, eOpts) {
                 if (this.api){
-                    var props = this.api.asc_getChartObject(true);
+                    var props = this.api.asc_getChartSettings(true);
                     if (props) {
                         var oView3D = props.getView3d();
                         if (oView3D) {
@@ -890,7 +893,7 @@ define([
             this.lockedControls.push(this.chAutoscale);
             this.chAutoscale.on('change', _.bind(function(field, newValue, oldValue, eOpts) {
                 if (this.api){
-                    var props = this.api.asc_getChartObject(true);
+                    var props = this.api.asc_getChartSettings(true);
                     if (props) {
                         var oView3D = props.getView3d();
                         if (oView3D) {
@@ -1035,7 +1038,7 @@ define([
             var me = this;
             var win, props;
             if (me.api){
-                props = (me.isChart) ? me.api.asc_getChartObject() : me._originalProps;
+                props = (me.isChart) ? me.api.asc_getChartSettings() : me._originalProps;
                 if (props) {
                     (new SSE.Views.ChartSettingsDlg(
                         {
@@ -1048,9 +1051,11 @@ define([
                                 if (result == 'ok') {
                                     if (me.api) {
                                         if (me.isChart) {
-                                            me.api.asc_editChartDrawingObject(value.chartSettings);
-                                            if (value.imageSettings)
+                                            if (value.imageSettings) {
+                                                value.imageSettings.asc_putChartProperties(value.chartSettings);
                                                 me.api.asc_setGraphicObjectProps(value.imageSettings);
+                                            } else
+                                                me.api.asc_applyChartSettings(value.chartSettings);
                                         } else
                                             me.api.asc_setSparklineGroup(me._state.SparkId, value.chartSettings);
                                     }
@@ -1065,12 +1070,12 @@ define([
         onSelectData_simple: function() {
             var me = this;
             if (me.api) {
-                var props = me.api.asc_getChartObject(),
+                var props = me.api.asc_getChartSettings(),
                     handlerDlg = function(dlg, result) {
                         if (result == 'ok') {
                             props.putRange(dlg.getSettings());
                             me.api.asc_setSelectionDialogMode(Asc.c_oAscSelectionDialogType.None);
-                            me.api.asc_editChartDrawingObject(props);
+                            me.api.asc_applyChartSettings(props);
                         }
 
                         Common.NotificationCenter.trigger('edit:complete', me.toolbar);
@@ -1094,7 +1099,7 @@ define([
                 var win = new SSE.Views.CellRangeDialog({
                     handler: handlerDlg
                 }).on('close', function() {
-                    me.api.asc_onCloseChartFrame();
+                    me.api.asc_onCloseFrameEditor();
                 });
 
                 win.show();
@@ -1115,7 +1120,7 @@ define([
             var me = this;
             var props;
             if (me.api){
-                props = me.api.asc_getChartObject();
+                props = me.api.asc_getChartSettings();
                 if (props) {
                     me._isEditRanges = true;
                     props.startEdit();
@@ -1141,18 +1146,23 @@ define([
         onChangeType: function() {
             var me = this;
             if (me.api){
-                (new SSE.Views.ChartWizardDialog({
+                me._isEditType = true;
+                var win = new SSE.Views.ChartWizardDialog({
                     api: me.api,
                     props: {recommended: me.api.asc_getRecommendedChartData()},
                     type: me._state.ChartType,
                     isEdit: true,
                     handler: function(result, value) {
                         if (result == 'ok') {
+                            me._isEditType = false;
                             me.api && me.api.asc_addChartSpace(value);
                         }
                         Common.NotificationCenter.trigger('edit:complete', me.toolbar);
                     }
-                })).show();
+                }).on('close', function() {
+                    me._isEditType = false;
+                });
+                win.show();
             }
         },
         
@@ -1464,7 +1474,7 @@ define([
 
         onSwitch:   function() {
             if (this.api){
-                var props = this.api.asc_getChartObject(true);
+                var props = this.api.asc_getChartSettings(true);
                 if (props) {
                     props.startEdit();
                     var res = props.switchRowCol();
@@ -1479,7 +1489,7 @@ define([
 
         onXRotation: function(field, newValue, oldValue, eOpts){
             if (this.api){
-                var props = this.api.asc_getChartObject(true);
+                var props = this.api.asc_getChartSettings(true);
                 if (props) {
                     var oView3D = props.getView3d();
                     if (oView3D) {
@@ -1494,7 +1504,7 @@ define([
 
         onYRotation: function(field, newValue, oldValue, eOpts){
             if (this.api){
-                var props = this.api.asc_getChartObject(true);
+                var props = this.api.asc_getChartSettings(true);
                 if (props) {
                     var oView3D = props.getView3d();
                     if (oView3D) {
@@ -1509,7 +1519,7 @@ define([
 
         onPerspective: function(field, newValue, oldValue, eOpts){
             if (this.api){
-                var props = this.api.asc_getChartObject(true);
+                var props = this.api.asc_getChartSettings(true);
                 if (props) {
                     var oView3D = props.getView3d();
                     if (oView3D) {
@@ -1524,7 +1534,7 @@ define([
 
         on3DDepth: function(field, newValue, oldValue, eOpts){
             if (this.api){
-                var props = this.api.asc_getChartObject(true);
+                var props = this.api.asc_getChartSettings(true);
                 if (props) {
                     var oView3D = props.getView3d();
                     if (oView3D) {
@@ -1539,7 +1549,7 @@ define([
 
         on3DHeight: function(field, newValue, oldValue, eOpts){
             if (this.api){
-                var props = this.api.asc_getChartObject(true);
+                var props = this.api.asc_getChartSettings(true);
                 if (props) {
                     var oView3D = props.getView3d();
                     if (oView3D) {
@@ -1554,7 +1564,7 @@ define([
 
         onDefRotation: function() {
             if (this.api){
-                var props = this.api.asc_getChartObject(true);
+                var props = this.api.asc_getChartSettings(true);
                 if (props) {
                     var oView3D = props.getView3d();
                     if (oView3D) {

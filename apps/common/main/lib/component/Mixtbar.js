@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  Mixtbar.js
@@ -106,6 +109,8 @@ define([
             initialize : function(options) {
                 Common.UI.BaseView.prototype.initialize.call(this, options);
 
+                const me = this;
+
                 var _template_tabs =
                     !Common.UI.isRTL() ?
                     '<section class="tabs">' +
@@ -157,10 +162,79 @@ define([
                 Common.NotificationCenter.on('app:repaint', _.bind(function() {
                     this.repaintMoreBtns();
                 }, this));
-                Common.NotificationCenter.on('uitheme:changed', _.bind(function() {
-                    this.clearActiveData();
-                    this.processPanelVisible();
-                }, this));
+                Common.NotificationCenter.on('uitheme:changed', _.bind(this.onThemeChanged, this));
+                Common.NotificationCenter.on({
+                    'hints:activate-control': function (p) {
+                        if (p && p.exit && me.isMoreDropdownSection(p.section)) p.exit(true);
+                    },
+
+                    'hints:resolve-section': function (p) {
+                        if (!p || !p.set) return;
+
+                        const $more = me.getVisibleMoreContainer();
+                        if (!$more.length) return;
+                        p.set($more, 1);
+                    },
+
+                    'hints:resolve-bounds': function (p) {
+                        if (p && me.isMoreDropdownSection(p.section)) {
+                            p.top = 0;
+                            p.bottom = p.docH;
+                        }
+                    },
+
+                    'hints:esc': function (p) {
+                        const handled = me.hasVisibleMoreDropdown();
+                        if (handled) me.closeVisibleMoreDropdown();
+                        if (p && p.handled) p.handled(handled);
+                    }
+                });
+            },
+
+            isMoreDropdownSection: function (section) {
+                return $(section).hasClass('more-container');
+            },
+
+            getVisibleMoreContainer: function () {
+                return $('.dropdown-menu.more-container:visible');
+            },
+
+            hasVisibleMoreDropdown: function () {
+                return this.getVisibleMoreContainer().length > 0;
+            },
+
+            closeVisibleMoreDropdown: function () {
+                const $more = this.getVisibleMoreContainer();
+                if (!$more.length) return null;
+                const tab = $more.attr('data-tab') || null;
+                this.closeMoreDropdown(tab);
+                $more.hide();
+                return tab;
+            },
+
+            closeMoreDropdown: function (tab) {
+                if (!btnsMore) return;
+                if (tab) {
+                    if (btnsMore[tab] && btnsMore[tab].pressed) {
+                        btnsMore[tab].toggle(false, true);
+                    }
+                    return;
+                }
+            },
+
+            prefillMore: function ($menu, level) {
+                if (!$menu || !$menu.length) return;
+
+                const prevDisplay = $menu[0].style.display,
+                    prevVisibility = $menu[0].style.visibility;
+                $menu.css({ display: 'block', visibility: 'hidden' });
+
+                Common.NotificationCenter.trigger('hints:prefill', {
+                    section: $('#toolbar'),   
+                    level: level
+                });
+
+                $menu.css({ display: prevDisplay, visibility: prevVisibility });
             },
 
             afterRender: function() {
@@ -190,11 +264,10 @@ define([
 
             setFolded: function(value) {
                 this.isFolded = value;
-
                 var me = this;
-                if ( this.isFolded ) {
-                    if (!optsFold.$box) optsFold.$box = me.$el.find('.box-controls');
+                if (!optsFold.$box) optsFold.$box = me.$el.find('.box-controls');
 
+                if ( this.isFolded ) {
                     optsFold.$bar.addClass('folded z-clear').toggleClass('expanded', false);
                     optsFold.$bar.find('.tabs .ribtab').removeClass('active');
                     optsFold.$bar.on($.support.transition.end, function (e) {
@@ -364,7 +437,7 @@ define([
                     }
 
                     this.fireEvent('tab:active', [tab]);
-                    Common.NotificationCenter.trigger('tab:active',[tab]);
+                    Common.NotificationCenter.trigger('tab:active', tab);
                 }
             },
 
@@ -378,7 +451,28 @@ define([
 
                 var _tabTemplate = _.template('<li class="ribtab" style="display: none;" <% if (typeof layoutname == "string") print(" data-layout-name=" + \' \' +  layoutname) + \' \' %>><a role="tab" id="<%= action %>" data-tab="<%= action %>" data-title="<%= caption %>" data-hint="0" data-hint-direction="bottom" data-hint-offset="small" <% if (typeof dataHintTitle !== "undefined") { %> data-hint-title="<%= dataHintTitle %>" <% } %> ><%= caption %></a></li>');
 
-                config.tabs[after + 1] = tab;
+                if (after===undefined || tab.aux)
+                    after = config.tabs.length-1;
+
+                if (tab.aux) { // alwayw show tab at the end of toolbar
+                    config.tabs.push(tab);
+                } else if (config.tabs[after + 1]) {
+                    var index = -1;
+                    for (let i=after + 2; i<config.tabs.length; i++) {
+                        if (config.tabs[i]===undefined) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index<0 || index>config.tabs.length-1)
+                        config.tabs.splice(after+1, 0, tab);
+                    else {
+                        config.tabs.splice(index, 1);
+                        config.tabs.splice(after+1, 0, tab);
+                    }
+                } else {
+                    config.tabs[after + 1] = tab;
+                }
                 var _after_action = _get_tab_action(after);
 
                 var _elements = this.$tabs || this.$layout.find('.tabs');
@@ -424,7 +518,8 @@ define([
             },
 
             getLastTabIdx: function() {
-                return config.tabs.length;
+                var index = _.findIndex(config.tabs, {aux: true});
+                return index<0 ? config.tabs.length-1 : index-1;
             },
 
             isCompact: function () {
@@ -462,9 +557,9 @@ define([
              * hide button's caption to decrease panel width
              * ##adopt-panel-width
             **/
-            processPanelVisible: function(panel, force) {
+            processPanelVisible: function(panel, reset, force) {
                 var me = this;
-                function _fc() {
+                function _fc(reset) {
                     var $active = panel || me.$panels.filter('.active');
                     if ( $active && $active.length ) {
                         var _maxright = $active.parents('.box-controls').width(),
@@ -524,9 +619,9 @@ define([
                                 }
                                 data.rightedge = _rightedge;
                             }
-                            me.resizeToolbar(force);
+                            me.resizeToolbar(reset);
                         } else {
-                            more_section.is(':visible') && me.resizeToolbar(force);
+                            more_section.is(':visible') && me.resizeToolbar(reset);
                             if (!more_section.is(':visible')) {
                                 for (var i=0; i<_btns.length; i++) {
                                     var btn = _btns[i];
@@ -558,12 +653,13 @@ define([
                     }
                 };
 
-                if (!me._timer_id) {
-                    _fc();
+                if (!me._timer_id || force) {
+                    me._timer_id && clearInterval(me._timer_id);
+                    _fc(reset);
                     me._needProcessPanel = false;
-                    me._timer_id =  setInterval(function() {
+                    me._timer_id = setInterval(function() {
                         if (me._needProcessPanel) {
-                            _fc();
+                            _fc(me._needProcessPanel.reset);
                             me._needProcessPanel = false;
                         } else {
                             clearInterval(me._timer_id);
@@ -571,7 +667,7 @@ define([
                         }
                     }, 100);
                 } else
-                    me._needProcessPanel = true;
+                    me._needProcessPanel = {reset: me._needProcessPanel ? me._needProcessPanel.reset || reset : reset};
             },
             /**/
 
@@ -608,7 +704,10 @@ define([
                         cls: 'btn-toolbar x-huge icon-top dropdown-manual',
                         caption: Common.Locale.get("textMoreButton",{name:"Common.Translation", default: "More"}),
                         iconCls: 'toolbar__icon btn-big-more',
-                        enableToggle: true
+                        enableToggle: true,
+                        dataHint: '1',              
+                        dataHintDirection: 'bottom', 
+                        dataHintTitle: 'MO' 
                     });
                     btnsMore[tab].render(box.find('.slot-btn-more'));
                     btnsMore[tab].on('toggle', function(btn, state, e) {
@@ -618,6 +717,9 @@ define([
                     var moreContainer = $('<div class="dropdown-menu more-container" data-tab="' + tab + '"><div style="display: inline;"></div></div>');
                     optsFold.$bar.append(moreContainer);
                     btnsMore[tab].panel = moreContainer.find('div');
+                } else if (btnsMore[tab].needRepaint && panel.is(':visible')) {
+                    btnsMore[tab].cmpEl.closest('.more-box').css('top', Common.Utils.getPosition(panel).top);
+                    btnsMore[tab].needRepaint = false;
                 }
                 this.$moreBar = btnsMore[tab].panel;
             },
@@ -625,8 +727,11 @@ define([
             repaintMoreBtns: function() {
                 for (var btn in btnsMore) {
                     if (btnsMore[btn] && btnsMore[btn].cmpEl) {
-                        var box = btnsMore[btn].cmpEl.closest('.more-box');
-                        box.css('top', Common.Utils.getPosition(box.parent()).top);
+                        var box = btnsMore[btn].cmpEl.closest('.more-box'),
+                            panel = box.parent(),
+                            isVisible = panel.is(':visible');
+                        isVisible && box.css('top', Common.Utils.getPosition(panel).top);
+                        btnsMore[btn].needRepaint = !isVisible;
                     }
                 }
             },
@@ -644,6 +749,22 @@ define([
                     btnsMore[tab].remove();
                     delete btnsMore[tab];
                 }
+            },
+
+            moveAllFromMoreButton: function(tab) {
+                if (btnsMore[tab]) {
+                    var moreBar = btnsMore[tab].panel,
+                        items = moreBar ? moreBar.children() : [];
+                    if (items.length>0) {
+                        items.removeAttr('hidden-on-resize');
+                        items.removeAttr('data-hidden-tb-item');
+                        items.removeAttr('group-state');
+                        var panel = this.$panels.filter('[data-tab=' + tab + ']');
+                        panel.length && panel.find('.more-box').before(items);
+                        this.clearMoreButton(tab);
+                    }
+                }
+                this.clearActiveData();
             },
 
             clearActiveData: function(tab) {
@@ -670,7 +791,7 @@ define([
                                 button.cmpEl.closest('.btn-slot').remove();
                                 if (group.children().length<1) {
                                     var in_more = group.closest('.more-container').length>0;
-                                    in_more ? group.next('.separator').remove() : group.prev('.separator').remove();
+                                    (in_more || group.prev().length===0) ? group.next('.separator').remove() : group.prev('.separator').remove(); // remove separator before empty group or after first empty group
                                     group.remove();
                                     if (in_more && $morepanel.children().filter('.group').length === 0) {
                                         btnsMore[tab.action] && btnsMore[tab.action].isActive() && btnsMore[tab.action].toggle(false);
@@ -1001,6 +1122,7 @@ define([
 
                 var styles = Common.UI.isRTL() ? {left: '6px', right: 'auto', top : top, 'max-width': Common.Utils.innerWidth() + 'px'} : {right: right, left: 'auto', top : top, 'max-width': Common.Utils.innerWidth() + 'px'}
                 moreContainer.css(styles);
+                this.prefillMore(moreContainer, 1);
                 moreContainer.show();
             },
 
@@ -1008,6 +1130,12 @@ define([
                 for (var btn in btnsMore) {
                     btnsMore[btn] && btnsMore[btn].isActive() && btnsMore[btn].toggle(false);
                 }
+            },
+
+            onThemeChanged: function(e) {
+                this.clearActiveData();
+                this.processPanelVisible();
+                this.repaintMoreBtns();
             }
         };
     }()));

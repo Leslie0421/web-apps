@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *    app.js
@@ -135,6 +138,9 @@ require([
             'PivotTable',
             'DataTab',
             'ViewTab',
+            'TableDesignTab',
+            'ChartTab',
+            'SparklineTab',
             'Search',
             'WBProtection',
             'Common.Controllers.Fonts',
@@ -142,10 +148,13 @@ require([
             'Common.Controllers.Chat',
             'Common.Controllers.Comments',
             'Common.Controllers.Draw',
+            'Common.Controllers.ExternalLinks',
             'Common.Controllers.Plugins'
             ,'Common.Controllers.ExternalOleEditor'
             ,'Common.Controllers.ReviewChanges'
             ,'Common.Controllers.Protection'
+            ,'Common.Controllers.Shortcuts'
+            ,'Common.Controllers.PasteOptions'
         ]
     });
 
@@ -171,6 +180,9 @@ require([
             'spreadsheeteditor/main/app/controller/PivotTable',
             'spreadsheeteditor/main/app/controller/DataTab',
             'spreadsheeteditor/main/app/controller/ViewTab',
+            'spreadsheeteditor/main/app/controller/TableDesignTab',
+            'spreadsheeteditor/main/app/controller/ChartTab',
+            'spreadsheeteditor/main/app/controller/SparklineTab',
             'spreadsheeteditor/main/app/controller/Search',
             'spreadsheeteditor/main/app/controller/WBProtection',
             // 'spreadsheeteditor/main/app/view/ParagraphSettings',
@@ -186,11 +198,14 @@ require([
             'common/main/lib/controller/History',
             'common/main/lib/controller/Comments',
             'common/main/lib/controller/Chat',
+            'common/main/lib/controller/ExternalLinks',
             'common/main/lib/controller/Plugins'
             ,'common/main/lib/controller/ExternalOleEditor'
             ,'common/main/lib/controller/ReviewChanges'
             ,'common/main/lib/controller/Protection'
+            ,'common/main/lib/controller/Shortcuts'
             ,'common/main/lib/controller/Draw'
+            ,'common/main/lib/controller/PasteOptions'
         ], function() {
             app.postLaunchScripts = [
                 'common/main/lib/controller/ScreenReaderFocus',
@@ -198,6 +213,7 @@ require([
                 'common/main/lib/component/ComboBoxDataView',
                 'common/main/lib/view/AdvancedSettingsWindow',
                 'common/main/lib/view/OptionsDialog',
+                'common/main/lib/view/Charts3DDlg',
                 'common/main/lib/view/AutoCorrectDialog',
                 'common/main/lib/view/DocumentAccessDialog',
                 'common/main/lib/view/SaveAsDlg',
@@ -218,9 +234,13 @@ require([
                 'common/main/lib/util/define',
                 'common/main/lib/view/SignDialog',
                 'common/main/lib/view/SignSettingsDialog',
+                'common/main/lib/view/ExternalLinksDlg',
+                'common/main/lib/view/FormatSettingsDialog',
                 'common/main/lib/view/DocumentPropertyDialog',
                 'common/main/lib/view/MacrosDialog',
                 'common/main/lib/view/MacrosAiDialog',
+                'common/main/lib/view/ShortcutsDialog',
+                'common/main/lib/view/ShortcutsEditDialog',
                 'common/main/lib/component/MonacoEditor',
 
                 'spreadsheeteditor/main/app/controller/DocumentHolderExt',
@@ -232,7 +252,6 @@ require([
                 'spreadsheeteditor/main/app/view/ViewManagerDlg',
                 'spreadsheeteditor/main/app/view/ChartDataDialog',
                 'spreadsheeteditor/main/app/view/ChartTypeDialog',
-                'spreadsheeteditor/main/app/view/ExternalLinksDlg',
                 'spreadsheeteditor/main/app/view/FormatRulesEditDlg',
                 'spreadsheeteditor/main/app/view/FormatRulesManagerDlg',
                 'spreadsheeteditor/main/app/view/MacroDialog',
@@ -246,7 +265,6 @@ require([
                 'spreadsheeteditor/main/app/view/SlicerAddDialog',
                 'spreadsheeteditor/main/app/view/Spellcheck',
                 'spreadsheeteditor/main/app/view/WatchDialog',
-                'spreadsheeteditor/main/app/view/FormatSettingsDialog',
                 'spreadsheeteditor/main/app/view/ValueFieldSettingsDialog',
                 'spreadsheeteditor/main/app/view/SpecialPasteDialog',
                 'spreadsheeteditor/main/app/view/FieldSettingsDialog',
@@ -283,7 +301,11 @@ require([
                 'spreadsheeteditor/main/app/view/AutoFilterDialog',
                 'spreadsheeteditor/main/app/view/PivotGroupDialog',
                 'spreadsheeteditor/main/app/view/PivotCalculatedItemsDialog',
-                'spreadsheeteditor/main/app/view/PivotInsertCalculatedItemDialog'
+                'spreadsheeteditor/main/app/view/PivotInsertCalculatedItemDialog',
+                'spreadsheeteditor/main/app/view/SolverDlg',
+                'spreadsheeteditor/main/app/view/ConstraintDialog',
+                'spreadsheeteditor/main/app/view/SolverMethodDialog',
+                'spreadsheeteditor/main/app/view/SolverResultsDlg'
             ];
 
             window.compareVersions = true;

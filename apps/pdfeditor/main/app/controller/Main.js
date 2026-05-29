@@ -1,33 +1,36 @@
 /*
- * (c) Copyright Ascensio System SIA 2010-2024
+ * Copyright (C) Ascensio System SIA, 2009-2026
  *
  * This program is a free software product. You can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License (AGPL)
- * version 3 as published by the Free Software Foundation. In accordance with
- * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
- * that Ascensio System SIA expressly excludes the warranty of non-infringement
- * of any third-party rights.
+ * version 3 as published by the Free Software Foundation, together with the
+ * additional terms provided in the LICENSE file.
  *
  * This program is distributed WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
- * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. For
+ * details, see the GNU AGPL at: https://www.gnu.org/licenses/agpl-3.0.html
  *
- * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
- * street, Riga, Latvia, EU, LV-1050.
+ * You can contact Ascensio System SIA by email at info@onlyoffice.com
+ * or by postal mail at 20A-6 Ernesta Birznieka-Upisha Street, Riga,
+ * LV-1050, Latvia, European Union.
  *
- * The  interactive user interfaces in modified source and object code versions
- * of the Program must display Appropriate Legal Notices, as required under
+ * The interactive user interfaces in modified versions of the Program
+ * are required to display Appropriate Legal Notices in accordance with
  * Section 5 of the GNU AGPL version 3.
  *
- * Pursuant to Section 7(b) of the License you must retain the original Product
- * logo when distributing the program. Pursuant to Section 7(e) we decline to
- * grant you any rights under trademark law for use of our trademarks.
+ * No trademark rights are granted under this License.
  *
- * All the Product's GUI elements, including illustrations and icon sets, as
- * well as technical writing content are licensed under the terms of the
- * Creative Commons Attribution-ShareAlike 4.0 International. See the License
- * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ * All non-code elements of the Product, including illustrations,
+ * icon sets, and technical writing content, are licensed under the
+ * Creative Commons Attribution-ShareAlike 4.0 International License:
+ * https://creativecommons.org/licenses/by-sa/4.0/legalcode
  *
+ * This license applies only to such non-code elements and does not
+ * modify or replace the licensing terms applicable to the Program's
+ * source code, which remains licensed under the GNU Affero General
+ * Public License v3.
+ *
+ * SPDX-License-Identifier: AGPL-3.0-only
  */
 /**
  *  Main.js
@@ -83,6 +86,7 @@ define([
             models: [],
             collections: [
                 'Common.Collections.TextArt',
+                'Common.Collections.HistoryUsers',
             ],
             views: [],
 
@@ -101,16 +105,27 @@ define([
                     'FileMenu': {
                         'settings:apply': _.bind(this.applySettings, this)
                     },
-                    // 'Common.Views.ReviewChanges': {
-                    //     'settings:apply': _.bind(this.applySettings, this)
-                    // }
+                    'Common.Views.ReviewChanges': {
+                        'settings:apply': _.bind(this.applySettings, this)
+                    }
                 });
 
                 this.translationTable = {
                     'Your text here': this.txtArt,
                     "Choose an item": this.txtChoose,
                     "Enter a date": this.txtEnterDate,
-                    "Click to load image": this.txtClickToLoad
+                    "Click to load image": this.txtClickToLoad,
+                    'Series': this.txtSeries,
+                    'Diagram Title': this.txtDiagramTitle,
+                    'X Axis': this.txtXAxis,
+                    'Y Axis': this.txtYAxis,
+                    'Button': this.txtButton,
+                    'Group': this.txtGroup,
+                    'Checkbox': this.txtCheckbox,
+                    'Text': this.txtText,
+                    'Dropdown': this.txtDropdown,
+                    'Listbox': this.txtListbox,
+                    'Signature': this.txtSignature
                 };
             },
 
@@ -204,7 +219,7 @@ define([
                     Common.NotificationCenter.on('showmessage',                     _.bind(this.onExternalMessage, this));
                     Common.NotificationCenter.on('showerror',                       _.bind(this.onError, this));
                     Common.NotificationCenter.on('editing:disable',                 _.bind(this.onEditingDisable, this));
-                    Common.NotificationCenter.on('pdf:mode-apply',                  _.bind(this.onPdfModeApply, this));
+                    Common.NotificationCenter.on('pdf:mode-apply',                  _.bind(this.onTryPdfModeApply, this));
 
                     this.isShowOpenDialog = false;
                     
@@ -306,7 +321,7 @@ define([
                             me.api.asc_enableKeyEvents(false);
                         },
                         'modal:close': function(dlg) {
-                            Common.Utils.ModalWindow.close();
+                            dlg && dlg.isVisible() && Common.Utils.ModalWindow.close(); // close can be called after hiding
                             if (!Common.Utils.ModalWindow.isVisible())
                                 me.api.asc_enableKeyEvents(true);
                         },
@@ -343,11 +358,10 @@ define([
                 }
 
                 me.defaultTitleText = '{{APP_TITLE_TEXT}}';
-                me.warnNoLicense  = (me.warnNoLicense || '').replace(/%1/g, '{{COMPANY_NAME}}');
+                me.warnNoResources  = (me.warnNoResources || '').replace(/%1/g, '{{COMPANY_NAME}}');
                 me.warnNoLicenseUsers = (me.warnNoLicenseUsers || '').replace(/%1/g, '{{COMPANY_NAME}}');
                 me.textNoLicenseTitle = (me.textNoLicenseTitle || '').replace(/%1/g, '{{COMPANY_NAME}}');
-                me.warnLicenseExceeded = (me.warnLicenseExceeded || '').replace(/%1/g, '{{COMPANY_NAME}}');
-                me.warnLicenseUsersExceeded = (me.warnLicenseUsersExceeded || '').replace(/%1/g, '{{COMPANY_NAME}}');
+                me.textNoResourcesTitle = (me.textNoResourcesTitle || '').replace(/%1/g, '{{COMPANY_NAME}}');
             },
 
             loadConfig: function(data) {
@@ -411,6 +425,9 @@ define([
                 this.appOptions.canRequestSaveAs = this.editorConfig.canRequestSaveAs;
                 this.appOptions.canRequestInsertImage = this.editorConfig.canRequestInsertImage;
                 this.appOptions.canRequestSharingSettings = this.editorConfig.canRequestSharingSettings;
+                this.appOptions.canRequestOpen = this.editorConfig.canRequestOpen;
+                this.appOptions.canRequestReferenceSource = this.editorConfig.canRequestReferenceSource;
+                this.appOptions.canRequestReferenceData = this.editorConfig.canRequestReferenceData;
                 this.appOptions.compatibleFeatures = true;
                 this.appOptions.mentionShare = !((typeof (this.appOptions.customization) == 'object') && (this.appOptions.customization.mentionShare==false));
                 this.appOptions.canSaveDocumentToBinary = this.editorConfig.canSaveDocumentToBinary;
@@ -495,7 +512,6 @@ define([
                     docInfo.asc_putIsEnabledMacroses(!!enable);
                     enable = !this.editorConfig.customization || (this.editorConfig.customization.plugins!==false);
                     docInfo.asc_putIsEnabledPlugins(!!enable);
-//                    docInfo.put_Review(this.permissions.review);
 
                     var type = /^(?:(djvu|xps|oxps))$/.exec(data.doc.fileType);
                     var coEditMode = (type && typeof type[1] === 'string') ? 'strict' :  // offline viewer for djvu|xps|oxps
@@ -519,7 +535,7 @@ define([
                 this.api.asc_registerCallback('asc_onLicenseChanged',       _.bind(this.onLicenseChanged, this));
                 this.api.asc_registerCallback('asc_onRunAutostartMacroses', _.bind(this.onRunAutostartMacroses, this));
                 this.api.asc_setDocInfo(docInfo);
-                this.api.asc_getEditorPermissions(this.editorConfig.licenseUrl, this.editorConfig.customerId);
+                this.api.asc_getEditorPermissions();
 
                 if (data.doc) {
                     appHeader.setDocumentCaption(data.doc.title);
@@ -532,16 +548,6 @@ define([
                 }
             },
 
-            onProcessSaveResult: function(data) {
-                this.api.asc_OnSaveEnd(data.result);
-                if (data && data.result === false) {
-                    Common.UI.error({
-                        title: this.criticalErrorTitle,
-                        msg  : _.isEmpty(data.message) ? this.errorProcessSaveResult : data.message
-                    });
-                }
-            },
-
             onProcessRightsChange: function(data) {
                 if (data && data.enabled === false) {
                     var me = this,
@@ -550,12 +556,12 @@ define([
                     this.api.asc_coAuthoringDisconnect();
                     Common.NotificationCenter.trigger('collaboration:sharingdeny');
                     Common.NotificationCenter.trigger('api:disconnect');
-                    !old_rights && Common.UI.TooltipManager.showTip({ step: 'changeRights', text: _.isEmpty(data.message) ? this.warnProcessRightsChange : data.message,
-                        target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, multiple: true,
-                        callback: function() {
-                            me._state.lostEditingRights = false;
+                    !old_rights && Common.UI.TooltipManager.showTip({ step: 'changeRights', text: _.isEmpty(data.message) ? this.warnProcessRightsChange : Common.Utils.String.htmlEncode(data.message),
+                        target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, noArrow: true, multiple: true,
+                            callback: function(){
+                                me._state.lostEditingRights = false;
                         }});
-                }
+                            }
             },
 
             onDownloadAs: function(format) {
@@ -629,10 +635,12 @@ define([
                     statusBar: true,
                     rightMenu: {clear: !temp, disable: true},
                     leftMenu: {disable: true, previewMode: true},
-                    fileMenu: {protect: true},
+                    fileMenu: {protect: true, history: temp},
                     navigation: {disable: !temp, previewMode: true},
+                    thumbnails: {disable: !temp},
                     comments: {disable: !temp, previewMode: true},
                     chat: true,
+                    review: true,
                     viewport: true,
                     documentHolder: {clear: !temp, disable: true},
                     toolbar: true,
@@ -658,6 +666,9 @@ define([
 
                 if (options.statusBar) {
                     app.getController('Statusbar').getView('Statusbar').SetDisabled(disable);
+                }
+                if (options.review) {
+                    app.getController('Common.Controllers.ReviewChanges').SetDisabled(disable);
                 }
                 if (options.viewport) {
                     app.getController('Viewport').SetDisabled(disable);
@@ -695,7 +706,7 @@ define([
                     if (options.header.docmode)
                         app.getController('Toolbar').getView('Toolbar').fireEvent('docmode:disabled', [disable]);
                     if (options.header.search)
-                        appHeader && appHeader.lockHeaderBtns('search', disable);
+                        appHeader && appHeader.lockHeaderBtns('search', disable, Common.enumLock.lostConnect);
                     appHeader && appHeader.lockHeaderBtns('undo', options.viewMode, Common.enumLock.lostConnect);
                     appHeader && appHeader.lockHeaderBtns('redo', options.viewMode, Common.enumLock.lostConnect);
                 }
@@ -872,9 +883,6 @@ define([
 
                 if (this.appOptions.isEdit && (id==Asc.c_oAscAsyncAction['Save'] || id==Asc.c_oAscAsyncAction['ForceSaveButton']) && (!this._state.fastCoauth || this._state.usersCount<2))
                     this.synchronizeChanges();
-                // else if (this.appOptions.isEdit && (id==Asc.c_oAscAsyncAction['Save'] || id==Asc.c_oAscAsyncAction['ForceSaveButton'] || id == Asc.c_oAscAsyncAction['ApplyChanges']) &&
-                //         this._state.fastCoauth)
-                //     this.getApplication().getController('Common.Controllers.ReviewChanges').synchronizeChanges();
 
                 if ( id == Asc.c_oAscAsyncAction['Disconnect']) {
                     this._state.timerDisconnect && clearTimeout(this._state.timerDisconnect);
@@ -891,7 +899,7 @@ define([
                     (!this.getApplication().getController('LeftMenu').dlgSearch || !this.getApplication().getController('LeftMenu').dlgSearch.isVisible()) &&
                     (!this.getApplication().getController('Toolbar').dlgSymbolTable || !this.getApplication().getController('Toolbar').dlgSymbolTable.isVisible()) &&
                     !((id == Asc.c_oAscAsyncAction['LoadDocumentFonts'] || id == Asc.c_oAscAsyncAction['LoadFonts'] || id == Asc.c_oAscAsyncAction['ApplyChanges'] || id == Asc.c_oAscAsyncAction['DownloadAs']) && (this.dontCloseDummyComment || this.inTextareaControl || Common.Utils.ModalWindow.isVisible() || this.inFormControl)) ) {
-//                        this.onEditComplete(this.loadMask); //если делать фокус, то при принятии чужих изменений, заканчивается свой композитный ввод
+//                        this.onEditComplete(this.loadMask); //if try to set the focus, then when accepting co-authoring changes, composite input ends.
                         this.api.asc_enableKeyEvents(true);
                 }
             },
@@ -974,9 +982,9 @@ define([
                         Common.UI.Menu.Manager.hideAll();
                         this.disableEditing(true, 'reconnect');
                         var me = this;
-                        me._state.timerDisconnect = setTimeout(function(){
+                            me._state.timerDisconnect = setTimeout(function(){
                             Common.UI.TooltipManager.showTip('disconnect');
-                        }, me._state.unloadTimer || 0);
+                            }, me._state.unloadTimer || 0);
                         this.getApplication().getController('Statusbar').setStatusCaption(text);
                         return;
 
@@ -1043,6 +1051,9 @@ define([
                 me.api.SetDrawingFreeze(false);
                 me.hidePreloader();
                 me.onLongActionEnd(Asc.c_oAscAsyncActionType['BlockInteraction'], LoadingDocument);
+
+                if (!me.appOptions.canCopy)
+                    Common.UI.TooltipManager.showTip({ step: 'copyDisabled', text: me.errorCopyDisabled, target: '#toolbar', maxwidth: 350, automove: true, noHighlight: true, noArrow: true, showButton: false});
 
                 Common.Utils.InternalSettings.set("pdfe-settings-livecomment", true);
                 Common.Utils.InternalSettings.set("pdfe-settings-resolvedcomment", false);
@@ -1118,6 +1129,7 @@ define([
                 navigationController.setMode(me.appOptions).setApi(me.api);
 
                 chatController.setApi(this.api).setMode(this.appOptions);
+                application.getController('Common.Controllers.ExternalDiagramEditor').setApi(this.api).loadConfig({config:this.editorConfig, customization: this.editorConfig.customization});
                 pluginsController.setApi(me.api);
 
                 documentHolderController.setApi(me.api);
@@ -1129,6 +1141,8 @@ define([
                     me.getApplication().getController('LeftMenu').leftMenu.getMenu('about').setLicInfo(me.editorConfig.customization);
 
                 documentHolderController.getView().on('editcomplete', _.bind(me.onEditComplete, me));
+
+                PDFE.getController('Common.Controllers.Shortcuts').setApi(me.api);
 
                 if (me.appOptions.isEdit || me.appOptions.isRestrictedEdit) {
                     if (me.appOptions.isEdit && me.appOptions.canForcesave) {// use asc_setIsForceSaveOnUserSave only when customization->forcesave = true
@@ -1143,6 +1157,7 @@ define([
                     me.appOptions.isRestrictedEdit && me.api.asc_SetHighlightRequiredFields(true);
 
                     var timer_sl = setTimeout(function(){
+
                         toolbarController.createDelayedElements();
                         toolbarController.activateControls();
                         documentHolderController.applyEditorMode();
@@ -1169,9 +1184,9 @@ define([
                     Common.component.Analytics.initialize('UA-12442749-13', 'Document Editor');
 
                 Common.Gateway.on('applyeditrights',        _.bind(me.onApplyEditRights, me));
-                Common.Gateway.on('processsaveresult',      _.bind(me.onProcessSaveResult, me));
                 Common.Gateway.on('processrightschange',    _.bind(me.onProcessRightsChange, me));
                 Common.Gateway.on('processmouse',           _.bind(me.onProcessMouse, me));
+                Common.Gateway.on('refreshhistory',               _.bind(me.onRefreshHistory, me));
                 Common.Gateway.on('downloadas',             _.bind(me.onDownloadAs, me));
                 Common.Gateway.on('setfavorite',            _.bind(me.onSetFavorite, me));
                 Common.Gateway.on('requestclose',           _.bind(me.onRequestClose, me));
@@ -1235,17 +1250,23 @@ define([
                     });
                 } else if (this._state.licenseType) {
                     var license = this._state.licenseType,
+                        title = this.textNoLicenseTitle,
                         buttons = ['ok'],
-                        primary = 'ok';
+                        primary = 'ok',
+                        modal = false;
                     if ((this.appOptions.trialMode & Asc.c_oLicenseMode.Limited) !== 0 &&
                         (license===Asc.c_oLicenseResult.SuccessLimit || this.appOptions.permissionsLicense===Asc.c_oLicenseResult.SuccessLimit)) {
                         license = this.warnLicenseLimitedRenewed;
                     } else if (license===Asc.c_oLicenseResult.Connections || license===Asc.c_oLicenseResult.UsersCount) {
-                        license = (license===Asc.c_oLicenseResult.Connections) ? this.warnLicenseExceeded : this.warnLicenseUsersExceeded;
+                        title = this.titleReadOnly;
+                        license = (license===Asc.c_oLicenseResult.Connections) ? this.tipLicenseExceeded : this.tipLicenseUsersExceeded;
                     } else {
-                        license = (license===Asc.c_oLicenseResult.ConnectionsOS) ? this.warnNoLicense : this.warnNoLicenseUsers;
+                        if (license===Asc.c_oLicenseResult.ConnectionsOS)
+                            title = this.textNoResourcesTitle;
+                        license = (license===Asc.c_oLicenseResult.ConnectionsOS) ? this.warnNoResources : this.warnNoLicenseUsers;
                         buttons = [{value: 'buynow', caption: this.textBuyNow}, {value: 'contact', caption: this.textContactUs}];
                         primary = 'buynow';
+                        modal = true;
                     }
 
                     if (this._state.licenseType!==Asc.c_oLicenseResult.SuccessLimit && (this.appOptions.isPDFFill || this.appOptions.isPDFAnnotate || this.appOptions.isPDFEdit || this.appOptions.isRestrictedEdit)) {
@@ -1254,25 +1275,21 @@ define([
                         Common.NotificationCenter.trigger('api:disconnect');
                     }
 
-                    var value = Common.localStorage.getItem("pdfe-license-warning");
-                    value = (value!==null) ? parseInt(value) : 0;
-                    var now = (new Date).getTime();
-                    if (now - value > 86400000) {
+                    !modal ? Common.UI.TooltipManager.showTip({ step: 'licenseError', text: license, header: title, target: '#toolbar', maxwidth: 430,
+                                                                automove: true, noHighlight: true, noArrow: true, textButton: this.textContinue}) :
                         Common.UI.info({
                             maxwidth: 500,
-                            title: this.textNoLicenseTitle,
+                        title: title,
                             msg  : license,
                             buttons: buttons,
                             primary: primary,
                             callback: function(btn) {
-                                Common.localStorage.setItem("pdfe-license-warning", now);
                                 if (btn == 'buynow')
                                     window.open('{{PUBLISHER_URL}}', "_blank");
                                 else if (btn == 'contact')
                                     window.open('mailto:{{SALES_EMAIL}}', "_blank");
                             }
                         });
-                    }
                 } else if (!this.appOptions.isDesktopApp && !this.appOptions.canBrandingExt &&
                     this.editorConfig && this.editorConfig.customization && (this.editorConfig.customization.loaderName || this.editorConfig.customization.loaderLogo ||
                         this.editorConfig.customization.font && (this.editorConfig.customization.font.size || this.editorConfig.customization.font.name))) {
@@ -1313,7 +1330,7 @@ define([
                     return;
                 }
 
-                if ( this.onServerVersion(params.asc_getBuildVersion()) || !this.onLanguageLoaded() ) return;
+                if ( this.onServerVersion(params.asc_getBuildVersion()) || !this.onLanguageLoaded()) return;
                 if ( this._isDocReady || this._isPermissionsInited ) {
                     this.api.asc_LoadDocument();
                     return;
@@ -1346,6 +1363,10 @@ define([
                 this.appOptions.canSwitchMode = this.appOptions.isPDFAnnotate && this.appOptions.canPDFEdit; // switch between View/annotate and pdf edit
                 // this.appOptions.canCoEditing = (this.appOptions.isPDFAnnotate || this.appOptions.isPDFFill) && !(this.appOptions.isDesktopApp && this.appOptions.isOffline);
 
+                this.appOptions.canUseHistory  = pdfEdit && this.appOptions.canLicense && this.editorConfig.canUseHistory && this.appOptions.canCoAuthoring && !this.appOptions.isOffline;
+                this.appOptions.canHistoryClose  = this.editorConfig.canHistoryClose;
+                this.appOptions.canHistoryRestore= this.editorConfig.canHistoryRestore;
+
                 this.appOptions.canComments    = pdfEdit && this.appOptions.canLicense && (this.permissions.comment===undefined ? this.appOptions.isPDFAnnotate : this.permissions.comment) && (this.editorConfig.mode !== 'view');
                 this.appOptions.canComments    = this.appOptions.canComments && !((typeof (this.editorConfig.customization) == 'object') && this.editorConfig.customization.comments===false);
                 this.appOptions.canViewComments = this.appOptions.canComments || pdfEdit && !((typeof (this.editorConfig.customization) == 'object') && this.editorConfig.customization.comments===false);
@@ -1355,7 +1376,6 @@ define([
                     console.log("Obsolete: The 'chat' parameter of the 'customization' section is deprecated. Please use 'chat' parameter in the permissions instead.");
                 }
                 this.appOptions.canPrint       = (this.permissions.print !== false);
-                this.appOptions.canPreviewPrint = this.appOptions.canPrint && !Common.Utils.isMac && this.appOptions.isDesktopApp;
                 this.appOptions.canQuickPrint = this.appOptions.canPrint && !Common.Utils.isMac && this.appOptions.isDesktopApp;
                 this.appOptions.canRename      = this.editorConfig.canRename;
                 this.appOptions.buildVersion   = params.asc_getBuildVersion();
@@ -1363,11 +1383,6 @@ define([
                 this.appOptions.forcesave      = this.appOptions.canForcesave;
                 this.appOptions.canEditComments= this.appOptions.isOffline || !this.permissions.editCommentAuthorOnly;
                 this.appOptions.canDeleteComments= this.appOptions.isOffline || !this.permissions.deleteCommentAuthorOnly;
-                if ((typeof (this.editorConfig.customization) == 'object') && this.editorConfig.customization.commentAuthorOnly===true) {
-                    console.log("Obsolete: The 'commentAuthorOnly' parameter of the 'customization' section is deprecated. Please use 'editCommentAuthorOnly' and 'deleteCommentAuthorOnly' parameters in the permissions instead.");
-                    if (this.permissions.editCommentAuthorOnly===undefined && this.permissions.deleteCommentAuthorOnly===undefined)
-                        this.appOptions.canEditComments = this.appOptions.canDeleteComments = this.appOptions.isOffline;
-                }
 
                 // this.appOptions.trialMode      = 0;
                 this.appOptions.trialMode      = 0;
@@ -1388,6 +1403,7 @@ define([
                 this.appOptions.canDownload       = this.permissions.download !== false;
                 this.appOptions.showSaveButton = this.appOptions.isEdit && !this.appOptions.isPDFFill && (this.appOptions.canSaveToFile || this.appOptions.canDownload);
                 this.appOptions.canSuggest     = !((typeof (this.editorConfig.customization) == 'object') && this.editorConfig.customization.suggestFeature===false);
+                this.appOptions.canCopy        = this.permissions.copy !== false;
 
                 this.appOptions.compactHeader = this.appOptions.customization && (typeof (this.appOptions.customization) == 'object') && !!this.appOptions.customization.compactHeader;
                 this.appOptions.twoLevelHeader = this.appOptions.isEdit || this.appOptions.isRestrictedEdit; // when compactHeader=true some buttons move to toolbar
@@ -1509,7 +1525,7 @@ define([
                 }
 
                 Common.Utils.InternalSettings.set("pdfe-settings-coauthmode", !!fastCoauth);
-                Common.Utils.InternalSettings.set("pdfe-settings-autosave", !!autosave);
+                Common.Utils.InternalSettings.set("pdfe-settings-autosave", autosave ? 1 : 0);
             },
 
             loadDefaultMetricSettings: function() {
@@ -1538,7 +1554,38 @@ define([
                 Common.Utils.InternalSettings.set("pdfe-config-region", region);
             },
 
-            onPdfModeApply: function(mode) {
+            onTryPdfModeApply: function(mode, activeTab, callback, pwd) {
+                if (mode==='edit' && this.appOptions.canPDFEdit && !this.api.asc_CheckEditPassword(pwd!==undefined ? pwd : null)) {
+                    var me = this,
+                        newPwd,
+                        win = new Common.Views.OpenDialog({
+                            title: me.txtUnlockTitle,
+                            closable: true,
+                            type: Common.Utils.importTextType.DRM,
+                            txtOpenFile: me.txtDocUnlockDescription,
+                            validatePwd: pwd!==undefined,
+                            handler: function (result, value) {
+                                if (result === 'ok') {
+                                    if (value && value.drmOptions && me.api.asc_CheckEditPassword(value.drmOptions.asc_getPassword()))
+                                        me.onPdfModeApply(mode, activeTab, callback);
+                                    else
+                                        newPwd = value.drmOptions.asc_getPassword();
+                                }
+                            }
+                        }).on('close', function() {
+                            if (newPwd!==undefined)
+                                setTimeout(function() {
+                                    me.onTryPdfModeApply(mode, activeTab, callback, newPwd);
+                                }, 100);
+                            else
+                                Common.NotificationCenter.trigger('pdf:mode-changed', me.appOptions);
+                        });
+                    win.show();
+                } else
+                    this.onPdfModeApply(mode, activeTab, callback);
+            },
+
+            onPdfModeApply: function(mode, activeTab, callback) {
                 if (!this.appOptions.canSwitchMode) return;
 
                 if (mode==='edit' && this.appOptions.canPDFEdit) {
@@ -1554,13 +1601,12 @@ define([
                 Common.NotificationCenter.trigger('pdf:mode-changed', this.appOptions);
                 var app = this.getApplication(),
                     toolbar = app.getController('Toolbar');
-                toolbar.applyMode();
+                toolbar.applyMode(activeTab);
                 app.getController('Viewport').applyEditorMode();
                 app.getController('ViewTab').applyEditorMode();
                 app.getController('DocumentHolder').applyEditorMode();
                 app.getController('LeftMenu').leftMenu.getMenu('file').applyMode();
-                toolbar.toolbar.clearActiveData();
-                toolbar.toolbar.processPanelVisible(null, true);
+                callback && callback.call();
             },
 
             onPdfModeCoAuthApply: function() {
@@ -1602,7 +1648,7 @@ define([
 
                 viewport.applyCommonMode();
 
-                if (this.appOptions.canPreviewPrint) {
+                if (this.appOptions.canPrint) {
                     var printController = app.getController('Print');
                     printController && this.api && printController.setApi(this.api).setMode(this.appOptions);
                 }
@@ -1628,9 +1674,13 @@ define([
             applyModeEditorElements: function() {
 
                 var me = this,
-                    application         = this.getApplication();
-                    // reviewController    = application.getController('Common.Controllers.ReviewChanges');
-                // reviewController.setMode(me.appOptions).setConfig({config: me.editorConfig}, me.api).loadDocument({doc:me.document});
+                    application         = this.getApplication(),
+                    reviewController    = application.getController('Common.Controllers.ReviewChanges');
+
+                reviewController
+                    .setMode(me.appOptions, { canCommentResolve: false })
+                    .setConfig({config: me.editorConfig}, me.api)
+                    .loadDocument({doc:me.document});
 
                 if (this.appOptions.isEdit) {
                     if (me.appOptions.isSignatureSupport || me.appOptions.isPasswordSupport)
@@ -1648,6 +1698,9 @@ define([
                     me.api.asc_registerCallback('asc_OnTryUndoInFastCollaborative',_.bind(me.onTryUndoInFastCollaborative, me));
                     me.appOptions.canSaveDocumentToBinary && me.api.asc_registerCallback('asc_onSaveDocument',_.bind(me.onSaveDocumentBinary, me));
                     /** coauthoring end **/
+
+                    if (me.appOptions.isPDFEdit)
+                        application.getController('Common.Controllers.ChartTab').setMode(me.appOptions);
 
                     if (me.stackLongActions.exist({id: ApplyEditRights, type: Asc.c_oAscAsyncActionType['BlockInteraction']})) {
                         me.onLongActionEnd(Asc.c_oAscAsyncActionType['BlockInteraction'], ApplyEditRights);
@@ -1677,11 +1730,14 @@ define([
             onError: function(id, level, errData) {
                 switch (id) {
                     case Asc.c_oAscError.ID.LoadingScriptError:
-                        this.showTips([this.scriptLoadError]);
-                        this.tooltip && this.tooltip.getBSTip().$tip.css('z-index', 10000);
-                        return;
+                    this.showTips([this.scriptLoadError]);
+                    this.tooltip && this.tooltip.getBSTip().$tip.css('z-index', 10000);
+                    return;
                     case Asc.c_oAscError.ID.CanNotPasteImage:
-                        this.showTips([this.errorCannotPasteImg], {timeout: 7000, hideCloseTip: true});
+                    this.showTips([this.errorCannotPasteImg], {timeout: 7000, hideCloseTip: true});
+                    return;
+                    case Asc.c_oAscError.ID.DocumentAndChangeMismatch:
+                        this.getApplication().getController('Common.Controllers.History').onHashError();
                         return;
                     case Asc.c_oAscError.ID.UpdateVersion:
                         Common.UI.TooltipManager.showTip('updateVersion');
@@ -1696,12 +1752,12 @@ define([
                         if (this._state.lostEditingRights) {
                             this._state.lostEditingRights = false;
                             return;
-                        }
+                }
                         this._state.lostEditingRights = true;
                         Common.NotificationCenter.trigger('collaboration:sharingdeny');
                         var me = this;
                         Common.UI.TooltipManager.showTip({ step: 'userDrop', text: this.errorUserDrop,
-                            target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, multiple: true,
+                            target: '#toolbar', maxwidth: 600, showButton: false, automove: true, noHighlight: true, noArrow: true, multiple: true,
                             callback: function() {
                                 me._state.lostEditingRights = false;
                             }});
@@ -1890,8 +1946,23 @@ define([
                         config.msg = this.errorPDFFormsLocked;
                         break;
 
+                    case Asc.c_oAscError.ID.CopyDisabled:
+                        config.maxwidth = 450;
+                        config.msg = this.errorCopyDisabled;
+                        break;
+
+                    case Asc.c_oAscError.ID.FileNotAssembled:
+                        config.msg = this.errorFileNotAssembled;
+                        break;
+
+                    case Asc.c_oAscError.ID.ForcedViewMode:
+                        config.msg = this.errorForcedViewMode;
+                        break;
+
                     default:
                         config.msg = (typeof id == 'string') ? id : this.errorDefaultMessage.replace('%1', id);
+                        if (typeof id == 'string')
+                            config.maxwidth = 600;
                         break;
                 }
 
@@ -1949,7 +2020,7 @@ define([
                     }, this);
                 }
 
-                if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value=' + id + ']').length<1)
+                if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value="' + id + '"]').length<1)
                     Common.UI.alert(config).$window.attr('data-value', id);
 
                 (id!==undefined) && Common.component.Analytics.trackEvent('Internal Error', id.toString());
@@ -1957,16 +2028,15 @@ define([
 
             onOpenLinkPdfForm: function(sURI, onAllow, onCancel) {
                 var id = 'pdf-link',
-                    re = new RegExp('ctrl|' + Common.Utils.String.textCtrl, 'i'),
-                    msg = Common.Utils.isMac ? this.txtSecurityWarningLink.replace(re, '⌘') : this.txtSecurityWarningLink,
                     config = {
                         closable: true,
                         title: this.notcriticalErrorTitle,
                         iconCls: 'warn',
                         buttons: ['ok', 'cancel'],
-                        msg: Common.Utils.String.format(msg, sURI || ''),
+                        msg: Common.Utils.String.format(this.txtSecurityWarningLinkOk, sURI || ''),
+                        maxwidth: 600,
                         callback: _.bind(function(btn){
-                            if (btn == 'ok' && window.event && (!Common.Utils.isMac && window.event.ctrlKey == true || Common.Utils.isMac && window.event.metaKey)) {
+                            if (btn == 'ok') {
                                 onAllow();
                             }
                             else
@@ -2224,13 +2294,13 @@ define([
             },
 
             onUpdateVersion: function(callback) {
-                console.log("Obsolete: The 'onOutdatedVersion' event is deprecated. Please use 'onRequestRefreshFile' event and 'refreshFile' method instead.");
+                this.editorConfig && this.editorConfig.canUpdateVersion && console.log("Obsolete: The 'onOutdatedVersion' event is deprecated. Please use 'onRequestRefreshFile' event and 'refreshFile' method instead.");
 
                 var me = this;
                 me.needToUpdateVersion = true;
                 me.onLongActionEnd(Asc.c_oAscAsyncActionType['BlockInteraction'], LoadingDocument);
                 Common.UI.TooltipManager.showTip({ step: 'updateVersionReload', text: this.errorUpdateVersion, header: this.titleUpdateVersion,
-                    target: '#toolbar', maxwidth: 'none', closable: false, automove: true, noHighlight: true,
+                    target: '#toolbar', maxwidth: 'none', closable: false, automove: true, noHighlight: true, noArrow: true,
                     callback: function() {
                         _.defer(function() {
                             Common.Gateway.updateVersion();
@@ -2300,7 +2370,7 @@ define([
                 Common.Utils.InternalSettings.set("pdfe-settings-unit", value);
                 this.api.asc_SetDocumentUnits((value==Common.Utils.Metric.c_MetricUnits.inch) ? Asc.c_oAscDocumentUnits.Inch : ((value==Common.Utils.Metric.c_MetricUnits.pt) ? Asc.c_oAscDocumentUnits.Point : Asc.c_oAscDocumentUnits.Millimeter));
                 this.getApplication().getController('Toolbar').getView().updateMetricUnit();
-                this.appOptions.canPreviewPrint && this.getApplication().getController('Print').getView('PrintWithPreview').updateMetricUnit();
+                this.getApplication().getController('Print').getView('PrintWithPreview').updateMetricUnit();
             },
 
             onAdvancedOptions: function(type, advOptions, mode, formatOptions) {
@@ -2339,6 +2409,7 @@ define([
                         warning: !(me.appOptions.isDesktopApp && me.appOptions.isOffline) && (typeof advOptions == 'string'),
                         warningMsg: advOptions,
                         validatePwd: !!me._state.isDRM,
+                        autoPosOnResize : 'center',
                         handler: function (result, value) {
                             me.isShowOpenDialog = false;
                             if (result == 'ok') {
@@ -2386,7 +2457,7 @@ define([
                                 Common.localStorage.setItem("pdfe-settings-showchanges-strict", 'last');
                                 Common.Utils.InternalSettings.set("pdfe-settings-showchanges-strict", 'last');
                                 this.api.SetCollaborativeMarksShowType(Asc.c_oAscCollaborativeMarksShowType.LastChanges);
-                                // this.getApplication().getController('Common.Controllers.ReviewChanges').applySettings();
+                                this.getApplication().getController('Common.Controllers.ReviewChanges').applySettings();
                             }
                             this.onEditComplete();
                         }, this)
@@ -2400,7 +2471,6 @@ define([
                         length++;
                 });
                 this._state.usersCount = length;
-                this._state.fastCoauth && this._state.usersCount>1 && this.api.asc_getCanUndo() && Common.UI.TooltipManager.showTip('fastUndo');
             },
 
             onUserConnection: function(change){
@@ -2429,7 +2499,6 @@ define([
                         this._state.fastCoauth = Common.localStorage.getBool("pdfe-settings-coauthmode");
                         if (this._state.fastCoauth && !oldval)
                             this.synchronizeChanges();
-                        this._state.fastCoauth && this._state.usersCount>1 && this.api.asc_getCanUndo() && Common.UI.TooltipManager.showTip('fastUndo');
                     }
                     if (this.appOptions.canForcesave) {
                         this.appOptions.forcesave = Common.localStorage.getBool("pdfe-settings-forcesave", this.appOptions.canForcesave);
@@ -2452,11 +2521,46 @@ define([
                 var filemenu = this.getApplication().getController('LeftMenu').getView('LeftMenu').getMenu('file');
                 filemenu.loadDocument({doc:this.document});
                 filemenu.panels && filemenu.panels['info'] && filemenu.panels['info'].updateInfo(this.document);
+                this.getApplication().getController('Common.Controllers.ReviewChanges').loadDocument({doc:this.document});
                 Common.Gateway.metaChange(meta);
 
                 if (this.appOptions.wopi) {
                     var idx = meta.title.lastIndexOf('.');
                     Common.Gateway.requestRename(idx>0 ? meta.title.substring(0, idx) : meta.title);
+                }
+            },
+
+            onTryPrint: function(callback, pwd) {
+                if (!this.api.asc_CheckPrintPassword(pwd!==undefined ? pwd : null)) {
+                    let newPwd;
+                    const me = this;
+                    const win = new Common.Views.OpenDialog({
+                        title: me.txtUnlockTitle,
+                        closable: true,
+                        type: Common.Utils.importTextType.DRM,
+                        txtOpenFile: me.txtDocUnlockDescription,
+                        validatePwd: pwd!==undefined,
+                        handler: function (result, value) {
+                            if (result === 'ok' && value && value.drmOptions) {
+                                const currentPwd = value.drmOptions.asc_getPassword();
+                                if (me.api.asc_CheckPrintPassword(currentPwd)) {
+                                    callback && callback.call();
+                                } else {
+                                    newPwd = currentPwd;
+                                }
+                            }
+                        }
+                    }).on('close', function() {
+                        if (newPwd!==undefined)
+                            setTimeout(function() {
+                                me.onTryPrint(callback, newPwd);
+                            }, 100);
+                        else
+                            Common.NotificationCenter.trigger('pdf:mode-changed', me.appOptions);
+                    });
+                    win.show();
+                } else {
+                    callback && callback.call();
                 }
             },
 
@@ -2497,35 +2601,36 @@ define([
 
             onPrintQuick: function() {
                 if (!this.appOptions.canQuickPrint) return;
+                this.onTryPrint(function() {
+                    var value = Common.localStorage.getBool("pdfe-hide-quick-print-warning"),
+                        me = this,
+                        handler = function () {
+                            var printopt = new Asc.asc_CAdjustPrint();
+                            printopt.asc_setNativeOptions({quickPrint: true});
+                            var opts = new Asc.asc_CDownloadOptions();
+                            opts.asc_setAdvancedOptions(printopt);
+                            me.api.asc_Print(opts);
+                            Common.component.Analytics.trackEvent('Print');
+                        };
 
-                var value = Common.localStorage.getBool("pdfe-hide-quick-print-warning"),
-                    me = this,
-                    handler = function () {
-                        var printopt = new Asc.asc_CAdjustPrint();
-                        printopt.asc_setNativeOptions({quickPrint: true});
-                        var opts = new Asc.asc_CDownloadOptions();
-                        opts.asc_setAdvancedOptions(printopt);
-                        me.api.asc_Print(opts);
-                        Common.component.Analytics.trackEvent('Print');
-                    };
-
-                if (value) {
-                    handler.call(this);
-                } else {
-                    Common.UI.warning({
-                        msg: this.textTryQuickPrint,
-                        buttons: ['yes', 'no'],
-                        primary: 'yes',
-                        dontshow: true,
-                        maxwidth: 500,
-                        callback: function(btn, dontshow){
-                            dontshow && Common.localStorage.setBool("pdfe-hide-quick-print-warning", true);
-                            if (btn === 'yes') {
-                                setTimeout(handler, 1);
+                    if (value) {
+                        handler.call(this);
+                    } else {
+                        Common.UI.warning({
+                            msg: this.textTryQuickPrint,
+                            buttons: ['yes', 'no'],
+                            primary: 'yes',
+                            dontshow: true,
+                            maxwidth: 500,
+                            callback: function(btn, dontshow){
+                                dontshow && Common.localStorage.setBool("pdfe-hide-quick-print-warning", true);
+                                if (btn === 'yes') {
+                                    setTimeout(handler, 1);
+                                }
                             }
-                        }
-                    });
-                }
+                        });
+                    }
+                }.bind(this));
             },
 
             onClearDummyComment: function() {
@@ -2610,6 +2715,7 @@ define([
                             if (apiCallback)  {
                                 apiCallback(btn === 'ok');
                             }
+                            Common.Gateway.reportWarning(id, btn === 'ok' ? 'undo' : 'continue');
                             me.onEditComplete();
                         }, this)
                     });
@@ -2670,6 +2776,7 @@ define([
 
             onRequestRefreshFile: function() {
                 Common.Gateway.requestRefreshFile();
+                console.log('Trying to refresh file');
             },
 
             onRefreshFile: function(data) {
@@ -2723,6 +2830,176 @@ define([
                     docInfo.put_CoEditingMode(coEditMode);
                     this.api.asc_refreshFile(docInfo);
                 }
+            },
+
+            DisableVersionHistory: function() {
+                this.editorConfig.canUseHistory = false;
+                this.appOptions.canUseHistory = false;
+            },
+
+            onRefreshHistory: function(opts) {
+                if (!this.appOptions.canUseHistory) return;
+
+                this.loadMask && this.loadMask.hide();
+                if (opts.data.error || !opts.data.history) {
+                    var historyStore = this.getApplication().getCollection('Common.Collections.HistoryVersions');
+                    if (historyStore && historyStore.size()>0) {
+                        historyStore.each(function(item){
+                            item.set('canRestore', false);
+                        });
+                    }
+                    Common.UI.alert({
+                        title: this.notcriticalErrorTitle,
+                        msg: (opts.data.error) ? opts.data.error : this.txtErrorLoadHistory,
+                        iconCls: 'warn',
+                        buttons: ['ok'],
+                        callback: _.bind(function(btn){
+                            this.onEditComplete();
+                        }, this)
+                    });
+                } else {
+                    this.api.asc_coAuthoringDisconnect();
+                    appHeader.setCanRename(false);
+                    appHeader.getButton('users') && appHeader.getButton('users').hide();
+                    appHeader.getButton('share') && appHeader.getButton('share').setVisible(false);
+                    this.getApplication().getController('LeftMenu').getView('LeftMenu').showHistory();
+                    this.disableEditing(true);
+                    this._renameDialog && this._renameDialog.close();
+                    var versions = opts.data.history,
+                        historyStore = this.getApplication().getCollection('Common.Collections.HistoryVersions'),
+                        currentVersion = null,
+                        arrIds = [];
+                    if (historyStore) {
+                        var arrVersions = [], ver, version, group = -1, prev_ver = -1, arrColors = [], docIdPrev = '',
+                            usersStore = this.getApplication().getCollection('Common.Collections.HistoryUsers'), user = null, usersCnt = 0;
+
+                        for (var ver=versions.length-1, index = 0; ver>=0; ver--, index++) {
+                            version = versions[ver];
+                            if (version.versionGroup===undefined || version.versionGroup===null)
+                                version.versionGroup = version.version;
+                            if (version) {
+                                if (!version.user) version.user = {};
+                                docIdPrev = (ver>0 && versions[ver-1]) ? versions[ver-1].key : version.key + '0';
+                                user = usersStore.findUser(version.user.id);
+                                if (!user) {
+                                    var color = Common.UI.ExternalUsers.getColor(version.user.id || version.user.name || this.textAnonymous, true);
+                                    user = new Common.Models.User({
+                                        id          : version.user.id,
+                                        username    : version.user.name || this.textAnonymous,
+                                        colorval    : color,
+                                        color       : this.generateUserColor(color)
+                                    });
+                                    usersStore.add(user);
+                                }
+                                var avatar = Common.UI.ExternalUsers.getImage(version.user.id);
+                                (avatar===undefined) && arrIds.push(version.user.id);
+                                arrVersions.push(new Common.Models.HistoryVersion({
+                                    version: version.versionGroup,
+                                    revision: version.version,
+                                    userid : version.user.id,
+                                    username : version.user.name || this.textAnonymous,
+                                    usercolor: user.get('color'),
+                                    initials : Common.Utils.getUserInitials(AscCommon.UserInfoParser.getParsedName(version.user.name || this.textAnonymous)),
+                                    avatar : avatar,
+                                    created: version.created,
+                                    docId: version.key,
+                                    markedAsVersion: (group!==version.versionGroup),
+                                    selected: (opts.data.currentVersion == version.version),
+                                    canRestore: this.appOptions.canHistoryRestore && (ver < versions.length-1),
+                                    isExpanded: true,
+                                    serverVersion: version.serverVersion,
+                                    fileType: 'docx',
+                                    index: index
+                                }));
+                                if (opts.data.currentVersion == version.version) {
+                                    currentVersion = arrVersions[arrVersions.length-1];
+                                }
+                                group = version.versionGroup;
+                                if (prev_ver!==version.version) {
+                                    prev_ver = version.version;
+                                    arrColors.reverse();
+                                    for (i=0; i<arrColors.length; i++) {
+                                        arrVersions[arrVersions.length-i-2].set('arrColors',arrColors);
+                                    }
+                                    arrColors = [];
+                                }
+                                arrColors.push(user.get('colorval'));
+
+                                var changes = version.changes, change, i;
+                                if (changes && changes.length>0 && false) { // hide changes for pdf
+                                    arrVersions[arrVersions.length-1].set('docIdPrev', docIdPrev);
+                                    if (!_.isEmpty(version.serverVersion) && version.serverVersion == this.appOptions.buildVersion) {
+                                        arrVersions[arrVersions.length-1].set('changeid', changes.length-1);
+                                        arrVersions[arrVersions.length-1].set('hasSubItems', changes.length>1);
+                                        arrVersions[arrVersions.length-1].set('documentSha256', changes[changes.length-1].documentSha256);
+                                        for (i=changes.length-2; i>=0; i--, index++) {
+                                            change = changes[i];
+
+                                            user = usersStore.findUser(change.user.id);
+                                            if (!user) {
+                                                var color = Common.UI.ExternalUsers.getColor(change.user.id || change.user.name || this.textAnonymous, true);
+                                                user = new Common.Models.User({
+                                                    id          : change.user.id,
+                                                    username    : change.user.name || this.textAnonymous,
+                                                    colorval    : color,
+                                                    color       : this.generateUserColor(color)
+                                                });
+                                                usersStore.add(user);
+                                            }
+                                            avatar = Common.UI.ExternalUsers.getImage(change.user.id);
+                                            (avatar===undefined) && arrIds.push(change.user.id);
+                                            arrVersions.push(new Common.Models.HistoryVersion({
+                                                version: version.versionGroup,
+                                                revision: version.version,
+                                                changeid: i,
+                                                userid : change.user.id,
+                                                username : change.user.name || this.textAnonymous,
+                                                usercolor: user.get('color'),
+                                                initials : Common.Utils.getUserInitials(AscCommon.UserInfoParser.getParsedName(change.user.name || this.textAnonymous)),
+                                                avatar : avatar,
+                                                created: change.created,
+                                                docId: version.key,
+                                                docIdPrev: docIdPrev,
+                                                selected: false,
+                                                canRestore: this.appOptions.canHistoryRestore && this.appOptions.canDownload,
+                                                isRevision: false,
+                                                isVisible: true,
+                                                serverVersion: version.serverVersion,
+                                                documentSha256: change.documentSha256,
+                                                fileType: 'docx',
+                                                hasParent: true,
+                                                index: index,
+                                                level: 1
+                                            }));
+                                            arrColors.push(user.get('colorval'));
+                                        }
+                                    }
+                                } else if (ver==0 && versions.length==1) {
+                                    arrVersions[arrVersions.length-1].set('docId', version.key + '1');
+                                }
+                            }
+                        }
+                        if (arrColors.length>0) {
+                            arrColors.reverse();
+                            for (i=0; i<arrColors.length; i++) {
+                                arrVersions[arrVersions.length-i-1].set('arrColors',arrColors);
+                            }
+                            arrColors = [];
+                        }
+                        historyStore.reset(arrVersions);
+                        if (currentVersion===null && historyStore.size()>0) {
+                            currentVersion = historyStore.at(0);
+                            currentVersion.set('selected', true);
+                        }
+                        if (currentVersion)
+                            this.getApplication().getController('Common.Controllers.History').onSelectRevision(null, null, currentVersion);
+                        arrIds.length && Common.UI.ExternalUsers.get('info', arrIds);
+                    }
+                }
+            },
+
+            generateUserColor: function(color) {
+                return"#"+("000000"+color.toString(16)).substr(-6);
             },
 
             onSaveDocumentBinary: function(data) {
