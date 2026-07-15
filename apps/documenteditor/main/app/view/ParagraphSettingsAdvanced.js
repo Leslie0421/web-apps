@@ -494,6 +494,33 @@ define([
             });
             this.chAllCaps.on('change', _.bind(this.onAllCapsChange, this));
 
+            this.numTextScale = new Common.UI.MetricSpinner({
+                el: $('#paragraphadv-spin-text-scale'),
+                step: 1,
+                width: 90,
+                defaultUnit: "%",
+                defaultValue: 100,
+                value: '100 %',
+                maxValue: 600,
+                minValue: 1
+            });
+            this.numTextScale.on('change', _.bind(function(field, newValue, oldValue, eOpts){
+                var value = Math.round(field.getNumberValue());
+                if (isNaN(value)) {
+                    value = 100;
+                    field.setValue(value, true);
+                }
+                value = Math.max(1, Math.min(600, value));
+                if (this._changedProps) {
+                    this._changedProps.put_TextScale(value);
+                }
+                if (this.api && !this._noApply) {
+                    var properties = (this._originalProps) ? this._originalProps : new Asc.asc_CParagraphProperty();
+                    properties.put_TextScale(value);
+                    this.api.SetDrawImagePlaceParagraph('paragraphadv-font-img', properties);
+                }
+            }, this));
+
             this.numSpacing = new Common.UI.MetricSpinner({
                 el: $('#paragraphadv-spin-spacing'),
                 step: .01,
@@ -768,7 +795,7 @@ define([
                 this.numSpacingBefore, this.numSpacingAfter, this.cmbLineRule, this.numLineHeight, this.chAddInterval, this.rbDirLtr, this.rbDirRtl, // 0 tab
                 this.chBreakBefore, this.chKeepLines, this.chOrphan, this.chKeepNext, this.chLineNumbers, // 1 tab
                 this.cmbBorderSize, this.btnBorderColor]).concat(this._btnsBorderPosition).concat([this.btnBackColor,  // 2 tab
-                this.chStrike, this.chSubscript, this.chDoubleStrike, this.chSmallCaps, this.chSuperscript, this.chAllCaps, this.numSpacing, this.numPosition, // 3 tab
+                this.chStrike, this.chSubscript, this.chDoubleStrike, this.chSmallCaps, this.chSuperscript, this.chAllCaps, this.numTextScale, this.numSpacing, this.numPosition, // 3 tab
                 this.numDefaultTab, this.numTab, this.cmbAlign, this.cmbLeader, this.tabList, this.btnAddTab, this.btnRemoveTab, this.btnRemoveAll,// 4 tab
                 this.spnMarginTop, this.spnMarginLeft, this.spnMarginBottom, this.spnMarginRight // 5 tab
             ]).concat(this.getFooterButtons());
@@ -990,6 +1017,7 @@ define([
                 this.chAllCaps.setValue((props.get_AllCaps() !== null && props.get_AllCaps() !== undefined) ? props.get_AllCaps() : 'indeterminate', true);
 
                 this.numSpacing.setValue((props.get_TextSpacing() !== null && props.get_TextSpacing() !== undefined) ? Common.Utils.Metric.fnRecalcFromMM(props.get_TextSpacing()) : '', true);
+                this.numTextScale.setValue((props.get_TextScale() !== null && props.get_TextScale() !== undefined) ? props.get_TextScale() : '', true);
                 this.numPosition.setValue((props.get_Position() !== null && props.get_Position() !== undefined) ? Common.Utils.Metric.fnRecalcFromMM(props.get_Position()) : '', true);
 
                 // Tabs
@@ -1629,6 +1657,7 @@ define([
         strSpacing: 'Spacing',
         strSuppressLineNumbers: 'Suppress line numbers',
         textOpenType: 'OpenType Features',
+        textScale: 'Scale',
         textLigatures: 'Ligatures',
         textStandard: 'Standard only',
         textContext: 'Contextual',

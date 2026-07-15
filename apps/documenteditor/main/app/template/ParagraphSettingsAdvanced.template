@@ -156,6 +156,10 @@
             <label class="header"><%= scope.textCharacterSpacing %></label>
         </div>
         <div class="padding-large">
+            <label class="input-label"><%= scope.textScale %></label>
+            <div id="paragraphadv-spin-text-scale"></div>
+        </div>
+        <div class="padding-large">
             <div style="display: inline-block;">
                 <label class="input-label"><%= scope.textSpacing %></label>
                 <div id="paragraphadv-spin-spacing"></div>
