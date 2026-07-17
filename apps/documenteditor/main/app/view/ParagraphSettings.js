@@ -88,6 +88,7 @@ define([
             this._locked = true;
             this.isChart = false;
             this.isSmartArtInternal = false;
+            this._firstLineFontSize = 12;
 
             this._arrLineRule = [
                 {displayValue: this.textAtLeast,defaultValue: 5, value: c_paragraphLinerule.LINERULE_LEAST, minValue: 0.03,   step: 0.01, defaultUnit: 'cm'},
@@ -97,8 +98,8 @@ define([
 
             this._arrSpecial = [
                 {displayValue: this.textNoneSpecial, value: c_paragraphSpecial.NONE_SPECIAL, defaultValue: 0},
-                {displayValue: this.textFirstLine, value: c_paragraphSpecial.FIRST_LINE, defaultValue: 12.7},
-                {displayValue: this.textHanging, value: c_paragraphSpecial.HANGING, defaultValue: 12.7}
+                {displayValue: this.textFirstLine, value: c_paragraphSpecial.FIRST_LINE, defaultValue: 2},
+                {displayValue: this.textHanging, value: c_paragraphSpecial.HANGING, defaultValue: 2}
             ];
 
             this.render();
@@ -262,18 +263,18 @@ define([
                 el: $markup.findById('#paragraph-spin-special-by'),
                 step: .1,
                 width: 85,
-                defaultUnit : "cm",
+                defaultUnit : Common.Utils.Metric.txtChar,
                 defaultValue : 0,
-                value: '0 cm',
-                maxValue: 55.87,
+                value: '0 ' + Common.Utils.Metric.txtChar,
+                maxValue: 100,
                 minValue: 0,
+                charUnitSize: Common.Utils.Metric.fnRecalcCharsToMM(1, 12),
                 disabled: this._locked,
                 dataHint: '1',
                 dataHintDirection: 'bottom',
                 dataHintOffset: 'big',
                 ariaLabel: this.strIndent + ' ' + this.strIndentsSpecial
             });
-            this.spinners.push(this.numSpecialBy);
             this.lockedControls.push(this.numSpecialBy);
 
             this.numLineHeight.on('change', this.onNumLineHeightChange.bind(this));
@@ -310,12 +311,27 @@ define([
         setApi: function(api) {
             this.api = api;
             if (this.api) {
-                // set api to numSpecialBy  
-                this.numSpecialBy.options.api = this.api;
-
                 this.api.asc_registerCallback('asc_onParaSpacingLine', _.bind(this._onLineSpacing, this));
+                this.api.asc_registerCallback('asc_onFontSize', _.bind(this._onFontSize, this));
             }
             return this;
+        },
+
+        _updateFirstLineCharUnit: function(fontSize) {
+            var previousFontSize = this._firstLineFontSize,
+                value = parseFloat(fontSize);
+            if (!isFinite(value) || value <= 0)
+                value = 12;
+            fontSize = value;
+            this._firstLineFontSize = fontSize;
+            this.numSpecialBy && this.numSpecialBy.setCharUnitSize(Common.Utils.Metric.fnRecalcCharsToMM(1, fontSize));
+            return previousFontSize !== fontSize;
+        },
+
+        _onFontSize: function(fontSize) {
+            if (this._updateFirstLineCharUnit(fontSize) && this._state.FirstLine !== null && this._state.FirstLine !== undefined) {
+                this.numSpecialBy.setValue(Math.abs(Common.Utils.Metric.fnRecalcCharsFromMM(this._state.FirstLine, this._firstLineFontSize)), true);
+            }
         },
 
         onNumLineHeightChange: function(field, newValue, oldValue, eOpts){
@@ -402,12 +418,11 @@ define([
         onSpecialSelect: function(combo, record) {
             var special = record.value,
                 specialBy = (special === c_paragraphSpecial.NONE_SPECIAL) ? 0 : this.numSpecialBy.getNumberValue();
-            const textProps = this.api.get_TextProps().get_TextPr();
-            const fontSize = textProps.get_FontSize();
-            specialBy = Common.Utils.Metric.fnRecalcToMM(specialBy, fontSize);
             if (specialBy === 0) {
                 specialBy = this._arrSpecial[special].defaultValue;
+                this.numSpecialBy.setValue(specialBy, true);
             }
+            specialBy = Common.Utils.Metric.fnRecalcCharsToMM(specialBy, this._firstLineFontSize);
             if (special === c_paragraphSpecial.HANGING) {
                 specialBy = -specialBy;
             }
@@ -428,9 +443,7 @@ define([
         },
 
         onFirstLineChange: function(field, newValue, oldValue, eOpts){
-            const textProps = this.api.get_TextProps().get_TextPr();
-            const fontSize = textProps.get_FontSize();
-            var specialBy = Common.Utils.Metric.fnRecalcToMM(field.getNumberValue(), fontSize);
+            var specialBy = Common.Utils.Metric.fnRecalcCharsToMM(field.getNumberValue(), this._firstLineFontSize);
  
             if (this._state.CurSpecial === c_paragraphSpecial.HANGING) {
                 specialBy = -specialBy;
@@ -543,7 +556,7 @@ define([
 
                 if ( Math.abs(this._state.FirstLine-first)>0.001 ||
                     (this._state.FirstLine===null || first===null)&&(this._state.FirstLine!==first)) {
-                    this.numSpecialBy.setValue(first!==null ? Math.abs(Common.Utils.Metric.fnRecalcFromMM(first)) : '', true);
+                    this.numSpecialBy.setValue(first!==null ? Math.abs(Common.Utils.Metric.fnRecalcCharsFromMM(first, this._firstLineFontSize)) : '', true);
                     this._state.FirstLine=first;
                 }
 
@@ -654,6 +667,7 @@ define([
                                     borderProps: me.borderAdvancedProps,
                                     isChart: me.isChart,
                                     isSmartArtInternal: me.isSmartArtInternal,
+                                    fontSize: me._firstLineFontSize,
                                     api: me.api,
                                     handler: function(result, value) {
                                         if (result == 'ok') {

@@ -290,6 +290,9 @@ export class storeTextSettings {
             case 3:
                 value = 'just';
                 break;
+            case AscCommon.align_Distributed:
+                value = 'distributed';
+                break;
         }
         this.paragraphAlign = value;
     }

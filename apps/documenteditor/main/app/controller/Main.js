@@ -1954,8 +1954,7 @@ define([
                     }
                 }
 
-                if (/^(ca|us)$/i.test(region))
-                    Common.Utils.Metric.setDefaultMetric(Common.Utils.Metric.c_MetricUnits.inch);
+                Common.Utils.Metric.setDefaultMetric(Common.Utils.Metric.c_MetricUnits.pt);
                 Common.Utils.InternalSettings.set("de-config-region", region);
             },
 
@@ -2060,6 +2059,7 @@ define([
                 value = (value!==null) ? parseInt(value) : (this.appOptions.customization && this.appOptions.customization.unit ? Common.Utils.Metric.c_MetricUnits[this.appOptions.customization.unit.toLocaleLowerCase()] : Common.Utils.Metric.getDefaultMetric());
                 (value===undefined) && (value = Common.Utils.Metric.getDefaultMetric());
                 Common.Utils.Metric.setCurrentMetric(value);
+                value = Common.Utils.Metric.getCurrentMetric();
                 Common.Utils.InternalSettings.set("de-settings-unit", value);
             },
 
@@ -2964,6 +2964,7 @@ define([
                 var value = Common.localStorage.getItem("de-settings-unit");
                 value = (value!==null) ? parseInt(value) : Common.Utils.Metric.getDefaultMetric();
                 Common.Utils.Metric.setCurrentMetric(value);
+                value = Common.Utils.Metric.getCurrentMetric();
                 Common.Utils.InternalSettings.set("de-settings-unit", value);
                 this.api.asc_SetDocumentUnits((value==Common.Utils.Metric.c_MetricUnits.inch) ? Asc.c_oAscDocumentUnits.Inch : ((value==Common.Utils.Metric.c_MetricUnits.pt) ? Asc.c_oAscDocumentUnits.Point : Asc.c_oAscDocumentUnits.Millimeter));
                 this.getApplication().getController('RightMenu').updateMetricUnit();

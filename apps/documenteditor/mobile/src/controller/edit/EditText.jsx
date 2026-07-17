@@ -192,6 +192,9 @@ class EditTextController extends Component {
         if (api) {
             let value;
             switch (type) {
+                case 'distributed':
+                    value = AscCommon.align_Distributed;
+                    break;
                 case 'just':
                     value = 3;
                     break;

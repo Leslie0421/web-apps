@@ -57,7 +57,8 @@ var c_paragraphTextAlignment = {
     RIGHT: 0,
     LEFT: 1,
     CENTERED: 2,
-    JUSTIFIED: 3
+    JUSTIFIED: 3,
+    DISTRIBUTED: 4
 };
 
 var c_pageNumPosition = {

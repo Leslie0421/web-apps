@@ -52,6 +52,7 @@ import IconTextAlignLeft from '@common-icons/icon-text-align-left.svg';
 import IconTextAlignCenter from '@common-icons/icon-text-align-center.svg';
 import IconTextAlignRight from '@common-icons/icon-text-align-right.svg';
 import IconTextAlignJust from '@common-icons/icon-text-align-just.svg';
+import IconTextAlignDistributed from '@common-icons/icon-text-align-distributed.svg';
 import IconDeIndent from '@common-icons/icon-de-indent.svg';
 import IconInIndent from '@common-icons/icon-in-indent.svg';
 import IconTextOrientationAngleCount from '@common-icons/icon-text-orientation-anglecount.svg';
@@ -842,6 +843,9 @@ const EditText = props => {
                         </a>
                         <a className={'button' + (paragraphAlign === 'just' ? ' active' : '')} onClick={() => {props.onParagraphAlign('just')}}>
                             <SvgIcon slot="media" symbolId={IconTextAlignJust.id} className={'icon icon-svg'} />
+                        </a>
+                        <a className={'button' + (paragraphAlign === 'distributed' ? ' active' : '')} onClick={() => {props.onParagraphAlign('distributed')}}>
+                            <SvgIcon slot="media" symbolId={IconTextAlignDistributed.id} className={'icon icon-svg'} />
                         </a>
                     </div>
                 </ListItem>

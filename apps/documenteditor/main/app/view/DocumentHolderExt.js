@@ -1223,6 +1223,15 @@ define([], function () {
                             checkable   : true,
                             checked     : false,
                             halign      : 3 
+                        }),
+                        me.menuTableCellDistributed = new Common.UI.MenuItem({
+                            iconCls     : 'menu__icon btn-align-just',
+                            caption     : me.AlignDistributed,
+                            toggleGroup : 'popuptablecellhalign',
+                            checkmark   : false,
+                            checkable   : true,
+                            checked     : false,
+                            halign      : AscCommon.align_Distributed
                         })
                     ]
                 })
@@ -1677,7 +1686,8 @@ define([], function () {
                     me.menuTableCellLeft.setChecked(halign == 1);
                     me.menuTableCellHCenter.setChecked(halign == 2);
                     me.menuTableCellRight.setChecked(halign == 0);
-                    me.menuTableCellJust.setChecked(halign == 3);        
+                    me.menuTableCellJust.setChecked(halign == 3);
+                    me.menuTableCellDistributed.setChecked(halign == AscCommon.align_Distributed);
 
                     var dir = value.tableProps.value.get_CellsTextDirection();
                     var cls = '';
@@ -2017,6 +2027,15 @@ define([], function () {
                             checked     : false,
                             toggleGroup : 'popupparagraphhalign',
                             halign      : 3 
+                        }),
+                        me.menuParagraphDistributed = new Common.UI.MenuItem({
+                            iconCls     : 'menu__icon btn-align-just',
+                            caption     : me.AlignDistributed,
+                            checkmark   : false,
+                            checkable   : true,
+                            checked     : false,
+                            toggleGroup : 'popupparagraphhalign',
+                            halign      : AscCommon.align_Distributed
                         })
                     ]
                 })
@@ -2341,6 +2360,7 @@ define([], function () {
                         me.menuParagraphHCenter.setChecked(halign == 2);
                         me.menuParagraphRight.setChecked(halign == 0);
                         me.menuParagraphJust.setChecked(halign == 3);
+                        me.menuParagraphDistributed.setChecked(halign == AscCommon.align_Distributed);
                         
 
                         var dir = value.imgProps.value.get_Vert();

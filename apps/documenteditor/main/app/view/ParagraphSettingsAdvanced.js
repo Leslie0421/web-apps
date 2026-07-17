@@ -90,6 +90,9 @@ define([
             this.tableStylerColumns = this.options.tableStylerColumns;
             this.borderProps = this.options.borderProps;
             this.api = this.options.api;
+            this._firstLineFontSize = parseFloat(this.options.fontSize);
+            if (!isFinite(this._firstLineFontSize) || this._firstLineFontSize <= 0)
+                this._firstLineFontSize = 12;
             this._originalProps = new Asc.asc_CParagraphProperty(this.options.paragraphProps);
             this.isChart = this.options.isChart;
             this.isSmartArtInternal = this.options.isSmartArtInternal;
@@ -104,8 +107,8 @@ define([
 
             this._arrSpecial = [
                 {displayValue: this.textNoneSpecial, value: c_paragraphSpecial.NONE_SPECIAL, defaultValue: 0},
-                {displayValue: this.textFirstLine, value: c_paragraphSpecial.FIRST_LINE, defaultValue: 12.7},
-                {displayValue: this.textHanging, value: c_paragraphSpecial.HANGING, defaultValue: 12.7}
+                {displayValue: this.textFirstLine, value: c_paragraphSpecial.FIRST_LINE, defaultValue: 2},
+                {displayValue: this.textHanging, value: c_paragraphSpecial.HANGING, defaultValue: 2}
             ];
             this.CurSpecial = undefined;
 
@@ -113,7 +116,8 @@ define([
                 {displayValue: this.textTabLeft, value: c_paragraphTextAlignment.LEFT},
                 {displayValue: this.textTabCenter, value: c_paragraphTextAlignment.CENTERED},
                 {displayValue: this.textTabRight, value: c_paragraphTextAlignment.RIGHT},
-                {displayValue: this.textJustified, value: c_paragraphTextAlignment.JUSTIFIED}
+                {displayValue: this.textJustified, value: c_paragraphTextAlignment.JUSTIFIED},
+                {displayValue: this.textDistributed, value: c_paragraphTextAlignment.DISTRIBUTED}
             ];
 
             this._arrOutlinelevel = [{displayValue: this.textBodyText, value: -1}];
@@ -285,14 +289,13 @@ define([
                 el: $('#paragraphadv-spin-special-by'),
                 step: .1,
                 width: 85,
-                defaultUnit : "cm",
+                defaultUnit : Common.Utils.Metric.txtChar,
                 defaultValue : 0,
-                value: '0 cm',
-                maxValue: 55.87,
+                value: '0 ' + Common.Utils.Metric.txtChar,
+                maxValue: 100,
                 minValue: 0,
-                api: this.api
+                charUnitSize: Common.Utils.Metric.fnRecalcCharsToMM(1, this._firstLineFontSize)
             });
-            this.spinners.push(this.numSpecialBy);
             this.numSpecialBy.on('change', _.bind(this.onFirstLineChange, this));
 
             this.cmbTextAlignment = new Common.UI.ComboBox({
@@ -920,6 +923,7 @@ define([
         _setDefaults: function(props) {
             if (props ){
                 this._originalProps = new Asc.asc_CParagraphProperty(props);
+                this._updateFirstLineCharUnit();
 
                 this.hideTextOnlySettings(this.isChart || this.isSmartArtInternal);
 
@@ -950,7 +954,7 @@ define([
                     this.CurSpecial = (props.get_Ind().get_FirstLine() === 0) ? c_paragraphSpecial.NONE_SPECIAL : ((props.get_Ind().get_FirstLine() > 0) ? c_paragraphSpecial.FIRST_LINE : c_paragraphSpecial.HANGING);
                 }
                 this.cmbSpecial.setValue(this.CurSpecial);
-                this.numSpecialBy.setValue(this.FirstLine!== null ? Math.abs(Common.Utils.Metric.fnRecalcFromMM(this.FirstLine)) : '', true);
+                this.numSpecialBy.setValue(this.FirstLine!== null ? Math.abs(Common.Utils.Metric.fnRecalcCharsFromMM(this.FirstLine, this._firstLineFontSize)) : '', true);
 
                 value = props.asc_getRtlDirection();
                 if (value !== undefined) {
@@ -1077,6 +1081,14 @@ define([
                 this.numLineHeight.setDefaultUnit(rec.defaultUnit);
                 this.numLineHeight.setStep(rec.step);
             }
+        },
+
+        _updateFirstLineCharUnit: function(fontSize) {
+            fontSize = parseFloat(fontSize);
+            if (!isFinite(fontSize) || fontSize <= 0)
+                fontSize = this._firstLineFontSize || 12;
+            this._firstLineFontSize = fontSize;
+            this.numSpecialBy && this.numSpecialBy.setCharUnitSize(Common.Utils.Metric.fnRecalcCharsToMM(1, fontSize));
         },
 
         updateThemeColors: function() {
@@ -1520,19 +1532,18 @@ define([
 
         onSpecialSelect: function(combo, record) {
             this.CurSpecial = record.value;
-            const textProps = this.api.get_TextProps().get_TextPr();
-            const fontSize = textProps.get_FontSize();
             if (this.CurSpecial === c_paragraphSpecial.NONE_SPECIAL) {
                 this.numSpecialBy.setValue(0, true);
             }
             if (this._changedProps) {
                 if (this._changedProps.get_Ind()===null || this._changedProps.get_Ind()===undefined)
                     this._changedProps.put_Ind(new Asc.asc_CParagraphInd());
-                var value = Common.Utils.Metric.fnRecalcToMM(this.numSpecialBy.getNumberValue(),fontSize);
+                var value = this.numSpecialBy.getNumberValue();
                 if (value === 0) {
-                    this.numSpecialBy.setValue(Common.Utils.Metric.fnRecalcFromMM(this._arrSpecial[record.value].defaultValue), true);
                     value = this._arrSpecial[record.value].defaultValue;
+                    this.numSpecialBy.setValue(value, true);
                 }
+                value = Common.Utils.Metric.fnRecalcCharsToMM(value, this._firstLineFontSize);
                 if (this.CurSpecial === c_paragraphSpecial.HANGING) {
                     value = -value;
                 }
@@ -1541,14 +1552,11 @@ define([
         },
 
         onFirstLineChange: function(field, newValue, oldValue, eOpts){
-            const textProps = this.api.get_TextProps().get_TextPr();
-            const fontSize = textProps.get_FontSize();
-
             if (this._changedProps) {
                 if (this._changedProps.get_Ind()===null || this._changedProps.get_Ind()===undefined)
                     this._changedProps.put_Ind(new Asc.asc_CParagraphInd());
 
-                var value = Common.Utils.Metric.fnRecalcToMM(field.getNumberValue(),fontSize);
+                var value = Common.Utils.Metric.fnRecalcCharsToMM(field.getNumberValue(), this._firstLineFontSize);
 
                 if (this.CurSpecial === c_paragraphSpecial.NONE_SPECIAL && value > 0 )  {
                     this.CurSpecial = c_paragraphSpecial.FIRST_LINE;
@@ -1650,6 +1658,7 @@ define([
         textFirstLine: 'First line',
         textHanging: 'Hanging',
         textJustified: 'Justified',
+        textDistributed: 'Distributed',
         textBodyText: 'Basic Text',
         textLevel: 'Level',
         strIndentsOutlinelevel: 'Outline level',

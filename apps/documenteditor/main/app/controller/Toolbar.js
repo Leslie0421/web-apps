@@ -366,6 +366,7 @@ define([
             toolbar.btnAlignCenter.on('click',                          _.bind(this.onHorizontalAlign, this, 2));
             toolbar.btnAlignRight.on('click',                           _.bind(this.onHorizontalAlign, this, 0));
             toolbar.btnAlignJust.on('click',                            _.bind(this.onHorizontalAlign, this, 3));
+            toolbar.btnAlignJust.menu.on('item:click',                  _.bind(this.onHorizontalAlignMenu, this));
             toolbar.btnDecLeftOffset.on('click',                        _.bind(this.onDecOffset, this));
             toolbar.btnIncLeftOffset.on('click',                        _.bind(this.onIncOffset, this));
             toolbar.btnMarkers.on('click',                              _.bind(this.onMarkers, this));
@@ -669,13 +670,16 @@ define([
                     toolbar.btnAlignLeft.toggle(false, true);
                     toolbar.btnAlignCenter.toggle(false, true);
                     toolbar.btnAlignJust.toggle(false, true);
+                    toolbar.btnAlignJust.menu.clearAll(true);
                     return;
                 }
 
                 toolbar.btnAlignRight.toggle(this._state.rtlDir ? v===1 : v===0, true);
                 toolbar.btnAlignLeft.toggle(this._state.rtlDir ? v===0 : v===1, true);
                 toolbar.btnAlignCenter.toggle(v===2, true);
-                toolbar.btnAlignJust.toggle(v===3, true);
+                toolbar.btnAlignJust.toggle(v===3 || v===AscCommon.align_Distributed, true);
+                toolbar.mnuAlignJust.setChecked(v===3, true);
+                toolbar.mnuAlignDistributed.setChecked(v===AscCommon.align_Distributed, true);
             }
         },
 
@@ -1417,9 +1421,10 @@ define([
         },
 
         onHorizontalAlign: function(type, btn, e) {
+            var currentAlign = this._state.pralign;
             this._state.pralign = undefined;
             if (this.api) {
-                if (!btn.pressed) {
+                if (!btn.pressed && !(type===AscCommon.align_Justify && currentAlign===AscCommon.align_Distributed)) {
                     if (this._state.rtlDir)
                         type = (type==0) ? 3 : 0;
                     else
@@ -1427,6 +1432,15 @@ define([
                 }
                 this.api.put_PrAlign(type);
             }
+
+            Common.NotificationCenter.trigger('edit:complete', this.toolbar);
+            Common.component.Analytics.trackEvent('ToolBar', 'Align');
+        },
+
+        onHorizontalAlignMenu: function(menu, item) {
+            this._state.pralign = undefined;
+            if (this.api)
+                this.api.put_PrAlign(item.value);
 
             Common.NotificationCenter.trigger('edit:complete', this.toolbar);
             Common.component.Analytics.trackEvent('ToolBar', 'Align');

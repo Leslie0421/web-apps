@@ -575,23 +575,26 @@ define([], function () {
 
         me.c_MetricUnits = {
             cm: 0,
-            磅: 1,
-            inch: 2,
-            字符: 3
+            pt: 1,
+            inch: 2
         };
 
-        me.currentMetric = me.c_MetricUnits.磅;
-        me.metricName = ['Cm', '磅', 'Inch', '字符'];
-        me.defaultMetric = me.c_MetricUnits.cm;
+        me.currentMetric = me.c_MetricUnits.pt;
+        me.metricName = ['Cm', 'Pt', 'Inch'];
+        me.defaultMetric = me.c_MetricUnits.pt;
+
+        function isValidMetric(value) {
+            return value === me.c_MetricUnits.cm || value === me.c_MetricUnits.pt || value === me.c_MetricUnits.inch;
+        }
 
         return {
             c_MetricUnits: me.c_MetricUnits,
             txtCm: 'cm',
-            txtPt: '磅',
+            txtPt: 'pt',
             txtInch: '\"',
-            txtChar: '字符',
+            txtChar: 'char',
             setCurrentMetric: function (value) {
-                me.currentMetric = value;
+                me.currentMetric = isValidMetric(value) ? value : me.defaultMetric;
             },
 
             getCurrentMetric: function () {
@@ -607,76 +610,53 @@ define([], function () {
             },
 
             setDefaultMetric: function (value) {
-                me.defaultMetric = value;
+                me.defaultMetric = isValidMetric(value) ? value : me.c_MetricUnits.pt;
             },
 
             getDefaultMetric: function () {
                 return me.defaultMetric;
             },
 
-            formatFontSize: function(charCount, fontSize){
-                // 计算字符缩进距离
-                // fontSize: 当前字体大小（单位：点 pt）
-                // charCount: 缩进字符数
-                // 返回：缩进距离（单位：厘米）
-                
-                // 1 点 = 1/72 英寸
-                // 1 英寸 = 2.54 厘米
-                // 所以 1 点 = 2.54/72 厘米
-                
-                // 对于中文字符，通常一个字符的宽度约等于字体大小
-                // 对于英文字符，宽度约为字体大小的 0.6 倍
-                // 这里使用中文字符的宽度计算（更保守的估计）
-                const charWidth = fontSize * (2.54 / 72.0) * charCount; // 将点转换为厘米
-                // 保留两位小数
-                return parseFloat(charWidth.toFixed(2));
-            },
-    
-            formatFontSizeReverse: function(mmValue, fontSize){
-                // 将毫米值转换为字符数
-                // mmValue: 毫米值
-                // 返回：字符数
-
-                // 将毫米转换为厘米，然后计算字符数
-                const cmValue = mmValue / 10;
-                const charCount = cmValue / (fontSize * (2.54 / 72.0));
-                // 保留两位小数
-                return parseFloat(charCount.toFixed(2));
-            },
-
-            fnRecalcToMM: function (value,fontSize) {
-                // value in 磅/cm/inch. need to convert to mm
-            
+            fnRecalcToMM: function (value) {
+                // value in pt/cm/inch. need to convert to mm
                 if (value !== null && value !== undefined) {
                     switch (me.currentMetric) {
-                     
                         case me.c_MetricUnits.cm:
                             return value * 10;
-                        case me.c_MetricUnits.磅:
+                        case me.c_MetricUnits.pt:
                             return value * 25.4 / 72.0;
                         case me.c_MetricUnits.inch:
                             return value * 25.4;
-                        case me.c_MetricUnits.字符: 
-                            return this.formatFontSize(value,fontSize)
                     }
-                       
                 }
                 return value;
             },
 
-            fnRecalcFromMM: function (value,fontSize) {
-                // value in mm. need to convert to 磅/cm/inch
+            fnRecalcFromMM: function (value) {
+                // value in mm. need to convert to pt/cm/inch
                 switch (me.currentMetric) {
                     case me.c_MetricUnits.cm:
                         return parseFloat((value / 10.).toFixed(4));
-                    case me.c_MetricUnits.磅:
+                    case me.c_MetricUnits.pt:
                         return parseFloat((value * 72.0 / 25.4).toFixed(3));
                     case me.c_MetricUnits.inch:
                         return parseFloat((value / 25.4).toFixed(3));
-                    case me.c_MetricUnits.字符:
-                        return this.formatFontSizeReverse(value,fontSize)
                 }
                 return value;
+            },
+
+            fnRecalcCharsToMM: function (value, fontSize) {
+                var size = parseFloat(fontSize);
+                if (!isFinite(size) || size <= 0)
+                    size = 12;
+                return value * size * 25.4 / 72.0;
+            },
+
+            fnRecalcCharsFromMM: function (value, fontSize) {
+                var size = parseFloat(fontSize);
+                if (!isFinite(size) || size <= 0)
+                    size = 12;
+                return value * 72.0 / 25.4 / size;
             }
         }
     })();

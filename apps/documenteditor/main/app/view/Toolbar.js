@@ -605,6 +605,23 @@ define([
                         lock: [_set.paragraphLock, _set.headerLock, _set.richEditLock, _set.plainEditLock, _set.previewReviewMode, _set.viewFormMode, _set.lostConnect, _set.disableOnStart, _set.docLockViewPara, _set.docLockForms, _set.docLockCommentsPara, _set.fixedForm, _set.viewMode],
                         enableToggle: true,
                         toggleGroup: 'alignGroup',
+                        split: true,
+                        menu: new Common.UI.Menu({
+                            items: [
+                                this.mnuAlignJust = new Common.UI.MenuItem({
+                                    caption: this.tipAlignJust,
+                                    value: AscCommon.align_Justify,
+                                    checkable: true,
+                                    toggleGroup: 'toolbar-paragraph-align'
+                                }),
+                                this.mnuAlignDistributed = new Common.UI.MenuItem({
+                                    caption: this.tipAlignDistributed,
+                                    value: AscCommon.align_Distributed,
+                                    checkable: true,
+                                    toggleGroup: 'toolbar-paragraph-align'
+                                })
+                            ]
+                        }),
                         dataHint: '1',
                         dataHintDirection: 'bottom'
                     });
