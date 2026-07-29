@@ -397,6 +397,42 @@ define([
                 }
             }, this));
 
+            this.chKinsoku = new Common.UI.CheckBox({
+                el: $('#paragraphadv-checkbox-kinsoku'),
+                labelText: this.strKinsoku
+            });
+            this.chKinsoku.on('change', _.bind(function(field){
+                if (this._changedProps)
+                    this._changedProps.put_Kinsoku(field.getValue() === 'checked');
+            }, this));
+
+            this.chOverflowPunct = new Common.UI.CheckBox({
+                el: $('#paragraphadv-checkbox-overflow-punct'),
+                labelText: this.strOverflowPunct
+            });
+            this.chOverflowPunct.on('change', _.bind(function(field){
+                if (this._changedProps)
+                    this._changedProps.put_OverflowPunct(field.getValue() === 'checked');
+            }, this));
+
+            this.chAutoSpaceDE = new Common.UI.CheckBox({
+                el: $('#paragraphadv-checkbox-auto-space-de'),
+                labelText: this.strAutoSpaceDE
+            });
+            this.chAutoSpaceDE.on('change', _.bind(function(field){
+                if (this._changedProps)
+                    this._changedProps.put_AutoSpaceDE(field.getValue() === 'checked');
+            }, this));
+
+            this.chAutoSpaceDN = new Common.UI.CheckBox({
+                el: $('#paragraphadv-checkbox-auto-space-dn'),
+                labelText: this.strAutoSpaceDN
+            });
+            this.chAutoSpaceDN.on('change', _.bind(function(field){
+                if (this._changedProps)
+                    this._changedProps.put_AutoSpaceDN(field.getValue() === 'checked');
+            }, this));
+
             // Borders
 
             this.cmbBorderSize = new Common.UI.ComboBorderSize({
@@ -835,7 +871,8 @@ define([
             return this.btnsCategory.concat([
                 this.cmbTextAlignment, this.cmbOutlinelevel, this.numIndentsLeft, this.numIndentsRight, this.cmbSpecial, this.numSpecialBy,
                 this.numSpacingBefore, this.numSpacingAfter, this.cmbLineRule, this.numLineHeight, this.chAddInterval, this.rbDirLtr, this.rbDirRtl, // 0 tab
-                this.chBreakBefore, this.chKeepLines, this.chOrphan, this.chKeepNext, this.chLineNumbers, // 1 tab
+                this.chBreakBefore, this.chKeepLines, this.chOrphan, this.chKeepNext, this.chLineNumbers,
+                this.chKinsoku, this.chOverflowPunct, this.chAutoSpaceDE, this.chAutoSpaceDN, // 1 tab
                 this.cmbBorderSize, this.btnBorderColor]).concat(this._btnsBorderPosition).concat([this.btnBackColor,  // 2 tab
                 this.chStrike, this.chSubscript, this.chDoubleStrike, this.chSmallCaps, this.chSuperscript, this.chAllCaps, this.numTextScale, this.numSpacing, this.numPosition, // 3 tab
                 this.numDefaultTab, this.numTab, this.cmbAlign, this.cmbLeader, this.tabList, this.btnAddTab, this.btnRemoveTab, this.btnRemoveAll,// 4 tab
@@ -1033,6 +1070,10 @@ define([
                 this.chOrphan.setValue((props.get_WidowControl() !== null && props.get_WidowControl() !== undefined) ? props.get_WidowControl() : 'indeterminate', true);
 
                 this.chLineNumbers.setValue((props.get_SuppressLineNumbers() !== null && props.get_SuppressLineNumbers() !== undefined) ? props.get_SuppressLineNumbers() : 'indeterminate', true);
+                this.chKinsoku.setValue((props.get_Kinsoku() !== null && props.get_Kinsoku() !== undefined) ? props.get_Kinsoku() : 'indeterminate', true);
+                this.chOverflowPunct.setValue((props.get_OverflowPunct() !== null && props.get_OverflowPunct() !== undefined) ? props.get_OverflowPunct() : 'indeterminate', true);
+                this.chAutoSpaceDE.setValue((props.get_AutoSpaceDE() !== null && props.get_AutoSpaceDE() !== undefined) ? props.get_AutoSpaceDE() : 'indeterminate', true);
+                this.chAutoSpaceDN.setValue((props.get_AutoSpaceDN() !== null && props.get_AutoSpaceDN() !== undefined) ? props.get_AutoSpaceDN() : 'indeterminate', true);
 
                 this.Borders = new Asc.asc_CParagraphBorders(props.get_Borders());
 
@@ -1739,6 +1780,11 @@ define([
         strIndent: 'Indents',
         strSpacing: 'Spacing',
         strSuppressLineNumbers: 'Suppress line numbers',
+        strEastAsianTypography: 'East Asian typography',
+        strKinsoku: 'Control line-start and line-end characters',
+        strOverflowPunct: 'Allow punctuation to hang outside margins',
+        strAutoSpaceDE: 'Automatically adjust spacing between Asian and Latin text',
+        strAutoSpaceDN: 'Automatically adjust spacing between Asian text and numbers',
         textOpenType: 'OpenType Features',
         textScale: 'Scale',
         textLigatures: 'Ligatures',

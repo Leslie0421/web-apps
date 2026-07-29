@@ -89,6 +89,21 @@
                 </td>
             </tr>
         </table>
+        <div style="padding-top: 16px;"><label class="header padding-very-small"><%= scope.strEastAsianTypography %></label></div>
+        <table cols="1" style="width: 100%;" role="presentation">
+            <tr>
+                <td class="padding-small"><div id="paragraphadv-checkbox-kinsoku"></div></td>
+            </tr>
+            <tr>
+                <td class="padding-small"><div id="paragraphadv-checkbox-overflow-punct"></div></td>
+            </tr>
+            <tr>
+                <td class="padding-small"><div id="paragraphadv-checkbox-auto-space-de"></div></td>
+            </tr>
+            <tr>
+                <td class="padding-small"><div id="paragraphadv-checkbox-auto-space-dn"></div></td>
+            </tr>
+        </table>
     </div>
 </div>
 <div id="id-adv-paragraph-borders" class="settings-panel">
