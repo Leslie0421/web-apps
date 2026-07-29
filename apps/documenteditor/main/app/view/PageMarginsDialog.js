@@ -108,6 +108,27 @@ define([], function () { 'use strict';
                 '</td>',
                 '</tr>',
                 '</table>',
+                '<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #cbcbcb;">',
+                    '<label class="font-weight-bold">' + this.textDocumentGrid + '</label>',
+                    '<div style="margin-top: 4px;">',
+                        '<div id="page-margins-cmb-grid-type"></div>',
+                    '</div>',
+                    '<div style="margin-top: 6px;">',
+                        '<div style="display: inline-block;">',
+                            '<label class="input-label">' + this.textLinesPerPage + '</label>',
+                            '<div id="page-margins-spin-grid-lines"></div>',
+                        '</div>',
+                        '<div class="margin-left-8" style="display: inline-block;">',
+                            '<label class="input-label">' + this.textCharsPerLine + '</label>',
+                            '<div id="page-margins-spin-grid-chars"></div>',
+                        '</div>',
+                        '<div class="margin-left-8" style="display: inline-block; vertical-align: top;">',
+                            '<label class="input-label">' + this.textApplyTo + '</label>',
+                            '<div id="page-margins-cmb-grid-apply"></div>',
+                        '</div>',
+                    '</div>',
+                    '<div class="input-label" style="margin-top: 6px; line-height: 14px;">' + this.textGridLimitations + '</div>',
+                '</div>',
                 '</div>'
             ].join('');
 
@@ -137,7 +158,7 @@ define([], function () { 'use strict';
                 if (this.api) {
                     this.properties = (this.properties) ? this.properties : new Asc.CDocumentSectionProps();
                     this.properties.put_TopMargin(Common.Utils.Metric.fnRecalcToMM(field.getNumberValue()));
-                    this.api.SetDrawImagePreviewMargins('page-margins-preview', this.properties);
+                    this._updateGridPreview();
                 }
             }, this));
             this.spinners.push(this.spnTop);
@@ -155,7 +176,7 @@ define([], function () { 'use strict';
                 if (this.api) {
                     this.properties = (this.properties) ? this.properties : new Asc.CDocumentSectionProps();
                     this.properties.put_BottomMargin(Common.Utils.Metric.fnRecalcToMM(field.getNumberValue()));
-                    this.api.SetDrawImagePreviewMargins('page-margins-preview', this.properties);
+                    this._updateGridPreview();
                 }
             }, this));
             this.spinners.push(this.spnBottom);
@@ -173,7 +194,7 @@ define([], function () { 'use strict';
                 if (this.api) {
                     this.properties = (this.properties) ? this.properties : new Asc.CDocumentSectionProps();
                     this.properties.put_LeftMargin(Common.Utils.Metric.fnRecalcToMM(field.getNumberValue()));
-                    this.api.SetDrawImagePreviewMargins('page-margins-preview', this.properties);
+                    this._updateGridPreview();
                 }
             }, this));
             this.spinners.push(this.spnLeft);
@@ -191,7 +212,7 @@ define([], function () { 'use strict';
                 if (this.api) {
                     this.properties = (this.properties) ? this.properties : new Asc.CDocumentSectionProps();
                     this.properties.put_RightMargin(Common.Utils.Metric.fnRecalcToMM(field.getNumberValue()));
-                    this.api.SetDrawImagePreviewMargins('page-margins-preview', this.properties);
+                    this._updateGridPreview();
                 }
             }, this));
             this.spinners.push(this.spnRight);
@@ -209,7 +230,7 @@ define([], function () { 'use strict';
                 if (this.api) {
                     this.properties = (this.properties) ? this.properties : new Asc.CDocumentSectionProps();
                     this.properties.put_Gutter(Common.Utils.Metric.fnRecalcToMM(field.getNumberValue()));
-                    this.api.SetDrawImagePreviewMargins('page-margins-preview', this.properties);
+                    this._updateGridPreview();
                 }
             }, this));
             this.spinners.push(this.spnGutter);
@@ -230,7 +251,7 @@ define([], function () { 'use strict';
                 if (this.api) {
                     this.properties = (this.properties) ? this.properties : new Asc.CDocumentSectionProps();
                     this.properties.put_GutterAtTop(record.value);
-                    this.api.SetDrawImagePreviewMargins('page-margins-preview', this.properties);
+                    this._updateGridPreview();
                 }
             }, this));
 
@@ -273,7 +294,7 @@ define([], function () { 'use strict';
                         this.spnLeft.setValue(Common.Utils.Metric.fnRecalcFromMM(this.properties.get_LeftMargin()), true);
                         this.spnRight.setValue(Common.Utils.Metric.fnRecalcFromMM(this.properties.get_RightMargin()), true);
 
-                        this.api.SetDrawImagePreviewMargins('page-margins-preview', this.properties);
+                        this._updateGridPreview();
                     }
                 }
             }, this));
@@ -304,9 +325,77 @@ define([], function () { 'use strict';
                 if (this.api) {
                     this.properties = (this.properties) ? this.properties : new Asc.CDocumentSectionProps();
                     this.properties.put_MirrorMargins(record.value);
-                    this.api.SetDrawImagePreviewMargins('page-margins-preview', this.properties);
+                    this._updateGridPreview();
                 }
             }, this));
+
+            this.cmbGridType = new Common.UI.ComboBox({
+                el: $('#page-margins-cmb-grid-type'),
+                menuStyle: 'min-width: 260px;',
+                style: 'width: 260px;',
+                editable: false,
+                takeFocusOnClose: true,
+                cls: 'input-group-nr',
+                data: [
+                    {value: Asc.c_oAscDocGridType.Default, displayValue: this.textGridNone},
+                    {value: Asc.c_oAscDocGridType.Lines, displayValue: this.textGridLines},
+                    {value: Asc.c_oAscDocGridType.LinesAndChars, displayValue: this.textGridLinesAndChars},
+                    {value: Asc.c_oAscDocGridType.SnapToChars, displayValue: this.textGridSnapToChars}
+                ]
+            });
+            this.cmbGridType.on('selected', _.bind(function(combo, record) {
+                if (this.properties) {
+                    this.properties.put_DocGridType(record.value);
+                    this._updateGridPreview();
+                }
+                this._updateGridControls(record.value);
+            }, this));
+
+            this.spnGridLines = new Common.UI.MetricSpinner({
+                el: $('#page-margins-spin-grid-lines'),
+                step: 1,
+                width: 86,
+                defaultUnit: '',
+                value: 40,
+                maxValue: 1000,
+                minValue: 1
+            });
+            this.spnGridLines.on('change', _.bind(function(field) {
+                var count = Math.round(field.getNumberValue());
+                if (isFinite(count))
+                    this._gridLinesCount = Math.max(1, count);
+                this._updateGridPreview();
+            }, this));
+
+            this.spnGridChars = new Common.UI.MetricSpinner({
+                el: $('#page-margins-spin-grid-chars'),
+                step: 1,
+                width: 86,
+                defaultUnit: '',
+                value: 40,
+                maxValue: 1000,
+                minValue: 1
+            });
+            this.spnGridChars.on('change', _.bind(function(field) {
+                var count = Math.round(field.getNumberValue());
+                if (isFinite(count))
+                    this._gridCharsCount = Math.max(1, count);
+                this._updateGridPreview();
+            }, this));
+
+            this.cmbGridApply = new Common.UI.ComboBox({
+                el: $('#page-margins-cmb-grid-apply'),
+                menuStyle: 'min-width: 150px;',
+                style: 'width: 150px;',
+                editable: false,
+                takeFocusOnClose: true,
+                cls: 'input-group-nr',
+                data: [
+                    {value: Asc.c_oAscDocGridApplyType.Current, displayValue: this.textCurrentSection},
+                    {value: Asc.c_oAscDocGridApplyType.Selected, displayValue: this.textSelectedSections},
+                    {value: Asc.c_oAscDocGridApplyType.All, displayValue: this.textWholeDocument}
+                ]
+            });
 
             this.window = this.getChild();
             this.window.find('.dlg-btn').on('click', _.bind(this.onBtnClick, this));
@@ -317,7 +406,8 @@ define([], function () { 'use strict';
         },
 
         getFocusedComponents: function() {
-            return [this.spnTop, this.spnBottom, this.spnLeft, this.spnRight, this.spnGutter, this.cmbGutterPosition, this.cmbOrientation, this.cmbMultiplePages].concat(this.getFooterButtons());
+            return [this.spnTop, this.spnBottom, this.spnLeft, this.spnRight, this.spnGutter, this.cmbGutterPosition, this.cmbOrientation, this.cmbMultiplePages,
+                this.cmbGridType, this.spnGridLines, this.spnGridChars, this.cmbGridApply].concat(this.getFooterButtons());
         },
 
         getDefaultFocusableComponent: function () {
@@ -388,6 +478,15 @@ define([], function () { 'use strict';
                     this.cmbGutterPosition.setValue(0);
                 }
                 this.cmbGutterPosition.setDisabled(mirrorMargins);
+
+                var gridType = (props.get_DocGridType() === undefined || props.get_DocGridType() === null) ? Asc.c_oAscDocGridType.Default : props.get_DocGridType();
+                this.cmbGridType.setValue(gridType);
+                this._gridLinesCount = props.get_DocGridLinesPerPage() || 40;
+                this._gridCharsCount = props.get_DocGridCharsPerLine() || 40;
+                this.spnGridLines.setValue(this._gridLinesCount, true);
+                this.spnGridChars.setValue(this._gridCharsCount, true);
+                this.cmbGridApply.setValue(Asc.c_oAscDocGridApplyType.Current);
+                this._updateGridControls(gridType);
             }
         },
 
@@ -403,7 +502,36 @@ define([], function () { 'use strict';
             props.put_MirrorMargins(this.cmbMultiplePages.getValue() ? true : false);
             props.put_H(this.properties.get_H());
             props.put_W(this.properties.get_W());
+            props.put_DocGridDefaultFontSize(this.properties.get_DocGridDefaultFontSize());
+            props.put_DocGridType(this.cmbGridType.getValue());
+            if (this.cmbGridType.getValue() === Asc.c_oAscDocGridType.Lines || this.cmbGridType.getValue() === Asc.c_oAscDocGridType.LinesAndChars)
+                props.put_DocGridLinesPerPage(this._gridLinesCount);
+            if (this.cmbGridType.getValue() === Asc.c_oAscDocGridType.SnapToChars || this.cmbGridType.getValue() === Asc.c_oAscDocGridType.LinesAndChars)
+                props.put_DocGridCharsPerLine(this._gridCharsCount);
+            props.put_DocGridApplyType(this.cmbGridApply.getValue());
             return props;
+        },
+
+        _updateGridControls: function(type) {
+            this.spnGridLines.setDisabled(type !== Asc.c_oAscDocGridType.Lines && type !== Asc.c_oAscDocGridType.LinesAndChars);
+            this.spnGridChars.setDisabled(type !== Asc.c_oAscDocGridType.SnapToChars && type !== Asc.c_oAscDocGridType.LinesAndChars);
+        },
+
+        _applyGridCountsToProperties: function() {
+            if (!this.properties || !this.cmbGridType)
+                return;
+            var type = this.cmbGridType.getValue();
+            this.properties.put_DocGridType(type);
+            if ((type === Asc.c_oAscDocGridType.Lines || type === Asc.c_oAscDocGridType.LinesAndChars) && this._gridLinesCount)
+                this.properties.put_DocGridLinesPerPage(this._gridLinesCount);
+            if ((type === Asc.c_oAscDocGridType.SnapToChars || type === Asc.c_oAscDocGridType.LinesAndChars) && this._gridCharsCount)
+                this.properties.put_DocGridCharsPerLine(this._gridCharsCount);
+        },
+
+        _updateGridPreview: function() {
+            this._applyGridCountsToProperties();
+            if (this.api && this.properties)
+                this.api.SetDrawImagePreviewMargins('page-margins-preview', this.properties);
         },
 
         updateMetricUnit: function() {
@@ -434,6 +562,18 @@ define([], function () { 'use strict';
         textMirrorMargins: 'Mirror margins',
         textNormal: 'Normal',
         textInside: 'Inside',
-        textOutside: 'Outside'
+        textOutside: 'Outside',
+        textDocumentGrid: 'Document grid',
+        textGridNone: 'No grid',
+        textGridLines: 'Line grid',
+        textGridLinesAndChars: 'Line and character grid',
+        textGridSnapToChars: 'Character alignment grid',
+        textLinesPerPage: 'Lines per page',
+        textCharsPerLine: 'Characters per line',
+        textApplyTo: 'Apply to',
+        textCurrentSection: 'Current section',
+        textSelectedSections: 'Selected sections',
+        textWholeDocument: 'Whole document',
+        textGridLimitations: 'Fixed line spacing, columns, and tables can limit grid alignment.'
     }, DE.Views.PageMarginsDialog || {}))
 });
