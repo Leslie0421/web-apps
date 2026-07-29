@@ -9,6 +9,7 @@
   - 中文字体只提交 `eastAsia`；西文字体同时提交 `ascii/hAnsi`；未修改的槽位保持不变。
   - 多选字体不一致时显示空白混合状态，不会因打开并确认对话框而写入未修改的字体。
   - 复用工具栏已加载的字体集合，避免按需打开对话框时下拉列表为空。
+  - 点击确定时读取选择器最终值并与打开对话框时的原值比较，兼容键盘输入和下拉选择两种操作；不再依赖仅在部分交互路径触发的 `selected` 事件。
 - `apps/documenteditor/main/app/controller/DocumentHolderExt.js`、`controller/RightMenu.js`、`view/ParagraphSettings.js`
   - 右键菜单和右侧属性面板两个高级段落入口均传入字体集合并通过同一次 `paraApply` 应用设置。
 - `apps/documenteditor/main/locale/en.json`、`zh.json`、`zh-tw.json`
@@ -18,6 +19,7 @@
 
 - 相关 JavaScript `node --check`、本地化 JSON 解析和 `git diff --check` 通过。
 - `build/node_modules/.bin/grunt deploy-documenteditor-component` 生产构建通过；仅有既有的 bundle 体积和 Browserslist 数据过期警告。
+- 已在生产部署环境验证中文与西文字体分别生效，临时诊断日志已清除。
 
 ### 跨项目依赖
 

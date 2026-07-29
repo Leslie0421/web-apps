@@ -85,6 +85,8 @@ define([
             this.LeftIndent = undefined;
             this.Spacing = null;
             this._changedFontFamilies = null;
+            this._originalEastAsianFontName = '';
+            this._originalWesternFontName = '';
             this.spinners = [];
 
             this.tableStylerRows = this.options.tableStylerRows;
@@ -480,11 +482,7 @@ define([
                 recent      : 0,
                 hint        : this.textEastAsianFont,
                 takeFocusOnClose: true
-            }).on('selected', _.bind(function(combo, record) {
-                if (!this._changedFontFamilies)
-                    this._changedFontFamilies = new AscCommon.asc_CTextFontFamilies();
-                this._changedFontFamilies.put_EastAsia(record.name);
-            }, this));
+            });
             if (dialogFontStore)
                 this.cmbEastAsianFont.fillFonts(dialogFontStore);
 
@@ -498,12 +496,7 @@ define([
                 recent      : 0,
                 hint        : this.textWesternFont,
                 takeFocusOnClose: true
-            }).on('selected', _.bind(function(combo, record) {
-                if (!this._changedFontFamilies)
-                    this._changedFontFamilies = new AscCommon.asc_CTextFontFamilies();
-                this._changedFontFamilies.put_Ascii(record.name);
-                this._changedFontFamilies.put_HAnsi(record.name);
-            }, this));
+            });
             if (dialogFontStore)
                 this.cmbWesternFont.fillFonts(dialogFontStore);
 
@@ -962,6 +955,21 @@ define([
             if (this.Spacing !== null) {
                 this._changedProps.asc_putSpacing(this.Spacing);
             }
+            var eastAsianFontName = this.cmbEastAsianFont.getRawValue(),
+                westernFontName = this.cmbWesternFont.getRawValue();
+            eastAsianFontName = typeof eastAsianFontName === 'string' ? eastAsianFontName.trim() : '';
+            westernFontName = typeof westernFontName === 'string' ? westernFontName.trim() : '';
+            this._changedFontFamilies = null;
+            if (eastAsianFontName && eastAsianFontName !== this._originalEastAsianFontName) {
+                this._changedFontFamilies = new AscCommon.asc_CTextFontFamilies();
+                this._changedFontFamilies.put_EastAsia(eastAsianFontName);
+            }
+            if (westernFontName && westernFontName !== this._originalWesternFontName) {
+                if (!this._changedFontFamilies)
+                    this._changedFontFamilies = new AscCommon.asc_CTextFontFamilies();
+                this._changedFontFamilies.put_Ascii(westernFontName);
+                this._changedFontFamilies.put_HAnsi(westernFontName);
+            }
             if (this._changedFontFamilies) {
                 this._changedProps.put_FontFamilies(this._changedFontFamilies);
             }
@@ -1072,8 +1080,10 @@ define([
                     hAnsiFont = fontFamilies && fontFamilies.get_HAnsi ? fontFamilies.get_HAnsi() : null,
                     asciiName = asciiFont && asciiFont.get_Name ? asciiFont.get_Name() : '',
                     hAnsiName = hAnsiFont && hAnsiFont.get_Name ? hAnsiFont.get_Name() : '';
-                this.cmbEastAsianFont.setValue(eastAsianFont && eastAsianFont.get_Name ? eastAsianFont.get_Name() : '');
-                this.cmbWesternFont.setValue(asciiName && asciiName === hAnsiName ? asciiName : '');
+                this._originalEastAsianFontName = eastAsianFont && eastAsianFont.get_Name ? eastAsianFont.get_Name() : '';
+                this._originalWesternFontName = asciiName && asciiName === hAnsiName ? asciiName : '';
+                this.cmbEastAsianFont.setValue(this._originalEastAsianFontName);
+                this.cmbWesternFont.setValue(this._originalWesternFontName);
                 this.chStrike.setValue((props.get_Strikeout() !== null && props.get_Strikeout() !== undefined) ? props.get_Strikeout() : 'indeterminate', true);
                 this.chDoubleStrike.setValue((props.get_DStrikeout() !== null && props.get_DStrikeout() !== undefined) ? props.get_DStrikeout() : 'indeterminate', true);
                 this.chSubscript.setValue((props.get_Subscript() !== null && props.get_Subscript() !== undefined) ? props.get_Subscript() : 'indeterminate', true);
