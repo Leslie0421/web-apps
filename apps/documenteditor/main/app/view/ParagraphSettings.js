@@ -651,6 +651,9 @@ define([
 
             var me = this;
             var win;
+            var toolbarController = me.application && me.application.getController('Toolbar'),
+                toolbar = toolbarController && toolbarController.getView('Toolbar'),
+                fontStore = toolbar && toolbar.cmbFontName ? toolbar.cmbFontName.store : null;
             if (me.api && !this._locked){
                 var selectedElements = me.api.getSelectedElements();
                 if (selectedElements && selectedElements.length>0){
@@ -668,6 +671,7 @@ define([
                                     isChart: me.isChart,
                                     isSmartArtInternal: me.isSmartArtInternal,
                                     fontSize: me._firstLineFontSize,
+                                    fontStore: fontStore,
                                     api: me.api,
                                     handler: function(result, value) {
                                         if (result == 'ok') {

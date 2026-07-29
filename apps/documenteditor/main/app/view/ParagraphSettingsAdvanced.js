@@ -49,7 +49,7 @@ define([
     DE.Views.ParagraphSettingsAdvanced = Common.Views.AdvancedSettingsWindow.extend(_.extend({
         options: {
             contentWidth: 370,
-            contentHeight: 340,
+            contentHeight: 430,
             toggleGroup: 'paragraph-adv-settings-group',
             storageName: 'de-para-settings-adv-category'
         },
@@ -84,6 +84,7 @@ define([
             this.FirstLine = undefined;
             this.LeftIndent = undefined;
             this.Spacing = null;
+            this._changedFontFamilies = null;
             this.spinners = [];
 
             this.tableStylerRows = this.options.tableStylerRows;
@@ -460,6 +461,51 @@ define([
             this.btnBackColor.on('color:select', _.bind(this.onColorsBackSelect, this));
 
             // Font
+
+            var dialogFontStore = null;
+            if (this.options.fontStore) {
+                var dialogFonts = this.options.fontStore.toJSON().filter(function(font) {
+                    return !font.cloneid;
+                });
+                dialogFontStore = new Common.Collections.Fonts(dialogFonts);
+            }
+
+            this.cmbEastAsianFont = new Common.UI.ComboBoxFonts({
+                el          : $('#paragraphadv-font-eastasia'),
+                cls         : 'input-group-nr',
+                style       : 'width: 158px;',
+                menuCls     : 'scrollable-menu',
+                menuStyle   : 'min-width: 100%;max-height: 270px;',
+                store       : new Common.Collections.Fonts(),
+                recent      : 0,
+                hint        : this.textEastAsianFont,
+                takeFocusOnClose: true
+            }).on('selected', _.bind(function(combo, record) {
+                if (!this._changedFontFamilies)
+                    this._changedFontFamilies = new AscCommon.asc_CTextFontFamilies();
+                this._changedFontFamilies.put_EastAsia(record.name);
+            }, this));
+            if (dialogFontStore)
+                this.cmbEastAsianFont.fillFonts(dialogFontStore);
+
+            this.cmbWesternFont = new Common.UI.ComboBoxFonts({
+                el          : $('#paragraphadv-font-western'),
+                cls         : 'input-group-nr',
+                style       : 'width: 158px;',
+                menuCls     : 'scrollable-menu',
+                menuStyle   : 'min-width: 100%;max-height: 270px;',
+                store       : new Common.Collections.Fonts(),
+                recent      : 0,
+                hint        : this.textWesternFont,
+                takeFocusOnClose: true
+            }).on('selected', _.bind(function(combo, record) {
+                if (!this._changedFontFamilies)
+                    this._changedFontFamilies = new AscCommon.asc_CTextFontFamilies();
+                this._changedFontFamilies.put_Ascii(record.name);
+                this._changedFontFamilies.put_HAnsi(record.name);
+            }, this));
+            if (dialogFontStore)
+                this.cmbWesternFont.fillFonts(dialogFontStore);
 
             this.chStrike = new Common.UI.CheckBox({
                 el: $('#paragraphadv-checkbox-strike'),
@@ -916,8 +962,14 @@ define([
             if (this.Spacing !== null) {
                 this._changedProps.asc_putSpacing(this.Spacing);
             }
+            if (this._changedFontFamilies) {
+                this._changedProps.put_FontFamilies(this._changedFontFamilies);
+            }
 
-            return { paragraphProps: this._changedProps, borderProps: {borderSize: this.BorderSize, borderColor: this.btnBorderColor.isAutoColor() ? 'auto' : this.btnBorderColor.color} };
+            return {
+                paragraphProps: this._changedProps,
+                borderProps: {borderSize: this.BorderSize, borderColor: this.btnBorderColor.isAutoColor() ? 'auto' : this.btnBorderColor.color}
+            };
         },
 
         _setDefaults: function(props) {
@@ -1013,6 +1065,15 @@ define([
 
                 // Font
                 this._noApply = true;
+                this._changedFontFamilies = null;
+                var fontFamilies = props.get_FontFamilies ? props.get_FontFamilies() : null,
+                    eastAsianFont = fontFamilies && fontFamilies.get_EastAsia ? fontFamilies.get_EastAsia() : null,
+                    asciiFont = fontFamilies && fontFamilies.get_Ascii ? fontFamilies.get_Ascii() : null,
+                    hAnsiFont = fontFamilies && fontFamilies.get_HAnsi ? fontFamilies.get_HAnsi() : null,
+                    asciiName = asciiFont && asciiFont.get_Name ? asciiFont.get_Name() : '',
+                    hAnsiName = hAnsiFont && hAnsiFont.get_Name ? hAnsiFont.get_Name() : '';
+                this.cmbEastAsianFont.setValue(eastAsianFont && eastAsianFont.get_Name ? eastAsianFont.get_Name() : '');
+                this.cmbWesternFont.setValue(asciiName && asciiName === hAnsiName ? asciiName : '');
                 this.chStrike.setValue((props.get_Strikeout() !== null && props.get_Strikeout() !== undefined) ? props.get_Strikeout() : 'indeterminate', true);
                 this.chDoubleStrike.setValue((props.get_DStrikeout() !== null && props.get_DStrikeout() !== undefined) ? props.get_DStrikeout() : 'indeterminate', true);
                 this.chSubscript.setValue((props.get_Subscript() !== null && props.get_Subscript() !== undefined) ? props.get_Subscript() : 'indeterminate', true);
@@ -1607,6 +1668,9 @@ define([
         textBorderDesc:         'Click on diagramm or use buttons to select borders',
         txtNoBorders:           'No borders',
         textEffects: 'Effects',
+        textFontFamilies: 'Fonts',
+        textEastAsianFont: 'East Asian font',
+        textWesternFont: 'Western font',
         textCharacterSpacing: 'Character Spacing',
         textSpacing: 'Spacing',
         textPosition: 'Position',

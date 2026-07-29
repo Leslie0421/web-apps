@@ -124,6 +124,19 @@
 <div id="id-adv-paragraph-font" class="settings-panel">
     <div class="inner-content" style="width: 100%;">
         <div class="padding-very-small">
+            <label class="header"><%= scope.textFontFamilies %></label>
+        </div>
+        <div class="padding-large">
+            <div style="display: inline-block; width: 158px;">
+                <label class="input-label"><%= scope.textEastAsianFont %></label>
+                <div id="paragraphadv-font-eastasia"></div>
+            </div>
+            <div class="margin-left-15" style="display: inline-block; width: 158px;">
+                <label class="input-label"><%= scope.textWesternFont %></label>
+                <div id="paragraphadv-font-western"></div>
+            </div>
+        </div>
+        <div class="padding-very-small">
             <label class="header"><%= scope.textEffects %></label>
         </div>
         <table cols="2" role="presentation">

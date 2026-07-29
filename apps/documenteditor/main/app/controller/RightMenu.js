@@ -91,6 +91,7 @@ define([
 
         onRightMenuAfterRender: function(rightMenu) {
             rightMenu.imageSettings && (rightMenu.imageSettings.application = this.getApplication());
+            rightMenu.paragraphSettings && (rightMenu.paragraphSettings.application = this.getApplication());
             rightMenu.shapeSettings && (rightMenu.shapeSettings.application = this.getApplication());
             rightMenu.textartSettings && (rightMenu.textartSettings.application = this.getApplication());
 

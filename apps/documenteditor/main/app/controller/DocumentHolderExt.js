@@ -2121,6 +2121,9 @@ define([], function () {
 
         dh.advancedParagraphClick = function(item, e, eOpt){
             var win, me = this;
+            var toolbarController = me.getApplication().getController('Toolbar'),
+                toolbar = toolbarController && toolbarController.getView('Toolbar'),
+                fontStore = toolbar && toolbar.cmbFontName ? toolbar.cmbFontName.store : null;
             if (me.api){
                 var selectedElements = me.api.getSelectedElements();
                 if (selectedElements && _.isArray(selectedElements)){
@@ -2137,6 +2140,7 @@ define([], function () {
                                 borderProps         : me.borderAdvancedProps,
                                 isChart             : (item.isChart===true),
                                 isSmartArtInternal  : (item.isSmartArtInternal===true),
+                                fontStore       : fontStore,
                                 api             : me.api,
                                 handler: function(result, value) {
                                     if (result == 'ok') {
